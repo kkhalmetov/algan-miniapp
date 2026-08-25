@@ -368,8 +368,7 @@ function HomeTab({ t, locale, profileName, location, favoriteStoreIds, category,
   return (
     <>
       <header className="bg-[#1f5c49] px-6 pb-8 pt-[max(1.4rem,env(safe-area-inset-top))] text-white">
-        <div className="flex items-center justify-between"><Brand light /><span className="rounded-full bg-white/12 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide">{t('demo')}</span></div>
-        <div className="mt-7 flex items-end justify-between gap-4">
+        <div className="mt-2 flex items-end justify-between gap-4">
           <div><p className="text-sm text-white/70">{t('greeting')},</p><h1 className="mt-0.5 text-[30px] font-black tracking-[-0.045em]">{profileName}!</h1></div>
           <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-white/30 bg-[#d9ed9a] text-center text-2xl font-black leading-[44px] text-[#173c31]">{profileName[0]?.toUpperCase()}</div>
         </div>
@@ -455,8 +454,7 @@ function FavoritesTab({ t, locale, favoriteStoreIds, toggleFavorite, openBox }: 
   const favoriteBoxes = boxes.filter((box) => favoriteStoreIds.includes(box.storeId));
   return (
     <section className="px-5 pb-7 pt-[max(1.5rem,env(safe-area-inset-top))]">
-      <Brand />
-      <h1 className="mt-8 text-[30px] font-black tracking-[-0.045em]">{t('favorites')}</h1>
+      <h1 className="mt-2 text-[30px] font-black tracking-[-0.045em]">{t('favorites')}</h1>
       {favoriteBoxes.length === 0 ? (
         <div className="mt-20 text-center">
           <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-[#ffe9e1] text-[#db6f4b]"><Heart size={34} /></span>
@@ -479,8 +477,7 @@ function ProfileTab({ t, locale, setLocale, profile, location, orders, openLegal
   return (
     <section className="pb-8">
       <header className="bg-[#1f5c49] px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
-        <div className="flex items-center justify-between"><Brand light /><LanguagePill locale={locale} setLocale={setLocale} dark /></div>
-        <div className="mt-8 flex items-center gap-4">
+        <div className="mt-2 flex items-center gap-4">
           <div className="grid h-16 w-16 place-items-center rounded-full bg-[#d9ed9a] text-2xl font-black text-[#173c31]">{profile.firstName[0]?.toUpperCase()}</div>
           <div><h1 className="text-2xl font-black">{profile.firstName} {profile.lastName}</h1><p className="mt-1 text-sm text-white/65">{profile.phone || 'Telegram Mini App'}</p></div>
         </div>
