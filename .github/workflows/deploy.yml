@@ -22,8 +22,8 @@ jobs:
       NEXT_PUBLIC_OSM_TILE_URL: https://tile.openstreetmap.org/{z}/{x}/{y}.png
       NEXT_PUBLIC_GEOCODER_URL: https://nominatim.openstreetmap.org
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -46,5 +46,7 @@ jobs:
           VPS_HOST: ${{ vars.VPS_HOST }}
           VPS_USER: ${{ vars.VPS_USER }}
         run: |
-          rsync -az --delete -e "ssh -i ~/.ssh/algan_deploy" +            dist/client/ "$VPS_USER@$VPS_HOST:/var/www/algan-miniapp/releases/$GITHUB_SHA/"
-          ssh -i ~/.ssh/algan_deploy "$VPS_USER@$VPS_HOST" +            "/usr/local/bin/algan-activate '$GITHUB_SHA'"
+          rsync -az --delete -e "ssh -i ~/.ssh/algan_deploy" \
+            dist/client/ "$VPS_USER@$VPS_HOST:/var/www/algan-miniapp/releases/$GITHUB_SHA/"
+          ssh -i ~/.ssh/algan_deploy "$VPS_USER@$VPS_HOST" \
+            "/usr/local/bin/algan-activate '$GITHUB_SHA'"
