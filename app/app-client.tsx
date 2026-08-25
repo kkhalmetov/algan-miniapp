@@ -5,7 +5,7 @@ import {
   ArrowLeft, Check, ChevronRight, Heart, Home, Info, Languages, Map as MapIcon,
   Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, Star, UserRound, X,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import { authenticateTelegram } from '@/lib/api';
@@ -43,6 +43,8 @@ export default function AlganApp() {
   const [editingPhone, setEditingPhone] = useState(false);
   const [category, setCategory] = useState<'all' | 'bakery' | 'cafe' | 'market'>('all');
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
+  const onboardingLocaleInitialized = useRef(false);
+  const onboardingLocaleChosenManually = useRef(false);
 
   useEffect(() => {
     const splashTimer = window.setTimeout(() => setMinimumSplashElapsed(true), MINIMUM_SPLASH_MS);
@@ -60,10 +62,17 @@ export default function AlganApp() {
         lastName: tgProfile.lastName || undefined,
         photoUrl: tgProfile.photoUrl || undefined,
       });
-    } else {
+    } else if (!onboardingLocaleInitialized.current && !onboardingLocaleChosenManually.current) {
+      onboardingLocaleInitialized.current = true;
       setLocale(tgProfile.locale);
     }
   }, [onboardingDone, setLocale, syncTelegramProfile]);
+
+  const setOnboardingLocale = useCallback((nextLocale: Locale) => {
+    onboardingLocaleChosenManually.current = true;
+    onboardingLocaleInitialized.current = true;
+    setLocale(nextLocale);
+  }, [setLocale]);
 
   useEffect(() => {
     const retryTimers = new Set<number>();
@@ -148,7 +157,7 @@ export default function AlganApp() {
     return (
       <PhoneShell>
         <Onboarding
-          t={t} locale={locale} setLocale={setLocale}
+          t={t} locale={locale} setLocale={setOnboardingLocale}
           phone={phone} setPhone={setPhone}
           terms={terms} setTerms={setTerms} privacy={privacy} setPrivacy={setPrivacy}
           openLegal={setLegal} onContinue={finishOnboarding}

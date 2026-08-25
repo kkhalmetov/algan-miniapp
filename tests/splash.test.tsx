@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlganApp, { MINIMUM_SPLASH_MS } from '../app/app-client';
 import { useAppStore } from '../lib/store';
@@ -74,4 +74,31 @@ describe('startup splash', () => {
       photoUrl: 'https://t.me/i/userpic/320/avatar.jpg',
     });
   });
+
+  it('does not overwrite a manually selected onboarding language on Telegram retries', () => {
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed-data',
+        initDataUnsafe: {
+          user: {
+            id: 123456,
+            first_name: 'Kimal',
+            language_code: 'ru',
+          },
+        },
+        ready: () => undefined,
+        expand: () => undefined,
+      },
+    };
+    render(<AlganApp />);
+
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+    fireEvent.click(screen.getByRole('button', { name: 'Switch language' }));
+    expect(useAppStore.getState().locale).toBe('kk');
+
+    act(() => vi.advanceTimersByTime(TELEGRAM_RETRY_WINDOW_MS));
+    expect(useAppStore.getState().locale).toBe('kk');
+  });
 });
+
+const TELEGRAM_RETRY_WINDOW_MS = 2500;
