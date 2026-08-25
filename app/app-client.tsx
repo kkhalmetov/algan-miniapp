@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from 'react';
 import LocationMap from '@/components/location-map';
 import { authenticateTelegram } from '@/lib/api';
 import { boxes, storeById, stores } from '@/lib/mock-data';
+import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phone';
 import { useAppStore } from '@/lib/store';
 import { getCopy, type CopyKey } from '@/lib/translations';
 import { haptic, prepareTelegram, telegramProfile } from '@/lib/telegram';
@@ -26,9 +27,7 @@ export default function AlganApp() {
     completeOnboarding, setLocation, setLocale, setTab, toggleFavorite, addOrder, resetDemo,
   } = useAppStore();
   const t = getCopy(locale);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+7');
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [legal, setLegal] = useState<'terms' | 'privacy' | null>(null);
@@ -44,8 +43,6 @@ export default function AlganApp() {
       prepareTelegram();
       const tgProfile = telegramProfile();
       if (!onboardingDone) {
-        setFirstName(tgProfile.firstName);
-        setLastName(tgProfile.lastName);
         setLocale(tgProfile.locale);
       }
     }, 400);
@@ -54,12 +51,14 @@ export default function AlganApp() {
   }, [onboardingDone, setLocale]);
 
   const finishOnboarding = () => {
-    if (!firstName.trim() || !terms || !privacy) return;
+    const normalizedPhone = normalizeKazakhstanPhone(phone);
+    if (!normalizedPhone || !terms || !privacy) return;
+    const tgProfile = telegramProfile();
     haptic('success');
     completeOnboarding({
-      firstName: firstName.trim(),
-      lastName: lastName.trim() || undefined,
-      phone: phone.trim() || undefined,
+      firstName: tgProfile.firstName.trim() || t('fallbackUser'),
+      lastName: tgProfile.lastName.trim() || undefined,
+      phone: normalizedPhone,
     });
   };
 
@@ -97,8 +96,6 @@ export default function AlganApp() {
       <PhoneShell>
         <Onboarding
           t={t} locale={locale} setLocale={setLocale}
-          firstName={firstName} setFirstName={setFirstName}
-          lastName={lastName} setLastName={setLastName}
           phone={phone} setPhone={setPhone}
           terms={terms} setTerms={setTerms} privacy={privacy} setPrivacy={setPrivacy}
           openLegal={setLegal} onContinue={finishOnboarding}
@@ -188,8 +185,6 @@ function Brand({ light = false }: { light?: boolean }) {
 
 interface OnboardingProps {
   t: Translator; locale: Locale; setLocale: (locale: Locale) => void;
-  firstName: string; setFirstName: (value: string) => void;
-  lastName: string; setLastName: (value: string) => void;
   phone: string; setPhone: (value: string) => void;
   terms: boolean; setTerms: (value: boolean) => void;
   privacy: boolean; setPrivacy: (value: boolean) => void;
@@ -197,8 +192,8 @@ interface OnboardingProps {
 }
 
 function Onboarding(props: OnboardingProps) {
-  const { t, locale, setLocale, firstName, setFirstName, lastName, setLastName, phone, setPhone, terms, setTerms, privacy, setPrivacy, openLegal, onContinue } = props;
-  const canContinue = Boolean(firstName.trim() && terms && privacy);
+  const { t, locale, setLocale, phone, setPhone, terms, setTerms, privacy, setPrivacy, openLegal, onContinue } = props;
+  const canContinue = Boolean(normalizeKazakhstanPhone(phone) && terms && privacy);
   return (
     <div className="flex min-h-dvh flex-col sm:min-h-[780px]">
       <div className="relative overflow-hidden bg-[#1f5c49] px-7 pb-9 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
@@ -219,11 +214,7 @@ function Onboarding(props: OnboardingProps) {
         <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">{t('askName')}</h2>
         <p className="mt-2 text-sm leading-6 text-[#63736c]">{t('nameHelp')}</p>
 
-        <Field label={t('firstName')} required value={firstName} setValue={setFirstName} placeholder={t('namePlaceholder')} autoComplete="given-name" />
-        <div className="grid grid-cols-2 gap-3">
-          <Field label={t('lastName')} optional={t('optional')} value={lastName} setValue={setLastName} placeholder={t('lastPlaceholder')} autoComplete="family-name" />
-          <Field label={t('phone')} optional={t('optional')} value={phone} setValue={setPhone} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
-        </div>
+        <Field label={t('phone')} required value={phone} setValue={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
 
         <div className="mt-5 space-y-3 text-[13px] leading-5 text-[#43574f]">
           <Consent checked={terms} setChecked={setTerms} text={t('terms')} onOpen={() => openLegal('terms')} />
