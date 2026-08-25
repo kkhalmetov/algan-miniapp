@@ -1,0 +1,50 @@
+name: Verify and deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: algan-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      NEXT_PUBLIC_DATA_MODE: mock
+      NEXT_PUBLIC_APP_ORIGIN: https://92-38-49-57.sslip.io
+      NEXT_PUBLIC_OSM_TILE_URL: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+      NEXT_PUBLIC_GEOCODER_URL: https://nominatim.openstreetmap.org
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Configure deployment SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/algan_deploy
+          chmod 600 ~/.ssh/algan_deploy
+          printf '%s\n' "$VPS_HOST_KEY" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+      - name: Upload release
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_USER: ${{ vars.VPS_USER }}
+        run: |
+          rsync -az --delete -e "ssh -i ~/.ssh/algan_deploy" +            dist/client/ "$VPS_USER@$VPS_HOST:/var/www/algan-miniapp/releases/$GITHUB_SHA/"
+          ssh -i ~/.ssh/algan_deploy "$VPS_USER@$VPS_HOST" +            "/usr/local/bin/algan-activate '$GITHUB_SHA'"
