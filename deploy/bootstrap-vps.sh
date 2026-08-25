@@ -55,6 +55,9 @@ server {
 
     location / {
         try_files \$uri \$uri/ /index.html;
+        add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
+        add_header Pragma "no-cache" always;
+        add_header Expires "0" always;
     }
 }
 NGINX_HTTP
@@ -113,6 +116,9 @@ server {
 
     location / {
         try_files \$uri \$uri/ /index.html;
+        add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
+        add_header Pragma "no-cache" always;
+        add_header Expires "0" always;
     }
 
     location /_next/static/ {
