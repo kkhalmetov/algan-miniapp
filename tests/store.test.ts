@@ -28,10 +28,23 @@ describe('local MVP state', () => {
 
   it('syncs Telegram identity without removing the saved phone', () => {
     useAppStore.setState({ profile: { firstName: 'Пользователь', phone: '+77001234567' } });
-    useAppStore.getState().syncTelegramProfile({ firstName: 'Kimal', lastName: 'A', photoUrl: 'https://example.test/avatar.jpg' });
+    useAppStore.getState().syncTelegramProfile({ telegramId: 123, firstName: 'Kimal', lastName: 'A', photoUrl: 'https://example.test/avatar.jpg' });
     expect(useAppStore.getState().profile).toEqual({
-      firstName: 'Kimal', lastName: 'A', phone: '+77001234567', photoUrl: 'https://example.test/avatar.jpg',
+      telegramId: 123, firstName: 'Kimal', lastName: 'A', phone: '+77001234567', photoUrl: 'https://example.test/avatar.jpg',
     });
+  });
+
+  it('keeps the last working avatar when Telegram omits photo_url', () => {
+    useAppStore.setState({ profile: { telegramId: 123, firstName: 'Kimal', photoUrl: 'https://example.test/avatar.jpg' } });
+    useAppStore.getState().syncTelegramProfile({ telegramId: 123, firstName: 'Kimal', lastName: undefined, photoUrl: undefined });
+    expect(useAppStore.getState().profile.photoUrl).toBe('https://example.test/avatar.jpg');
+  });
+
+  it('does not reuse an avatar after switching Telegram accounts', () => {
+    useAppStore.setState({ profile: { telegramId: 123, firstName: 'Kimal', photoUrl: 'https://example.test/avatar.jpg' } });
+    useAppStore.getState().syncTelegramProfile({ telegramId: 456, firstName: 'Алия', lastName: undefined, photoUrl: undefined });
+    expect(useAppStore.getState().profile).toMatchObject({ telegramId: 456, firstName: 'Алия' });
+    expect(useAppStore.getState().profile.photoUrl).toBeUndefined();
   });
 
   it('updates only the saved phone number', () => {

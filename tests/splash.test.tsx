@@ -6,6 +6,7 @@ import { useAppStore } from '../lib/store';
 describe('startup splash', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    delete window.Telegram;
     useAppStore.setState({
       hydrated: true,
       onboardingDone: false,
@@ -18,6 +19,7 @@ describe('startup splash', () => {
   });
 
   afterEach(() => {
+    delete window.Telegram;
     cleanup();
     vi.useRealTimers();
   });
@@ -43,5 +45,33 @@ describe('startup splash', () => {
 
     act(() => useAppStore.setState({ hydrated: true }));
     expect(screen.queryByLabelText('Algan загружается')).not.toBeInTheDocument();
+  });
+
+  it('syncs a Telegram avatar when user data becomes available on a retry', () => {
+    useAppStore.setState({ onboardingDone: true, profile: { firstName: 'Пользователь' } });
+    render(<AlganApp />);
+
+    act(() => vi.advanceTimersByTime(300));
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed-data',
+        initDataUnsafe: {
+          user: {
+            id: 123456,
+            first_name: 'Kimal',
+            photo_url: 'https://t.me/i/userpic/320/avatar.jpg',
+          },
+        },
+        ready: () => undefined,
+        expand: () => undefined,
+      },
+    };
+
+    act(() => vi.advanceTimersByTime(450));
+    expect(useAppStore.getState().profile).toMatchObject({
+      telegramId: 123456,
+      firstName: 'Kimal',
+      photoUrl: 'https://t.me/i/userpic/320/avatar.jpg',
+    });
   });
 });

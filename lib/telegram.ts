@@ -1,4 +1,4 @@
-type TelegramUser = { first_name?: string; last_name?: string; language_code?: string; photo_url?: string };
+type TelegramUser = { id?: number; first_name?: string; last_name?: string; language_code?: string; photo_url?: string };
 
 type TelegramWebApp = {
   initData: string;
@@ -32,6 +32,7 @@ export function prepareTelegram() {
 export function telegramProfile() {
   const user = telegram()?.initDataUnsafe?.user;
   return {
+    telegramId: user?.id,
     firstName: user?.first_name ?? '',
     lastName: user?.last_name ?? '',
     photoUrl: user?.photo_url ?? '',

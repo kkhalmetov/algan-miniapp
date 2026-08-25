@@ -18,6 +18,10 @@ import type { Box, Locale, Order, Tab, UserProfile } from '@/lib/types';
 
 const SHYMKENT = { lat: 42.3155, lng: 69.5869 };
 export const MINIMUM_SPLASH_MS = 900;
+const TELEGRAM_SYNC_DELAYS_MS = [0, 250, 750, 1500, 3000] as const;
+
+export const avatarRetryUrl = (url: string, attempt: number) =>
+  `${url}${url.includes('?') ? '&' : '?'}algan_avatar_retry=${attempt}`;
 
 const formatPrice = (value: number, locale: Locale) =>
   `${new Intl.NumberFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ').format(value)} ₸`;
@@ -45,25 +49,57 @@ export default function AlganApp() {
     return () => window.clearTimeout(splashTimer);
   }, []);
 
-  useEffect(() => {
+  const syncFromTelegram = useCallback(() => {
     prepareTelegram();
-    const telegramRetry = window.setTimeout(() => {
-      prepareTelegram();
-      const tgProfile = telegramProfile();
-      if (tgProfile.isTelegram && onboardingDone) {
-        syncTelegramProfile({
-          firstName: tgProfile.firstName,
-          lastName: tgProfile.lastName || undefined,
-          photoUrl: tgProfile.photoUrl || undefined,
-        });
-      }
-      if (!onboardingDone) {
-        setLocale(tgProfile.locale);
-      }
-    }, 400);
-    void authenticateTelegram().catch(() => undefined);
-    return () => window.clearTimeout(telegramRetry);
+    const tgProfile = telegramProfile();
+    if (!tgProfile.isTelegram) return;
+    if (onboardingDone) {
+      syncTelegramProfile({
+        telegramId: tgProfile.telegramId,
+        firstName: tgProfile.firstName,
+        lastName: tgProfile.lastName || undefined,
+        photoUrl: tgProfile.photoUrl || undefined,
+      });
+    } else {
+      setLocale(tgProfile.locale);
+    }
   }, [onboardingDone, setLocale, syncTelegramProfile]);
+
+  useEffect(() => {
+    const retryTimers = new Set<number>();
+    let lastScheduledAt = Number.NEGATIVE_INFINITY;
+
+    const scheduleTelegramSync = () => {
+      const now = Date.now();
+      if (now - lastScheduledAt < 200) return;
+      lastScheduledAt = now;
+      TELEGRAM_SYNC_DELAYS_MS.forEach((delay) => {
+        const timer = window.setTimeout(() => {
+          retryTimers.delete(timer);
+          syncFromTelegram();
+        }, delay);
+        retryTimers.add(timer);
+      });
+    };
+
+    const syncWhenVisible = () => {
+      if (!document.hidden) scheduleTelegramSync();
+    };
+
+    scheduleTelegramSync();
+    window.addEventListener('focus', scheduleTelegramSync);
+    document.addEventListener('visibilitychange', syncWhenVisible);
+
+    return () => {
+      retryTimers.forEach((timer) => window.clearTimeout(timer));
+      window.removeEventListener('focus', scheduleTelegramSync);
+      document.removeEventListener('visibilitychange', syncWhenVisible);
+    };
+  }, [syncFromTelegram]);
+
+  useEffect(() => {
+    void authenticateTelegram().catch(() => undefined);
+  }, []);
 
   const finishOnboarding = () => {
     const normalizedPhone = normalizeKazakhstanPhone(phone);
@@ -71,6 +107,7 @@ export default function AlganApp() {
     const tgProfile = telegramProfile();
     haptic('success');
     completeOnboarding({
+      telegramId: tgProfile.telegramId,
       firstName: tgProfile.firstName.trim() || t('fallbackUser'),
       lastName: tgProfile.lastName.trim() || undefined,
       phone: normalizedPhone,
@@ -420,12 +457,21 @@ function ProfileTab({ t, locale, setLocale, profile, orders, openLegal, resetDem
 
 function ProfileAvatar({ profile }: { profile: UserProfile }) {
   const [imageFailed, setImageFailed] = useState(false);
+  const [reloadAttempt, setReloadAttempt] = useState(0);
   const initial = profile.firstName.trim().charAt(0).toUpperCase() || 'A';
+  const photoSource = profile.photoUrl
+    ? reloadAttempt === 0 ? profile.photoUrl : avatarRetryUrl(profile.photoUrl, reloadAttempt)
+    : undefined;
+
+  const retryImage = () => {
+    if (reloadAttempt < 2) setReloadAttempt((attempt) => attempt + 1);
+    else setImageFailed(true);
+  };
 
   return (
     <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-[#d9ed9a] text-2xl font-black text-[#173c31]">
-      {profile.photoUrl && !imageFailed
-        ? <img src={profile.photoUrl} alt="" className="h-full w-full object-cover" onError={() => setImageFailed(true)} />
+      {photoSource && !imageFailed
+        ? <img src={photoSource} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={retryImage} />
         : initial}
     </div>
   );

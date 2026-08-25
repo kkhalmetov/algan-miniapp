@@ -15,7 +15,7 @@ interface AppState {
   orders: Order[];
   setHydrated: (value: boolean) => void;
   completeOnboarding: (profile: UserProfile) => void;
-  syncTelegramProfile: (profile: Pick<UserProfile, 'firstName' | 'lastName' | 'photoUrl'>) => void;
+  syncTelegramProfile: (profile: Pick<UserProfile, 'telegramId' | 'firstName' | 'lastName' | 'photoUrl'>) => void;
   updatePhone: (phone: string) => void;
   setLocation: (location: UserLocation) => void;
   setLocale: (locale: Locale) => void;
@@ -37,14 +37,20 @@ export const useAppStore = create<AppState>()(
       orders: [],
       setHydrated: (hydrated) => set({ hydrated }),
       completeOnboarding: (profile) => set({ profile, onboardingDone: true }),
-      syncTelegramProfile: (telegramProfile) => set((state) => ({
-        profile: {
-          ...state.profile,
-          firstName: telegramProfile.firstName || state.profile.firstName,
-          lastName: telegramProfile.lastName || undefined,
-          photoUrl: telegramProfile.photoUrl || undefined,
-        },
-      })),
+      syncTelegramProfile: (telegramProfile) => set((state) => {
+        const isSameTelegramUser = Boolean(
+          telegramProfile.telegramId && state.profile.telegramId === telegramProfile.telegramId,
+        );
+        return {
+          profile: {
+            ...state.profile,
+            telegramId: telegramProfile.telegramId ?? state.profile.telegramId,
+            firstName: telegramProfile.firstName || state.profile.firstName,
+            lastName: telegramProfile.lastName || undefined,
+            photoUrl: telegramProfile.photoUrl || (isSameTelegramUser ? state.profile.photoUrl : undefined),
+          },
+        };
+      }),
       updatePhone: (phone) => set((state) => ({ profile: { ...state.profile, phone } })),
       setLocation: (location) => set({ location }),
       setLocale: (locale) => set({ locale }),
