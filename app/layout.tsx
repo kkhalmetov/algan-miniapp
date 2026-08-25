@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'Algan — спасаем еду вместе',
   description: 'Боксы из кофеен, пекарен и магазинов Шымкента со скидкой.',
   icons: {
-    icon: '/algan-mark.svg',
+    icon: '/algan-mark.svg?v=2',
   },
   openGraph: {
     title: 'Algan — спасаем еду вместе',
