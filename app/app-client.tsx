@@ -2,9 +2,8 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  ArrowLeft, Check, ChevronRight, Crosshair, Heart, Home, Info, Languages,
-  LocateFixed, Map as MapIcon, Minus, Navigation, PackageCheck, Plus, Search,
-  ShoppingBag, Sparkles, Star, UserRound, X,
+  ArrowLeft, Check, ChevronRight, Heart, Home, Info, Languages, Map as MapIcon,
+  Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, Star, UserRound, X,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import LocationMap from '@/components/location-map';
@@ -14,7 +13,7 @@ import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phon
 import { useAppStore } from '@/lib/store';
 import { getCopy, type CopyKey } from '@/lib/translations';
 import { haptic, prepareTelegram, telegramProfile } from '@/lib/telegram';
-import type { Box, GeocodingResult, Locale, Order, Tab, UserLocation } from '@/lib/types';
+import type { Box, Locale, Order, Tab, UserProfile } from '@/lib/types';
 
 const SHYMKENT = { lat: 42.3155, lng: 69.5869 };
 
@@ -23,8 +22,8 @@ const formatPrice = (value: number, locale: Locale) =>
 
 export default function AlganApp() {
   const {
-    hydrated, onboardingDone, profile, location, locale, tab, favoriteStoreIds, orders,
-    completeOnboarding, setLocation, setLocale, setTab, toggleFavorite, addOrder, resetDemo,
+    hydrated, onboardingDone, profile, locale, tab, favoriteStoreIds, orders,
+    completeOnboarding, syncTelegramProfile, updatePhone, setLocale, setTab, toggleFavorite, addOrder, resetDemo,
   } = useAppStore();
   const t = getCopy(locale);
   const [phone, setPhone] = useState('+7');
@@ -35,6 +34,7 @@ export default function AlganApp() {
   const [checkoutBox, setCheckoutBox] = useState<Box | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [successOrder, setSuccessOrder] = useState<Order | null>(null);
+  const [editingPhone, setEditingPhone] = useState(false);
   const [category, setCategory] = useState<'all' | 'bakery' | 'cafe' | 'market'>('all');
 
   useEffect(() => {
@@ -42,13 +42,20 @@ export default function AlganApp() {
     const telegramRetry = window.setTimeout(() => {
       prepareTelegram();
       const tgProfile = telegramProfile();
+      if (tgProfile.isTelegram && onboardingDone) {
+        syncTelegramProfile({
+          firstName: tgProfile.firstName,
+          lastName: tgProfile.lastName || undefined,
+          photoUrl: tgProfile.photoUrl || undefined,
+        });
+      }
       if (!onboardingDone) {
         setLocale(tgProfile.locale);
       }
     }, 400);
     void authenticateTelegram().catch(() => undefined);
     return () => window.clearTimeout(telegramRetry);
-  }, [onboardingDone, setLocale]);
+  }, [onboardingDone, setLocale, syncTelegramProfile]);
 
   const finishOnboarding = () => {
     const normalizedPhone = normalizeKazakhstanPhone(phone);
@@ -59,6 +66,7 @@ export default function AlganApp() {
       firstName: tgProfile.firstName.trim() || t('fallbackUser'),
       lastName: tgProfile.lastName.trim() || undefined,
       phone: normalizedPhone,
+      photoUrl: tgProfile.photoUrl || undefined,
     });
   };
 
@@ -104,32 +112,24 @@ export default function AlganApp() {
       </PhoneShell>
     );
   }
-  if (!location) {
-    return (
-      <PhoneShell>
-        <LocationStep t={t} locale={locale} onConfirm={(value) => { setLocation(value); haptic('success'); }} />
-      </PhoneShell>
-    );
-  }
-
   return (
     <PhoneShell>
       <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-[#fffdf8] sm:h-[780px]">
         <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
           {tab === 'home' && (
             <HomeTab
-              t={t} locale={locale} profileName={profile.firstName} location={location}
+              t={t} locale={locale} profileName={profile.firstName}
               favoriteStoreIds={favoriteStoreIds} category={category} setCategory={setCategory}
               toggleFavorite={toggleFavorite} openBox={openBox}
             />
           )}
-          {tab === 'map' && <MapTab t={t} location={location} openBox={openBox} />}
+          {tab === 'map' && <MapTab openBox={openBox} />}
           {tab === 'favorites' && (
             <FavoritesTab t={t} locale={locale} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openBox={openBox} />
           )}
           {tab === 'profile' && (
-            <ProfileTab t={t} locale={locale} setLocale={setLocale} profile={profile} location={location} orders={orders}
-              openLegal={setLegal} resetDemo={resetDemo} openBox={openBox} />
+            <ProfileTab t={t} locale={locale} setLocale={setLocale} profile={profile} orders={orders}
+              openLegal={setLegal} resetDemo={resetDemo} openBox={openBox} onEditPhone={() => setEditingPhone(true)} />
           )}
         </main>
         <BottomNav tab={tab} setTab={setTab} t={t} />
@@ -145,6 +145,13 @@ export default function AlganApp() {
       )}
       {successOrder && (
         <Success order={successOrder} t={t} onDone={() => { setSuccessOrder(null); setTab('profile'); }} />
+      )}
+      {editingPhone && (
+        <PhoneEditor currentPhone={profile.phone} t={t} onClose={() => setEditingPhone(false)} onSave={(value) => {
+          updatePhone(value);
+          setEditingPhone(false);
+          haptic('success');
+        }} />
       )}
       {legal && <LegalModal type={legal} t={t} onClose={() => setLegal(null)} />}
     </PhoneShell>
@@ -261,97 +268,8 @@ function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; set
   );
 }
 
-function LocationStep({ t, locale, onConfirm }: { t: Translator; locale: Locale; onConfirm: (location: UserLocation) => void }) {
-  const [point, setPoint] = useState(SHYMKENT);
-  const [address, setAddress] = useState(t('demoAddress'));
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<GeocodingResult[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const moveMarker = useCallback((lat: number, lng: number) => {
-    setPoint({ lat, lng });
-    setAddress(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
-  }, []);
-
-  const search = async () => {
-    if (!query.trim() || busy) return;
-    setBusy(true); setError(''); setResults([]);
-    try {
-      const base = process.env.NEXT_PUBLIC_GEOCODER_URL ?? 'https://nominatim.openstreetmap.org';
-      const params = new URLSearchParams({ format: 'jsonv2', q: `${query}, Шымкент, Казахстан`, countrycodes: 'kz', limit: '5', 'accept-language': locale });
-      const response = await fetch(`${base.replace(/\/$/, '')}/search?${params}`);
-      const data = await response.json() as GeocodingResult[];
-      if (!data.length) setError(t('searchError'));
-      setResults(data);
-    } catch {
-      setError(t('searchError'));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const locate = () => {
-    if (!navigator.geolocation) { setError(t('locateError')); return; }
-    setBusy(true); setError('');
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => { setPoint({ lat: coords.latitude, lng: coords.longitude }); setAddress(t('currentLocation')); setBusy(false); },
-      () => { setError(t('locateError')); setBusy(false); },
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
-  };
-
-  return (
-    <div className="flex min-h-dvh flex-col bg-[#fffdf8] sm:min-h-[780px]">
-      <header className="px-6 pb-4 pt-[max(1.4rem,env(safe-area-inset-top))]">
-        <Brand />
-        <p className="mt-7 text-sm font-bold text-[#db6f4b]">2 / 2</p>
-        <h1 className="mt-1 text-[29px] font-black tracking-[-0.045em]">{t('chooseLocation')}</h1>
-        <p className="mt-2 text-sm leading-6 text-[#63736c]">{t('locationHelp')}</p>
-      </header>
-
-      <div className="px-6">
-        <div className="flex gap-2">
-          <label className="flex h-13 flex-1 items-center gap-2 rounded-2xl border border-[#dce3dc] bg-white px-4 focus-within:border-[#2d745e]">
-            <Search size={18} className="text-[#77867f]" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); void search(); } }}
-              placeholder={t('addressPlaceholder')} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
-          </label>
-          <button onClick={() => void search()} className="grid h-13 w-13 place-items-center rounded-2xl bg-[#1f5c49] text-white" aria-label={t('search')}><Search size={20} /></button>
-        </div>
-        {error && <p className="mt-2 rounded-xl bg-[#fff0ea] px-3 py-2 text-xs font-semibold text-[#a84425]">{error}</p>}
-        {results.length > 0 && (
-          <div className="absolute left-6 right-6 z-[700] mt-2 max-h-48 overflow-y-auto rounded-2xl border border-[#dfe4df] bg-white p-1 shadow-xl">
-            {results.map((result) => (
-              <button key={`${result.lat}-${result.lon}`} onClick={() => {
-                setPoint({ lat: Number(result.lat), lng: Number(result.lon) }); setAddress(result.display_name); setResults([]); setQuery('');
-              }} className="w-full rounded-xl px-3 py-3 text-left text-xs leading-5 hover:bg-[#f2f5f1]">
-                {result.display_name}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="relative mt-4 flex-1 overflow-hidden">
-        <LocationMap lat={point.lat} lng={point.lng} interactiveMarker onChange={moveMarker} className="absolute inset-0" />
-        <button onClick={locate} disabled={busy} className="absolute bottom-5 left-1/2 z-[600] flex h-11 -translate-x-1/2 items-center gap-2 rounded-full bg-white px-4 text-xs font-black shadow-lg disabled:opacity-60">
-          <LocateFixed size={17} className="text-[#db6f4b]" /> {busy ? t('searching') : t('currentLocation')}
-        </button>
-      </div>
-
-      <div className="rounded-t-[28px] bg-[#fffdf8] px-6 pb-[max(1.4rem,env(safe-area-inset-bottom))] pt-5 shadow-[0_-18px_45px_rgba(23,60,49,0.08)]">
-        <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e8f1d0] text-[#1f5c49]"><Navigation size={19} /></span>
-          <div className="min-w-0"><p className="text-xs font-semibold text-[#7a8982]">{t('location')}</p><p className="mt-1 line-clamp-2 text-sm font-black">{address}</p></div>
-        </div>
-        <button onClick={() => onConfirm({ ...point, address })} className="primary-button mt-4">{t('confirmLocation')}<Check size={19} /></button>
-      </div>
-    </div>
-  );
-}
-
-function HomeTab({ t, locale, profileName, location, favoriteStoreIds, category, setCategory, toggleFavorite, openBox }: {
-  t: Translator; locale: Locale; profileName: string; location: UserLocation; favoriteStoreIds: string[];
+function HomeTab({ t, locale, profileName, favoriteStoreIds, category, setCategory, toggleFavorite, openBox }: {
+  t: Translator; locale: Locale; profileName: string; favoriteStoreIds: string[];
   category: 'all' | 'bakery' | 'cafe' | 'market'; setCategory: (value: 'all' | 'bakery' | 'cafe' | 'market') => void;
   toggleFavorite: (id: string) => void; openBox: (box: Box) => void;
 }) {
@@ -359,26 +277,11 @@ function HomeTab({ t, locale, profileName, location, favoriteStoreIds, category,
   return (
     <>
       <header className="bg-[#1f5c49] px-6 pb-8 pt-[max(1.4rem,env(safe-area-inset-top))] text-white">
-        <div className="mt-2 flex items-end justify-between gap-4">
-          <div><p className="text-sm text-white/70">{t('greeting')},</p><h1 className="mt-0.5 text-[30px] font-black tracking-[-0.045em]">{profileName}!</h1></div>
-          <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-white/30 bg-[#d9ed9a] text-center text-2xl font-black leading-[44px] text-[#173c31]">{profileName[0]?.toUpperCase()}</div>
-        </div>
-        <button className="mt-5 flex w-full items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 text-left">
-          <Navigation size={18} className="shrink-0 text-[#d9ed9a]" />
-          <span className="min-w-0 flex-1"><span className="block text-[10px] font-semibold text-white/60">{t('location')}</span><span className="block truncate text-sm font-extrabold">{location.address}</span></span>
-          <ChevronRight size={17} className="text-white/50" />
-        </button>
+        <div className="mt-2"><p className="text-sm text-white/70">{t('greeting')},</p><h1 className="mt-0.5 text-[30px] font-black tracking-[-0.045em]">{profileName}!</h1></div>
       </header>
 
-      <section className="-mt-1 rounded-t-[28px] bg-[#fffdf8] px-5 pt-6">
-        <div className="relative overflow-hidden rounded-[26px] bg-[#d9ed9a] p-5">
-          <div className="absolute -right-5 -top-8 h-28 w-28 rounded-full bg-white/35" />
-          <Sparkles size={22} className="text-[#db6f4b]" />
-          <h2 className="mt-4 max-w-[250px] text-xl font-black tracking-[-0.035em]">{t('impactTitle')}</h2>
-          <p className="mt-2 max-w-[270px] text-xs leading-5 text-[#3c5c50]">{t('impactText')}</p>
-        </div>
-
-        <div className="hide-scrollbar -mx-5 mt-6 flex gap-2 overflow-x-auto px-5">
+      <section className="bg-[#fffdf8] px-5 pt-6">
+        <div className="hide-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5">
           {(['all', 'bakery', 'cafe', 'market'] as const).map((item) => (
             <button key={item} onClick={() => setCategory(item)} className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-black transition ${category === item ? 'bg-[#1f5c49] text-white' : 'bg-[#edf1eb] text-[#50645b]'}`}>{t(item)}</button>
           ))}
@@ -419,17 +322,13 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
   );
 }
 
-function MapTab({ t, location, openBox }: { t: Translator; location: UserLocation; openBox: (box: Box) => void }) {
+function MapTab({ openBox }: { openBox: (box: Box) => void }) {
   const [storeId, setStoreId] = useState<string | null>(null);
   const selected = storeId ? boxes.find((box) => box.storeId === storeId) : null;
   const selectStore = useCallback((id: string) => setStoreId(id), []);
   return (
     <div className="relative min-h-[calc(100dvh-98px)] sm:min-h-[682px]">
-      <header className="absolute left-4 right-4 top-[max(1rem,env(safe-area-inset-top))] z-[600] flex items-center justify-between rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
-        <div><p className="text-[10px] font-bold text-[#7d8983]">{t('map')}</p><h1 className="text-base font-black">Шымкент · {boxes.length} бокса</h1></div>
-        <button className="grid h-10 w-10 place-items-center rounded-full bg-[#eaf2d7] text-[#1f5c49]"><Crosshair size={19} /></button>
-      </header>
-      <LocationMap lat={location.lat} lng={location.lng} stores={stores} onSelectStore={selectStore} className="absolute inset-0" />
+      <LocationMap lat={SHYMKENT.lat} lng={SHYMKENT.lng} stores={stores} onSelectStore={selectStore} className="absolute inset-0" />
       {selected && (
         <button onClick={() => openBox(selected)} className="absolute bottom-5 left-4 right-4 z-[600] flex gap-3 rounded-[22px] bg-white p-3 text-left shadow-[0_18px_50px_rgba(23,60,49,0.22)]">
           <img src={selected.image} alt="" className="h-20 w-20 rounded-2xl object-cover" />
@@ -461,23 +360,26 @@ function FavoritesTab({ t, locale, favoriteStoreIds, toggleFavorite, openBox }: 
   );
 }
 
-function ProfileTab({ t, locale, setLocale, profile, location, orders, openLegal, resetDemo, openBox }: {
-  t: Translator; locale: Locale; setLocale: (locale: Locale) => void; profile: { firstName: string; lastName?: string; phone?: string };
-  location: UserLocation; orders: Order[]; openLegal: (type: 'terms' | 'privacy') => void; resetDemo: () => void; openBox: (box: Box) => void;
+function ProfileTab({ t, locale, setLocale, profile, orders, openLegal, resetDemo, openBox, onEditPhone }: {
+  t: Translator; locale: Locale; setLocale: (locale: Locale) => void; profile: UserProfile;
+  orders: Order[]; openLegal: (type: 'terms' | 'privacy') => void; resetDemo: () => void; openBox: (box: Box) => void; onEditPhone: () => void;
 }) {
   return (
     <section className="pb-8">
       <header className="bg-[#1f5c49] px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
         <div className="mt-2 flex items-center gap-4">
-          <div className="grid h-16 w-16 place-items-center rounded-full bg-[#d9ed9a] text-2xl font-black text-[#173c31]">{profile.firstName[0]?.toUpperCase()}</div>
+          <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} />
           <div><h1 className="text-2xl font-black">{profile.firstName} {profile.lastName}</h1><p className="mt-1 text-sm text-white/65">{profile.phone || 'Telegram Mini App'}</p></div>
         </div>
       </header>
 
-      <div className="-mt-1 rounded-t-[28px] bg-[#fffdf8] px-5 pt-6">
+      <div className="bg-[#fffdf8] px-5 pt-6">
         <h2 className="text-lg font-black">{t('orders')}</h2>
         {orders.length === 0 ? (
-          <div className="mt-3 flex items-center gap-3 rounded-2xl bg-[#f1f4ef] p-4 text-sm text-[#66756e]"><ShoppingBag size={20} /> {t('noFavoritesText')}</div>
+          <div className="mt-3 flex items-start gap-3 rounded-2xl bg-[#f1f4ef] p-4">
+            <ShoppingBag size={20} className="mt-0.5 shrink-0 text-[#66756e]" />
+            <div><p className="text-sm font-black text-[#43574f]">{t('noOrders')}</p><p className="mt-1 text-xs leading-5 text-[#74817b]">{t('noOrdersText')}</p></div>
+          </div>
         ) : (
           <div className="mt-3 space-y-3">
             {orders.map((order) => {
@@ -494,16 +396,56 @@ function ProfileTab({ t, locale, setLocale, profile, location, orders, openLegal
         )}
 
         <div className="mt-7 space-y-2">
-          <ProfileRow icon={<UserRound size={18} />} label={t('personal')} value={`${profile.firstName} ${profile.lastName ?? ''}`.trim()} />
-          <ProfileRow icon={<Navigation size={18} />} label={t('location')} value={location.address} />
+          <ProfileRow icon={<Phone size={18} />} label={t('changePhone')} value={profile.phone ? formatKazakhstanPhoneInput(profile.phone) : undefined} onClick={onEditPhone} />
           <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
           <ProfileRow icon={<Info size={18} />} label={t('termsTitle')} onClick={() => openLegal('terms')} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('privacyTitle')} onClick={() => openLegal('privacy')} />
         </div>
         <button onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6 w-full rounded-2xl bg-[#fff0ea] px-4 py-4 text-sm font-black text-[#b44b2b]">{t('signOutDemo')}</button>
-        <p className="mt-5 text-center text-[11px] font-semibold text-[#98a29d]">Algan MVP · 0.1.0</p>
+        <div className="mt-6 space-y-1 text-center text-[11px] font-semibold leading-5 text-[#98a29d]">
+          <p>ALGAN 0.1.0</p>
+          <p>© 2026 Algan. Все права защищены.</p>
+          <p>ИП ALGAN | ИИН: 030705500040</p>
+        </div>
       </div>
     </section>
+  );
+}
+
+function ProfileAvatar({ profile }: { profile: UserProfile }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const initial = profile.firstName.trim().charAt(0).toUpperCase() || 'A';
+
+  return (
+    <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-[#d9ed9a] text-2xl font-black text-[#173c31]">
+      {profile.photoUrl && !imageFailed
+        ? <img src={profile.photoUrl} alt="" className="h-full w-full object-cover" onError={() => setImageFailed(true)} />
+        : initial}
+    </div>
+  );
+}
+
+function PhoneEditor({ currentPhone, t, onClose, onSave }: {
+  currentPhone?: string; t: Translator; onClose: () => void; onSave: (phone: string) => void;
+}) {
+  const [value, setValue] = useState(formatKazakhstanPhoneInput(currentPhone ?? '+7'));
+  const normalizedPhone = normalizeKazakhstanPhone(value);
+
+  return (
+    <Overlay onClose={onClose}>
+      <form className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5" onSubmit={(event) => {
+        event.preventDefault();
+        if (normalizedPhone) onSave(normalizedPhone);
+      }}>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-xl font-black tracking-[-0.035em]">{t('changePhone')}</h2>
+          <button type="button" onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('back')}><X size={18} /></button>
+        </div>
+        <Field label={t('phone')} required value={value} setValue={(phone) => setValue(formatKazakhstanPhoneInput(phone))}
+          placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
+        <button type="submit" disabled={!normalizedPhone} className="primary-button mt-6">{t('savePhone')}<Check size={19} /></button>
+      </form>
+    </Overlay>
   );
 }
 

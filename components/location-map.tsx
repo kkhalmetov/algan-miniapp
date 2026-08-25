@@ -56,7 +56,6 @@ export default function LocationMap({ lat, lng, stores = [], interactiveMarker =
 
       stores.forEach((store) => {
         const marker = L.marker([store.lat, store.lng], { icon: storeIcon }).addTo(map!);
-        marker.bindTooltip(store.name, { direction: 'top', offset: [0, -18] });
         marker.on('click', () => onSelectStore?.(store.id));
       });
 

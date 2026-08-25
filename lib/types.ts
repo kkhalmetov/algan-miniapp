@@ -5,6 +5,7 @@ export interface UserProfile {
   firstName: string;
   lastName?: string;
   phone?: string;
+  photoUrl?: string;
 }
 
 export interface UserLocation {

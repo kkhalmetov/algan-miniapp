@@ -26,6 +26,20 @@ describe('local MVP state', () => {
     expect(useAppStore.getState().favoriteStoreIds).toEqual([]);
   });
 
+  it('syncs Telegram identity without removing the saved phone', () => {
+    useAppStore.setState({ profile: { firstName: 'Пользователь', phone: '+77001234567' } });
+    useAppStore.getState().syncTelegramProfile({ firstName: 'Kimal', lastName: 'A', photoUrl: 'https://example.test/avatar.jpg' });
+    expect(useAppStore.getState().profile).toEqual({
+      firstName: 'Kimal', lastName: 'A', phone: '+77001234567', photoUrl: 'https://example.test/avatar.jpg',
+    });
+  });
+
+  it('updates only the saved phone number', () => {
+    useAppStore.setState({ profile: { firstName: 'Kimal', phone: '+77001234567' } });
+    useAppStore.getState().updatePhone('+77771234567');
+    expect(useAppStore.getState().profile).toEqual({ firstName: 'Kimal', phone: '+77771234567' });
+  });
+
   it('adds paid demo orders to the top of history', () => {
     useAppStore.getState().addOrder({
       id: 'order-1', boxId: 'bakery-surprise', quantity: 1, total: 2490,

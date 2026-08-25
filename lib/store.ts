@@ -15,6 +15,8 @@ interface AppState {
   orders: Order[];
   setHydrated: (value: boolean) => void;
   completeOnboarding: (profile: UserProfile) => void;
+  syncTelegramProfile: (profile: Pick<UserProfile, 'firstName' | 'lastName' | 'photoUrl'>) => void;
+  updatePhone: (phone: string) => void;
   setLocation: (location: UserLocation) => void;
   setLocale: (locale: Locale) => void;
   setTab: (tab: Tab) => void;
@@ -35,6 +37,15 @@ export const useAppStore = create<AppState>()(
       orders: [],
       setHydrated: (hydrated) => set({ hydrated }),
       completeOnboarding: (profile) => set({ profile, onboardingDone: true }),
+      syncTelegramProfile: (telegramProfile) => set((state) => ({
+        profile: {
+          ...state.profile,
+          firstName: telegramProfile.firstName || state.profile.firstName,
+          lastName: telegramProfile.lastName || undefined,
+          photoUrl: telegramProfile.photoUrl || undefined,
+        },
+      })),
+      updatePhone: (phone) => set((state) => ({ profile: { ...state.profile, phone } })),
       setLocation: (location) => set({ location }),
       setLocale: (locale) => set({ locale }),
       setTab: (tab) => set({ tab }),

@@ -1,4 +1,4 @@
-type TelegramUser = { first_name?: string; last_name?: string; language_code?: string };
+type TelegramUser = { first_name?: string; last_name?: string; language_code?: string; photo_url?: string };
 
 type TelegramWebApp = {
   initData: string;
@@ -34,7 +34,9 @@ export function telegramProfile() {
   return {
     firstName: user?.first_name ?? '',
     lastName: user?.last_name ?? '',
+    photoUrl: user?.photo_url ?? '',
     locale: user?.language_code?.toLowerCase().startsWith('kk') ? 'kk' as const : 'ru' as const,
+    isTelegram: Boolean(user),
   };
 }
 
