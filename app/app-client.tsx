@@ -117,8 +117,8 @@ export default function AlganApp() {
 
   return (
     <PhoneShell>
-      <div className="relative flex min-h-[100dvh] flex-col bg-[#fffdf8] sm:min-h-[780px]">
-        <main className="flex-1 overflow-x-hidden pb-[98px]">
+      <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-[#fffdf8] sm:h-[780px]">
+        <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
           {tab === 'home' && (
             <HomeTab
               t={t} locale={locale} profileName={profile.firstName} location={location}
@@ -537,7 +537,7 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
     { id: 'profile', icon: <UserRound size={21} />, label: 'profile' },
   ];
   return (
-    <nav className="absolute bottom-0 left-0 right-0 z-[800] border-t border-[#e3e7e2] bg-[#fffdf8]/95 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
+    <nav className="z-[800] shrink-0 border-t border-[#e3e7e2] bg-[#fffdf8]/95 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
       <div className="grid grid-cols-4">
         {items.map((item) => (
           <button key={item.id} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-black transition ${tab === item.id ? 'text-[#1f5c49]' : 'text-[#89958f]'}`}>
