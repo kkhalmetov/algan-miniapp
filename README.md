@@ -70,4 +70,4 @@ GitHub Actions проверяет и экспортирует приложени
 - repository variables: `VPS_HOST=92.38.49.57`, `VPS_USER=algan-deploy`;
 - repository secrets: `VPS_SSH_PRIVATE_KEY`, `VPS_HOST_KEY`.
 
-Первичная настройка VPS выполняется скриптом `deploy/bootstrap-vps.sh` от root с публичным ключом в `DEPLOY_PUBLIC_KEY`. Временный адрес: `https://92-38-49-57.sslip.io`.
+Первичная настройка VPS выполняется скриптом `deploy/bootstrap-vps.sh` от root с публичным ключом в `DEPLOY_PUBLIC_KEY`. Production-адрес: `https://algan-bot.online`; `www` перенаправляется на основной домен.

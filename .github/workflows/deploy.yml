@@ -18,7 +18,7 @@ jobs:
     environment: production
     env:
       NEXT_PUBLIC_DATA_MODE: mock
-      NEXT_PUBLIC_APP_ORIGIN: https://92-38-49-57.sslip.io
+      NEXT_PUBLIC_APP_ORIGIN: https://algan-bot.online
       NEXT_PUBLIC_OSM_TILE_URL: https://tile.openstreetmap.org/{z}/{x}/{y}.png
       NEXT_PUBLIC_GEOCODER_URL: https://nominatim.openstreetmap.org
     steps:

@@ -3,7 +3,7 @@ import Script from 'next/script';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'https://92-38-49-57.sslip.io'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'https://algan-bot.online'),
   title: 'Algan — спасаем еду вместе',
   description: 'Боксы из кофеен, пекарен и магазинов Шымкента со скидкой.',
   openGraph: {
