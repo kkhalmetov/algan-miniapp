@@ -396,7 +396,7 @@ function ProfileTab({ t, locale, setLocale, profile, orders, openLegal, resetDem
         )}
 
         <div className="mt-7 space-y-2">
-          <ProfileRow icon={<Phone size={18} />} label={t('changePhone')} value={profile.phone ? formatKazakhstanPhoneInput(profile.phone) : undefined} onClick={onEditPhone} />
+          <ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={profile.phone ? formatKazakhstanPhoneInput(profile.phone) : undefined} onClick={onEditPhone} />
           <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
           <ProfileRow icon={<Info size={18} />} label={t('termsTitle')} onClick={() => openLegal('terms')} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('privacyTitle')} onClick={() => openLegal('privacy')} />
