@@ -6,6 +6,7 @@ import {
   Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, Star, UserRound, X,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import { authenticateTelegram } from '@/lib/api';
 import { boxes, storeById, stores } from '@/lib/mock-data';
@@ -16,6 +17,7 @@ import { haptic, prepareTelegram, telegramProfile } from '@/lib/telegram';
 import type { Box, Locale, Order, Tab, UserProfile } from '@/lib/types';
 
 const SHYMKENT = { lat: 42.3155, lng: 69.5869 };
+export const MINIMUM_SPLASH_MS = 900;
 
 const formatPrice = (value: number, locale: Locale) =>
   `${new Intl.NumberFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ').format(value)} ₸`;
@@ -36,6 +38,12 @@ export default function AlganApp() {
   const [successOrder, setSuccessOrder] = useState<Order | null>(null);
   const [editingPhone, setEditingPhone] = useState(false);
   const [category, setCategory] = useState<'all' | 'bakery' | 'cafe' | 'market'>('all');
+  const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
+
+  useEffect(() => {
+    const splashTimer = window.setTimeout(() => setMinimumSplashElapsed(true), MINIMUM_SPLASH_MS);
+    return () => window.clearTimeout(splashTimer);
+  }, []);
 
   useEffect(() => {
     prepareTelegram();
@@ -98,7 +106,7 @@ export default function AlganApp() {
     haptic('success');
   };
 
-  if (!hydrated) return <Splash />;
+  if (!hydrated || !minimumSplashElapsed) return <Splash />;
   if (!onboardingDone) {
     return (
       <PhoneShell>
@@ -160,10 +168,17 @@ export default function AlganApp() {
 
 function Splash() {
   return (
-    <main className="grid min-h-dvh place-items-center bg-[#1f5c49] text-white">
-      <div className="text-center">
-        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#d9ed9a] text-3xl font-black text-[#173c31]">a</span>
-        <p className="mt-4 text-xl font-black">algan</p>
+    <main className="grid min-h-dvh place-items-center overflow-hidden bg-[#1f5c49] px-6 text-white" aria-label="Algan загружается">
+      <div className="flex flex-col items-center">
+        <AlganLogo
+          light
+          className="flex-col gap-3"
+          markClassName="h-20 w-20"
+          wordmarkClassName="text-[28px]"
+        />
+        <span className="algan-loader mt-10" role="status">
+          <span className="sr-only">Загрузка</span>
+        </span>
       </div>
     </main>
   );
@@ -180,15 +195,6 @@ function PhoneShell({ children }: { children: React.ReactNode }) {
 }
 
 type Translator = (key: CopyKey) => string;
-
-function Brand({ light = false }: { light?: boolean }) {
-  return (
-    <div className={`flex items-center gap-2 text-lg font-black tracking-[-0.04em] ${light ? 'text-white' : 'text-[#173c31]'}`}>
-      <span className="grid h-9 w-9 place-items-center rounded-full bg-[#d9ed9a] text-[#173c31]">a</span>
-      algan
-    </div>
-  );
-}
 
 interface OnboardingProps {
   t: Translator; locale: Locale; setLocale: (locale: Locale) => void;
@@ -207,7 +213,7 @@ function Onboarding(props: OnboardingProps) {
         <div className="absolute -right-8 -top-6 h-40 w-40 rounded-full bg-[#f5b968]/20" />
         <div className="absolute -bottom-14 -left-8 h-36 w-36 rounded-full border-[28px] border-[#cce385]/20" />
         <div className="relative flex items-start justify-between">
-          <Brand light />
+          <AlganLogo light />
           <LanguagePill locale={locale} setLocale={setLocale} dark />
         </div>
         <div className="relative mt-12">

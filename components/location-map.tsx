@@ -37,7 +37,7 @@ export default function LocationMap({ lat, lng, stores = [], interactiveMarker =
       });
       const storeIcon = L.divIcon({
         className: 'algan-store-marker',
-        html: '<span aria-hidden="true">a</span>',
+        html: '<span aria-hidden="true"></span>',
         iconSize: [42, 42],
         iconAnchor: [21, 21],
       });

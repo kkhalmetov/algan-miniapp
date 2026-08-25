@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'https://algan-bot.online'),
   title: 'Algan — спасаем еду вместе',
   description: 'Боксы из кофеен, пекарен и магазинов Шымкента со скидкой.',
+  icons: {
+    icon: '/algan-mark.svg',
+  },
   openGraph: {
     title: 'Algan — спасаем еду вместе',
     description: 'Вкусные боксы со скидкой в Шымкенте.',
