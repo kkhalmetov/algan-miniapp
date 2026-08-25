@@ -26,7 +26,7 @@ export function AlganLogo({
   light = false,
   className = '',
   markClassName = 'h-9 w-9',
-  wordmarkClassName = 'h-6 w-[68px]',
+  wordmarkClassName = 'h-6 w-[73px]',
 }: {
   light?: boolean;
   className?: string;

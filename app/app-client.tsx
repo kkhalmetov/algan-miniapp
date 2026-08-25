@@ -211,7 +211,7 @@ function Splash() {
           light
           className="flex-col gap-3"
           markClassName="h-20 w-20"
-          wordmarkClassName="h-9 w-[102px]"
+          wordmarkClassName="h-9 w-[110px]"
         />
         <span className="algan-loader mt-10" role="status">
           <span className="sr-only">Загрузка</span>
