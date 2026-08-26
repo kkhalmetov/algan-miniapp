@@ -19,5 +19,7 @@ describe('mock customer catalog', () => {
     expect(ru('continue')).toBe('Продолжить');
     expect(kk('continue')).toBe('Жалғастыру');
     expect(ru('buy')).not.toBe(kk('buy'));
+    expect(ru('businessDetails')).toBe('ИП «ALGAN» | ИИН 030705500040');
+    expect(kk('businessDetails')).toBe('«ALGAN» ЖК | ЖСН 030705500040');
   });
 });

@@ -455,9 +455,9 @@ function ProfileTab({ t, locale, setLocale, profile, orders, openLegal, resetDem
         </div>
         <button onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6 w-full rounded-2xl bg-[#fff0ea] px-4 py-4 text-sm font-black text-[#b44b2b]">{t('signOutDemo')}</button>
         <div className="mt-6 space-y-1 text-center text-[11px] font-semibold leading-5 text-[#98a29d]">
-          <p>Версия 0.1.0</p>
-          <p>© 2026 Algan. Все права защищены.</p>
-          <p>ИП ALGAN | ИИН: 030705500040</p>
+          <p>{t('version')}</p>
+          <p>{t('copyright')}</p>
+          <p>{t('businessDetails')}</p>
         </div>
       </div>
     </section>
