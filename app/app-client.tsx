@@ -481,6 +481,7 @@ function OrdersTab({ t, locale, orders, openBox }: {
                   <span className="min-w-0 flex-1 py-0.5">
                     <span className="block truncate text-xs font-bold text-[#74817b]">{store.name}</span>
                     <span className="mt-1 block truncate text-base font-black">{box.name}</span>
+                    <span className="mt-1 block truncate text-[11px] font-semibold text-[#8a9690]">{t('orderId')}: {order.id}</span>
                     <span className="mt-2 flex items-center justify-between gap-3 text-xs text-[#66756e]">
                       <span>{t('quantity')}: {order.quantity}</span>
                       <b className="text-sm text-[#1f5c49]">{formatPrice(order.total, locale)}</b>
