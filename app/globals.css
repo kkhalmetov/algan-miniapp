@@ -65,7 +65,7 @@ button:disabled { cursor: not-allowed; }
 
 .algan-content-safe-top {
   padding-top: env(safe-area-inset-top, 0px);
-  padding-top: max(var(--tg-content-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px));
+  padding-top: max(var(--algan-telegram-content-top, 0px), var(--tg-content-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px));
 }
 
 .algan-user-marker,
