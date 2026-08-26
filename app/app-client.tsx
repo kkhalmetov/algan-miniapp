@@ -762,7 +762,7 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
         {view === 'menu' && (
           <div className="mt-2 space-y-2">
             <ProfileRow icon={<CircleHelp size={18} />} label={t('faq')} onClick={() => setView('faq')} />
-            <ProfileRow icon={<MessageCircle size={18} />} label={t('contactSupport')} value="@kkhalmetov" onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
+            <ProfileRow icon={<MessageCircle size={18} />} label={t('contactSupport')} onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
             <ProfileRow icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setView('contacts')} />
           </div>
         )}
@@ -788,7 +788,6 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
           <div className="mt-2 rounded-2xl bg-[#f2f5f1] p-5 text-sm">
             <h3 className="text-lg font-black">{t('companyName')}</h3>
             <p className="mt-1 font-bold text-[#617169]">{t('companyId')}</p>
-            <p className="mt-1 text-[#617169]">{t('companyCity')}</p>
             <div className="mt-5 space-y-4">
               <div><p className="text-xs font-black text-[#819088]">{t('addressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
               <a href="mailto:algansupport@gmail.com" className="flex items-center gap-3 rounded-xl bg-white p-3 text-[#1f5c49]"><Mail size={18} className="shrink-0" /><span><span className="block text-xs text-[#819088]">{t('emailLabel')}</span><span className="mt-0.5 block font-bold">algansupport@gmail.com</span></span></a>

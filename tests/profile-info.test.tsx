@@ -61,11 +61,12 @@ describe('profile information sections', () => {
 
     fireEvent.click(support);
     expect(screen.getByRole('heading', { name: 'Помощь и поддержка' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'FAQ — Частые вопросы' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Связаться с поддержкой/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'FAQ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Связаться с поддержкой' })).toBeInTheDocument();
+    expect(screen.queryByText('@kkhalmetov')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Контакты' })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'FAQ — Частые вопросы' }));
+    fireEvent.click(screen.getByRole('button', { name: 'FAQ' }));
     const question = screen.getByRole('button', { name: 'Как купить бокс?' });
     expect(question).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(question);
@@ -78,6 +79,7 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Контакты' }));
     expect(screen.getByText('ИП «ALGAN»')).toBeInTheDocument();
     expect(screen.getByText('ИИН: 030705500040')).toBeInTheDocument();
+    expect(screen.queryByText('Казахстан, г. Шымкент')).not.toBeInTheDocument();
     expect(screen.getByText(/Аль-Фарабийский район/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /algansupport@gmail.com/ })).toHaveAttribute('href', 'mailto:algansupport@gmail.com');
     expect(screen.getByRole('link', { name: /\+7 705 976 80 00/ })).toHaveAttribute('href', 'tel:+77059768000');
@@ -89,7 +91,7 @@ describe('profile information sections', () => {
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
     fireEvent.click(screen.getByRole('button', { name: 'Көмек және қолдау' }));
-    fireEvent.click(screen.getByRole('button', { name: 'FAQ — Жиі қойылатын сұрақтар' }));
+    fireEvent.click(screen.getByRole('button', { name: 'FAQ' }));
     fireEvent.click(screen.getByRole('button', { name: 'Боксты қалай сатып алуға болады?' }));
     expect(screen.getByText(/Төлемнен кейін тапсырыс/)).toBeInTheDocument();
   });
