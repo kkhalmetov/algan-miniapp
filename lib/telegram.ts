@@ -3,8 +3,6 @@ type TelegramUser = { id?: number; first_name?: string; last_name?: string; lang
 type TelegramWebApp = {
   initData: string;
   initDataUnsafe?: { user?: TelegramUser };
-  platform?: string;
-  contentSafeAreaInset?: { top: number; bottom: number; left: number; right: number };
   ready: () => void;
   expand: () => void;
   close?: () => void;
@@ -28,11 +26,6 @@ export function prepareTelegram() {
   webApp?.expand();
   webApp?.setHeaderColor?.('#1f5c49');
   webApp?.setBackgroundColor?.('#f5f0e6');
-  if (webApp && typeof document !== 'undefined') {
-    const reportedTop = webApp.contentSafeAreaInset?.top ?? 0;
-    const fallbackTop = webApp.initData ? (webApp.platform === 'ios' ? 80 : 64) : 0;
-    document.documentElement.style.setProperty('--algan-telegram-content-top', `${Math.max(reportedTop, fallbackTop)}px`);
-  }
   return webApp;
 }
 
