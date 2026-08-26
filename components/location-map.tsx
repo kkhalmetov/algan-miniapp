@@ -1,16 +1,19 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import type { Store } from '@/lib/types';
 
 interface Props {
   lat: number;
   lng: number;
-  stores?: { id: string; name: string; lat: number; lng: number }[];
+  stores?: Pick<Store, 'id' | 'name' | 'logo' | 'lat' | 'lng'>[];
   interactiveMarker?: boolean;
   onChange?: (lat: number, lng: number) => void;
   onSelectStore?: (id: string) => void;
   className?: string;
 }
+
+export const storeMarkerHtml = (logo: string) => `<span aria-hidden="true"><img src="${logo}" alt="" /></span>`;
 
 export default function LocationMap({ lat, lng, stores = [], interactiveMarker = false, onChange, onSelectStore, className = '' }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,13 +38,6 @@ export default function LocationMap({ lat, lng, stores = [], interactiveMarker =
         iconSize: [38, 46],
         iconAnchor: [19, 42],
       });
-      const storeIcon = L.divIcon({
-        className: 'algan-store-marker',
-        html: '<span aria-hidden="true"></span>',
-        iconSize: [42, 42],
-        iconAnchor: [21, 21],
-      });
-
       if (interactiveMarker) {
         const marker = L.marker([lat, lng], { draggable: true, icon: markerIcon }).addTo(map);
         marker.on('dragend', () => {
@@ -55,7 +51,13 @@ export default function LocationMap({ lat, lng, stores = [], interactiveMarker =
       }
 
       stores.forEach((store) => {
-        const marker = L.marker([store.lat, store.lng], { icon: storeIcon }).addTo(map!);
+        const storeIcon = L.divIcon({
+          className: 'algan-store-marker',
+          html: storeMarkerHtml(store.logo),
+          iconSize: [48, 48],
+          iconAnchor: [24, 24],
+        });
+        const marker = L.marker([store.lat, store.lng], { icon: storeIcon, title: store.name }).addTo(map!);
         marker.on('click', () => onSelectStore?.(store.id));
       });
 

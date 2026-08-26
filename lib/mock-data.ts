@@ -1,10 +1,10 @@
 import type { Box, Store } from './types';
 
 export const stores: Store[] = [
-  { id: 'tatti', name: 'Tatti Bakery', type: 'bakery', address: 'пр. Тауке хана, 47', lat: 42.3184, lng: 69.5907, rating: 4.9 },
-  { id: 'kofi', name: 'Köfi', type: 'cafe', address: 'ул. Байтурсынова, 12', lat: 42.3122, lng: 69.5823, rating: 4.8 },
-  { id: 'dastarhan', name: 'Dastarhan Market', type: 'market', address: 'ул. Желтоксан, 19', lat: 42.3268, lng: 69.5979, rating: 4.7 },
-  { id: 'bal', name: 'Bal Dessert', type: 'dessert', address: 'пр. Кунаева, 38', lat: 42.3058, lng: 69.6038, rating: 4.9 },
+  { id: 'tatti', name: 'Tatti Bakery', logo: '/images/store-logos/tatti.svg', type: 'bakery', address: 'пр. Тауке хана, 47', lat: 42.3184, lng: 69.5907, rating: 4.9 },
+  { id: 'kofi', name: 'Köfi', logo: '/images/store-logos/kofi.svg', type: 'cafe', address: 'ул. Байтурсынова, 12', lat: 42.3122, lng: 69.5823, rating: 4.8 },
+  { id: 'dastarhan', name: 'Dastarhan Market', logo: '/images/store-logos/dastarhan.svg', type: 'market', address: 'ул. Желтоксан, 19', lat: 42.3268, lng: 69.5979, rating: 4.7 },
+  { id: 'bal', name: 'Bal Dessert', logo: '/images/store-logos/bal.svg', type: 'dessert', address: 'пр. Кунаева, 38', lat: 42.3058, lng: 69.6038, rating: 4.9 },
 ];
 
 export const boxes: Box[] = [

@@ -18,6 +18,7 @@ export interface UserLocation {
 export interface Store {
   id: string;
   name: string;
+  logo: string;
   type: 'bakery' | 'cafe' | 'market' | 'dessert';
   address: string;
   lat: number;

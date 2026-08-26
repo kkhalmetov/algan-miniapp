@@ -90,22 +90,20 @@ button:disabled { cursor: not-allowed; }
 
 .algan-store-marker span {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   place-items: center;
-  border: 4px solid white;
+  overflow: hidden;
+  border: 3px solid #1f5c49;
   border-radius: 50%;
-  background: #1f5c49;
+  background: white;
   box-shadow: 0 8px 22px rgba(31, 92, 73, .28);
 }
 
-.algan-store-marker span::after {
-  width: 24px;
-  height: 24px;
-  content: '';
-  background: #d9ed9a;
-  -webkit-mask: url('/algan-mark.svg?v=2') center / contain no-repeat;
-  mask: url('/algan-mark.svg?v=2') center / contain no-repeat;
+.algan-store-marker img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
 }
 
 .leaflet-control-attribution {

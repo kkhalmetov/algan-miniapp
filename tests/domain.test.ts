@@ -13,6 +13,11 @@ describe('mock customer catalog', () => {
     });
   });
 
+  it('gives every mock store its own local SVG logo', () => {
+    expect(new Set(stores.map((store) => store.logo)).size).toBe(stores.length);
+    stores.forEach((store) => expect(store.logo).toMatch(/^\/images\/store-logos\/.+\.svg$/));
+  });
+
   it('provides matching Russian and Kazakh copy', () => {
     const ru = getCopy('ru');
     const kk = getCopy('kk');

@@ -617,17 +617,24 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
   const store = storeById(box.storeId);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
-    <Overlay onClose={onClose} full>
-      <div className="h-full overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        <div className="relative h-[310px]">
-          <img src={box.image} alt="" className="h-full w-full object-cover" />
-          <div className="absolute inset-x-0 top-0 flex justify-between px-5 pt-[max(1.2rem,env(safe-area-inset-top))]">
-            <button onClick={onClose} className="grid h-11 w-11 place-items-center rounded-full bg-white/92 shadow-lg"><ArrowLeft size={20} /></button>
-            <button onClick={toggleFavorite} className={`grid h-11 w-11 place-items-center rounded-full shadow-lg ${isFavorite ? 'bg-[#ffe9e1] text-[#db6f4b]' : 'bg-white/92'}`}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></button>
-          </div>
-          <span className="absolute bottom-4 left-5 rounded-full bg-[#db6f4b] px-3 py-1.5 text-xs font-black text-white">−{discount}% {t('discount')}</span>
+    <section className="absolute inset-0 z-[1000] flex h-full min-h-0 flex-col overflow-hidden bg-[#fffdf8]" role="dialog" aria-modal="true" aria-label={box.name}>
+      <header data-testid="box-details-header" className="shrink-0 bg-[#1f5c49] px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
+        <div className="flex min-h-11 items-center gap-3">
+          <button onClick={onClose} aria-label={t('back')} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/12"><ArrowLeft size={20} /></button>
+          <p className="min-w-0 flex-1 truncate text-center text-sm font-black">{store.name}</p>
+          <button onClick={toggleFavorite} aria-label={t('favorites')} aria-pressed={isFavorite} className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${isFavorite ? 'bg-[#ffe9e1] text-[#db6f4b]' : 'bg-white/12 text-white'}`}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></button>
         </div>
-        <div className="-mt-3 rounded-t-[28px] bg-[#fffdf8] px-6 pb-5 pt-6">
+      </header>
+
+      <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="relative h-[260px] bg-[#eee7da]">
+          <img src={box.image} alt="" className="h-full w-full object-cover object-center" />
+          <span className="absolute bottom-4 right-5 rounded-full bg-[#db6f4b] px-3 py-1.5 text-xs font-black text-white">−{discount}% {t('discount')}</span>
+          <span className="absolute -bottom-8 left-5 grid h-17 w-17 place-items-center overflow-hidden rounded-full border-4 border-[#fffdf8] bg-white shadow-[0_8px_24px_rgba(23,60,49,0.2)]">
+            <img src={store.logo} alt={`${store.name} logo`} className="h-13 w-13 object-contain" />
+          </span>
+        </div>
+        <div className="px-6 pb-6 pt-11">
           <p className="flex items-center gap-1 text-sm font-bold text-[#6c7a73]"><Star size={15} fill="#f5b968" strokeWidth={0} />{store.rating} · {store.name}</p>
           <h1 className="mt-2 text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
           <p className="mt-3 text-sm leading-6 text-[#5e7068]">{box.description}</p>
@@ -644,10 +651,12 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
           <div className="mt-5 flex items-start gap-3 rounded-2xl bg-[#f2f4f1] p-4">
             <Navigation size={19} className="mt-0.5 shrink-0 text-[#db6f4b]" /><div><p className="text-sm font-black">{store.address}</p><p className="mt-1 text-xs text-[#74817b]">{box.distanceKm} км</p></div>
           </div>
-          <button onClick={onBuy} disabled={box.quantity < 1} className="primary-button mt-6">{t('buy')}<ShoppingBag size={19} /></button>
         </div>
       </div>
-    </Overlay>
+      <footer className="shrink-0 border-t border-[#e3e7e2] bg-[#fffdf8]/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
+        <button onClick={onBuy} disabled={box.quantity < 1} className="primary-button">{t('buy')}<ShoppingBag size={19} /></button>
+      </footer>
+    </section>
   );
 }
 

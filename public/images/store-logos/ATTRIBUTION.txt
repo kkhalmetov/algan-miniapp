@@ -1,0 +1,8 @@
+Store logo mock assets are adapted from OpenMoji, the open-source emoji and icon project.
+License: CC BY-SA 4.0 — https://creativecommons.org/licenses/by-sa/4.0/
+Source: https://openmoji.org/
+
+Tatti Bakery: Croissant (1F950), Miriam Vollmeier
+Köfi: Hot Beverage (2615), Alexander Müller
+Dastarhan Market: Shopping Cart (1F6D2), Marius Schnabel
+Bal Dessert: Shortcake (1F370), Miriam Vollmeier
