@@ -14,6 +14,7 @@ describe('Kazakhstan phone helpers', () => {
   });
 
   it('formats input without exceeding eleven digits', () => {
+    expect(formatKazakhstanPhoneInput('+77059768000')).toBe('+7 705 976 80 00');
     expect(formatKazakhstanPhoneInput('87001234567')).toBe('+7 700 123 45 67');
     expect(formatKazakhstanPhoneInput('7001234567')).toBe('+7 700 123 45 67');
     expect(formatKazakhstanPhoneInput('+7 700 123 45 6789')).toBe('+7 700 123 45 67');
