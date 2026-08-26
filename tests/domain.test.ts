@@ -18,6 +18,7 @@ describe('mock customer catalog', () => {
     const kk = getCopy('kk');
     expect(ru('continue')).toBe('Продолжить');
     expect(kk('continue')).toBe('Жалғастыру');
+    expect(ru('privacy')).toBe('Я согласен на сбор и обработку персональных данных в соответствии с политикой конфиденциальности');
     expect(ru('buy')).not.toBe(kk('buy'));
     expect(ru('orders')).toBe('Заказы');
     expect(kk('orders')).toBe('Тапсырыстар');
