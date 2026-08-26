@@ -3,7 +3,7 @@
 
 import {
   ArrowLeft, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Heart, Home, Info, Languages, Mail, Map as MapIcon,
-  MessageCircle, Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, Star, X,
+  Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, Star, X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
@@ -762,7 +762,7 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
         {view === 'menu' && (
           <div className="mt-2 space-y-2">
             <ProfileRow icon={<CircleHelp size={18} />} label={t('faq')} onClick={() => setView('faq')} />
-            <ProfileRow icon={<MessageCircle size={18} />} label={t('contactSupport')} onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
+            <ProfileRow icon={<TelegramIcon />} label={t('contactSupport')} onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
             <ProfileRow icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setView('contacts')} />
           </div>
         )}
@@ -797,6 +797,14 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
         )}
       </div>
     </Overlay>
+  );
+}
+
+function TelegramIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="currentColor">
+      <path d="M21.7 3.4a1.2 1.2 0 0 0-1.25-.17L2.9 10.18c-1.2.48-1.18 1.17-.22 1.46l4.5 1.4 1.73 5.24c.22.62.11.87.76.87.5 0 .72-.23 1-.5l2.16-2.1 4.5 3.32c.83.46 1.43.22 1.64-.77l3-14.14c.31-1.23-.47-1.8-.27-1.56ZM8.36 12.72l9.8-6.18c.49-.3.94-.14.57.2l-8.1 7.3-.32 3.4-1.95-4.72Z" />
+    </svg>
   );
 }
 
