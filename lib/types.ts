@@ -1,5 +1,5 @@
 export type Locale = 'ru' | 'kk';
-export type Tab = 'home' | 'map' | 'favorites' | 'profile';
+export type Tab = 'home' | 'map' | 'favorites' | 'orders' | 'profile';
 
 export interface UserProfile {
   telegramId?: number;

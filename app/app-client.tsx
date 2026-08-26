@@ -181,9 +181,10 @@ export default function AlganApp() {
           {tab === 'favorites' && (
             <FavoritesTab t={t} locale={locale} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openBox={openBox} />
           )}
+          {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} openBox={openBox} />}
           {tab === 'profile' && (
-            <ProfileTab t={t} locale={locale} setLocale={setLocale} profile={profile} orders={orders}
-              openLegal={setLegal} resetDemo={resetDemo} openBox={openBox} onEditPhone={() => setEditingPhone(true)} />
+            <ProfileTab t={t} locale={locale} setLocale={setLocale} profile={profile}
+              openLegal={setLegal} resetDemo={resetDemo} onEditPhone={() => setEditingPhone(true)} />
           )}
         </main>
         <BottomNav tab={tab} setTab={setTab} t={t} />
@@ -198,7 +199,7 @@ export default function AlganApp() {
           onClose={() => setCheckoutBox(null)} onPay={pay} />
       )}
       {successOrder && (
-        <Success order={successOrder} t={t} onDone={() => { setSuccessOrder(null); setTab('profile'); }} />
+        <Success order={successOrder} t={t} onDone={() => { setSuccessOrder(null); setTab('orders'); }} />
       )}
       {editingPhone && (
         <PhoneEditor currentPhone={profile.phone} t={t} onClose={() => setEditingPhone(false)} onSave={(value) => {
@@ -412,9 +413,80 @@ function FavoritesTab({ t, locale, favoriteStoreIds, toggleFavorite, openBox }: 
   );
 }
 
-function ProfileTab({ t, locale, setLocale, profile, orders, openLegal, resetDemo, openBox, onEditPhone }: {
+function OrdersTab({ t, locale, orders, openBox }: {
+  t: Translator; locale: Locale; orders: Order[]; openBox: (box: Box) => void;
+}) {
+  const [view, setView] = useState<'active' | 'past'>('active');
+  const visibleOrders = orders.filter((order) => view === 'active' ? order.status === 'paid' : order.status === 'collected');
+  const emptyTitle = view === 'active' ? t('noActiveOrders') : t('noPastOrders');
+  const emptyText = view === 'active' ? t('noActiveOrdersText') : t('noPastOrdersText');
+
+  return (
+    <section className="px-5 pb-7 pt-[max(1.5rem,env(safe-area-inset-top))]">
+      <h1 className="mt-2 text-[30px] font-black tracking-[-0.045em]">{t('orders')}</h1>
+      <div className="mt-5 grid grid-cols-2 rounded-2xl bg-[#edf1ed] p-1" role="group" aria-label={t('orders')}>
+        {(['active', 'past'] as const).map((item) => (
+          <button
+            key={item}
+            type="button"
+            aria-pressed={view === item}
+            onClick={() => { setView(item); haptic('tap'); }}
+            className={`min-h-11 rounded-xl px-3 text-sm font-black transition ${view === item ? 'bg-white text-[#1f5c49] shadow-sm' : 'text-[#7b8982]'}`}
+          >
+            {item === 'active' ? t('activeOrders') : t('pastOrders')}
+          </button>
+        ))}
+      </div>
+
+      {visibleOrders.length === 0 ? (
+        <div className="mt-20 text-center">
+          <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-[#e7efcf] text-[#1f5c49]">
+            {view === 'active' ? <ShoppingBag size={34} /> : <PackageCheck size={34} />}
+          </span>
+          <h2 className="mx-auto mt-6 max-w-[290px] text-xl font-black">{emptyTitle}</h2>
+          <p className="mx-auto mt-2 max-w-[290px] text-sm leading-6 text-[#6d7c75]">{emptyText}</p>
+        </div>
+      ) : (
+        <div className="mt-5 space-y-3">
+          {visibleOrders.map((order) => {
+            const box = boxes.find((item) => item.id === order.boxId);
+            if (!box) return null;
+            const store = storeById(box.storeId);
+            const orderDate = new Intl.DateTimeFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ', {
+              day: 'numeric', month: 'long', year: 'numeric',
+            }).format(new Date(order.createdAt));
+            return (
+              <button key={order.id} onClick={() => openBox(box)} className="w-full rounded-[22px] border border-[#e0e6df] bg-white p-3 text-left shadow-[0_8px_24px_rgba(32,69,56,0.06)]">
+                <span className="flex gap-3">
+                  <img src={box.image} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
+                  <span className="min-w-0 flex-1 py-0.5">
+                    <span className="block truncate text-xs font-bold text-[#74817b]">{store.name}</span>
+                    <span className="mt-1 block truncate text-base font-black">{box.name}</span>
+                    <span className="mt-2 flex items-center justify-between gap-3 text-xs text-[#66756e]">
+                      <span>{t('quantity')}: {order.quantity}</span>
+                      <b className="text-sm text-[#1f5c49]">{formatPrice(order.total, locale)}</b>
+                    </span>
+                  </span>
+                </span>
+                <span className="mt-3 flex items-center justify-between gap-3 border-t border-[#edf0ed] pt-3 text-xs">
+                  {view === 'active' ? (
+                    <><span className="font-bold text-[#68776f]">{t('pickup')}: {box.pickupFrom}–{box.pickupTo}</span><span className="rounded-full bg-[#dceab3] px-3 py-1.5 font-black text-[#1f5c49]">{t('pickupCode')}: {order.pickupCode}</span></>
+                  ) : (
+                    <><span className="font-bold text-[#7a8781]">{orderDate}</span><ChevronRight size={17} className="text-[#89958f]" /></>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ProfileTab({ t, locale, setLocale, profile, openLegal, resetDemo, onEditPhone }: {
   t: Translator; locale: Locale; setLocale: (locale: Locale) => void; profile: UserProfile;
-  orders: Order[]; openLegal: (type: 'terms' | 'privacy') => void; resetDemo: () => void; openBox: (box: Box) => void; onEditPhone: () => void;
+  openLegal: (type: 'terms' | 'privacy') => void; resetDemo: () => void; onEditPhone: () => void;
 }) {
   return (
     <section className="pb-8">
@@ -426,28 +498,7 @@ function ProfileTab({ t, locale, setLocale, profile, orders, openLegal, resetDem
       </header>
 
       <div className="bg-[#fffdf8] px-5 pt-6">
-        <h2 className="text-lg font-black">{t('orders')}</h2>
-        {orders.length === 0 ? (
-          <div className="mt-3 flex items-start gap-3 rounded-2xl bg-[#f1f4ef] p-4">
-            <ShoppingBag size={20} className="mt-0.5 shrink-0 text-[#66756e]" />
-            <div><p className="text-sm font-black text-[#43574f]">{t('noOrders')}</p><p className="mt-1 text-xs leading-5 text-[#74817b]">{t('noOrdersText')}</p></div>
-          </div>
-        ) : (
-          <div className="mt-3 space-y-3">
-            {orders.map((order) => {
-              const box = boxes.find((item) => item.id === order.boxId)!;
-              return (
-                <button key={order.id} onClick={() => openBox(box)} className="flex w-full items-center gap-3 rounded-2xl border border-[#e0e6df] bg-white p-3 text-left">
-                  <img src={box.image} alt="" className="h-14 w-14 rounded-xl object-cover" />
-                  <span className="min-w-0 flex-1"><span className="block truncate text-sm font-black">{box.name}</span><span className="mt-1 block text-xs text-[#74827b]">{t('pickupCode')}: <b className="text-[#1f5c49]">{order.pickupCode}</b></span></span>
-                  <ChevronRight size={18} className="text-[#87938d]" />
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        <div className="mt-7 space-y-2">
+        <div className="space-y-2">
           <ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={profile.phone ? formatKazakhstanPhoneInput(profile.phone) : undefined} onClick={onEditPhone} />
           <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
           <ProfileRow icon={<Info size={18} />} label={t('termsTitle')} onClick={() => openLegal('terms')} />
@@ -525,11 +576,12 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
     { id: 'home', icon: <Home size={21} />, label: 'home' },
     { id: 'map', icon: <MapIcon size={21} />, label: 'map' },
     { id: 'favorites', icon: <Heart size={21} />, label: 'favorites' },
+    { id: 'orders', icon: <ShoppingBag size={21} />, label: 'orders' },
     { id: 'profile', icon: <UserRound size={21} />, label: 'profile' },
   ];
   return (
     <nav className="z-[800] shrink-0 border-t border-[#e3e7e2] bg-[#fffdf8]/95 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-5">
         {items.map((item) => (
           <button key={item.id} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-black transition ${tab === item.id ? 'text-[#1f5c49]' : 'text-[#89958f]'}`}>
             <span className={`grid h-8 w-12 place-items-center rounded-full ${tab === item.id ? 'bg-[#dceab3]' : ''}`}>{item.icon}</span>{t(item.label)}
