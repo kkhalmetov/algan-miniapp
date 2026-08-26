@@ -616,14 +616,13 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
   return (
     <Overlay onClose={onClose} full>
       <div className="h-full overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        <div className="relative h-[310px] overflow-hidden bg-[#e7e2d8]">
-          <img src={box.image} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-xl" />
-          <img src={box.image} alt={box.name} className="relative z-10 h-full w-full object-contain" />
-          <div className="absolute inset-x-0 top-0 z-20 flex justify-between px-5 pt-[max(1.2rem,env(safe-area-inset-top))]">
+        <div className="relative h-[310px]">
+          <img src={box.image} alt="" className="h-full w-full object-cover" />
+          <div className="absolute inset-x-0 top-0 flex justify-between px-5 pt-[max(1.2rem,env(safe-area-inset-top))]">
             <button onClick={onClose} className="grid h-11 w-11 place-items-center rounded-full bg-white/92 shadow-lg"><ArrowLeft size={20} /></button>
             <button onClick={toggleFavorite} className={`grid h-11 w-11 place-items-center rounded-full shadow-lg ${isFavorite ? 'bg-[#ffe9e1] text-[#db6f4b]' : 'bg-white/92'}`}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></button>
           </div>
-          <span className="absolute bottom-4 left-5 z-20 rounded-full bg-[#db6f4b] px-3 py-1.5 text-xs font-black text-white">−{discount}% {t('discount')}</span>
+          <span className="absolute bottom-4 left-5 rounded-full bg-[#db6f4b] px-3 py-1.5 text-xs font-black text-white">−{discount}% {t('discount')}</span>
         </div>
         <div className="-mt-3 rounded-t-[28px] bg-[#fffdf8] px-6 pb-5 pt-6">
           <p className="flex items-center gap-1 text-sm font-bold text-[#6c7a73]"><Star size={15} fill="#f5b968" strokeWidth={0} />{store.rating} · {store.name}</p>
