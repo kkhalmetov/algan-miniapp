@@ -395,7 +395,7 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
         </div>
         <div className="mt-4 flex items-end justify-between gap-3">
           <div><p className="text-xs text-[#849088] line-through">{formatPrice(box.originalPrice, locale)}</p><p className="text-lg font-black text-[#1f5c49]">{formatPrice(box.salePrice, locale)}</p></div>
-          <div className="text-right"><p className="text-[11px] font-bold text-[#db6f4b]">{box.quantity} {t('left')}</p><p className="mt-1 text-xs font-semibold text-[#607169]">{box.pickupFrom}–{box.pickupTo}</p></div>
+          <div className="text-right"><p className={`text-[11px] font-bold ${box.quantity > 0 ? 'text-[#db6f4b]' : 'text-[#a43d32]'}`}>{box.quantity > 0 ? `${box.quantity} ${t('left')}` : formatBoxesLeft(0, locale)}</p><p className="mt-1 text-xs font-semibold text-[#607169]">{box.pickupFrom}–{box.pickupTo}</p></div>
         </div>
       </div>
     </article>

@@ -1,0 +1,7 @@
+<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
+  <title id="title">Qamyr Bakery</title>
+  <circle cx="36" cy="36" r="34" fill="#f2cf72"/>
+  <path d="M22 49V27c0-7 5-12 14-12s14 5 14 12v18c0 7-5 12-14 12-5 0-9-2-11-5" fill="none" stroke="#315b43" stroke-width="7" stroke-linecap="round"/>
+  <path d="M36 31c5 0 9 4 9 9s-4 9-9 9-9-4-9-9 4-9 9-9Z" fill="#fff7df"/>
+  <path d="M33 35c3 1 5 3 6 6M32 41c3 0 5 1 7 3" fill="none" stroke="#c58a35" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

@@ -38,7 +38,7 @@ describe('store details presentation', () => {
     stores.forEach((store) => {
       expect(screen.getByAltText(`${store.name} logo`)).toHaveAttribute('src', store.logo);
     });
-    expect(screen.getAllByAltText('Halal')).toHaveLength(4);
+    expect(screen.getAllByAltText('Halal')).toHaveLength(5);
     screen.getAllByAltText('Halal').forEach((badge) => expect(badge).toHaveAttribute('src', '/images/halal-logo.svg'));
   });
 
@@ -102,6 +102,20 @@ describe('store details presentation', () => {
     const dialog = screen.getByRole('dialog', { name: 'Зелёный бокс' });
     expect(within(dialog).getByText('Аллергены')).toBeInTheDocument();
     expect(within(dialog).getByText('Информация об аллергенах не указана. Уточните её у заведения.')).toBeInTheDocument();
+  });
+
+  it('shows a sold-out venue and disables purchasing', () => {
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+
+    const soldOutCard = screen.getByText('Qamyr Bakery').closest('article');
+    expect(soldOutCard).not.toBeNull();
+    expect(within(soldOutCard!).getByText('Боксы закончились')).toBeInTheDocument();
+    fireEvent.click(within(soldOutCard!).getByRole('button', { name: /Qamyr Bakery Вечерний бокс/ }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Вечерний бокс' });
+    expect(within(dialog).getByTestId('box-stock')).toHaveTextContent('Боксы закончились');
+    expect(within(dialog).getByRole('button', { name: 'Купить бокс' })).toBeDisabled();
   });
 });
 

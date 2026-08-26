@@ -3,14 +3,15 @@ import { boxes, stores, storeById } from '../lib/mock-data';
 import { getCopy } from '../lib/translations';
 
 describe('mock customer catalog', () => {
-  it('contains purchasable discounted boxes linked to stores', () => {
-    expect(boxes).toHaveLength(4);
-    expect(stores).toHaveLength(4);
+  it('contains available and sold-out discounted boxes linked to stores', () => {
+    expect(boxes).toHaveLength(5);
+    expect(stores).toHaveLength(5);
     boxes.forEach((box) => {
       expect(box.salePrice).toBeLessThan(box.originalPrice);
-      expect(box.quantity).toBeGreaterThan(0);
+      expect(box.quantity).toBeGreaterThanOrEqual(0);
       expect(storeById(box.storeId)).toBeTruthy();
     });
+    expect(boxes.some((box) => box.quantity === 0)).toBe(true);
   });
 
   it('gives every mock store its own local SVG logo', () => {

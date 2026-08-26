@@ -5,6 +5,7 @@ export const stores: Store[] = [
   { id: 'kofi', name: 'Köfi', logo: '/images/store-logos/kofi.svg', type: 'cafe', address: 'ул. Байтурсынова, 12', lat: 42.3122, lng: 69.5823, rating: 4.8 },
   { id: 'dastarhan', name: 'Dastarhan Market', logo: '/images/store-logos/dastarhan.svg', type: 'market', address: 'ул. Желтоксан, 19', lat: 42.3268, lng: 69.5979, rating: 4.7 },
   { id: 'bal', name: 'Bal Dessert', logo: '/images/store-logos/bal.svg', type: 'dessert', address: 'пр. Кунаева, 38', lat: 42.3058, lng: 69.6038, rating: 4.9 },
+  { id: 'qamyr', name: 'Qamyr Bakery', logo: '/images/store-logos/qamyr.svg', type: 'bakery', address: 'ул. Рыскулова, 18', lat: 42.321, lng: 69.5795, rating: 4.8 },
 ];
 
 export const boxes: Box[] = [
@@ -31,6 +32,12 @@ export const boxes: Box[] = [
     description: 'Ассорти десертов дня: мини-торты, тарталетки и нежные пирожные.',
     originalPrice: 7600, salePrice: 3190, quantity: 2, pickupFrom: '20:30', pickupTo: '21:30',
     image: '/images/dessert.jpg', allergens: 'Молоко, яйца, глютен, орехи', isHalal: true, distanceKm: 2.4,
+  },
+  {
+    id: 'qamyr-evening', storeId: 'qamyr', name: 'Вечерний бокс',
+    description: 'Выпечка и хлеб, оставшиеся к концу дня.',
+    originalPrice: 5400, salePrice: 2190, quantity: 0, pickupFrom: '20:00', pickupTo: '21:00',
+    image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 1.5,
   },
 ];
 
