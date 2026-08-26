@@ -3,7 +3,7 @@
 
 import {
   AlertTriangle, ArrowLeft, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Heart, Home, Info, Languages, Mail, Map as MapIcon,
-  MapPin, Minus, PackageCheck, Phone, Plus, Route, ShoppingBag, Sparkles, X,
+  MapPin, Minus, Package, PackageCheck, Phone, Plus, Route, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
@@ -13,6 +13,7 @@ import { getRouteOptions, type RouteProvider } from '@/lib/maps';
 import { boxes, storeById, stores } from '@/lib/mock-data';
 import { createOrderId, formatOrderId } from '@/lib/order-id';
 import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phone';
+import { formatBoxesLeft } from '@/lib/stock';
 import { useAppStore } from '@/lib/store';
 import { getCopy, type CopyKey } from '@/lib/translations';
 import { haptic, openExternalLink, openTelegramLink, prepareTelegram, telegramProfile } from '@/lib/telegram';
@@ -653,7 +654,10 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
         <div className="px-6 pb-6 pt-11">
           <p className="text-sm font-bold text-[#6c7a73]">{store.name}</p>
           <h1 className="mt-2 text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
-          <div className="mt-5 grid grid-cols-[1.08fr_.92fr] gap-3">
+          <span data-testid="box-stock" className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${box.quantity > 0 ? 'bg-[#fff0e8] text-[#bd593c]' : 'bg-[#f9dcd8] text-[#a43d32]'}`}>
+            <Package size={15} />{formatBoxesLeft(box.quantity, locale)}
+          </span>
+          <div className="mt-4 grid grid-cols-[1.08fr_.92fr] gap-3">
             <div data-testid="box-price-card" className="rounded-[20px] bg-[#e9f1d5] p-4">
               <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#64766d]">{t('boxPrice')}</p>
               <p className="mt-2 text-[25px] font-black tracking-[-0.04em] text-[#1f5c49]">{formatPrice(box.salePrice, locale)}</p>

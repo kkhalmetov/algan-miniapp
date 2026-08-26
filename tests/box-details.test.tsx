@@ -54,6 +54,7 @@ describe('store details presentation', () => {
     expect(within(scroll).getByAltText('Tatti Bakery logo')).toHaveAttribute('src', stores[0]!.logo);
     expect(within(cover).getByAltText('Halal')).toHaveAttribute('src', '/images/halal-logo.svg');
     expect(within(scroll).queryByText('Свежая выпечка дня: круассаны, слойки и хлеб. Точный состав станет сюрпризом.')).not.toBeInTheDocument();
+    expect(within(scroll).getByTestId('box-stock')).toHaveTextContent('Осталось 4 бокса');
     expect(screen.queryByText(/4\.9/)).not.toBeInTheDocument();
     expect(within(within(scroll).getByTestId('box-price-card')).getByText('−60%')).toBeInTheDocument();
     expect(within(scroll).getByTestId('box-pickup-card')).toHaveTextContent('19:30–20:30');
