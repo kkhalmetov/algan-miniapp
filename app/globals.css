@@ -63,6 +63,11 @@ button:disabled { cursor: not-allowed; }
 .hide-scrollbar { scrollbar-width: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 
+.algan-content-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: max(var(--tg-content-safe-area-inset-top, 0px), env(safe-area-inset-top, 0px));
+}
+
 .algan-user-marker,
 .algan-store-marker {
   background: transparent;

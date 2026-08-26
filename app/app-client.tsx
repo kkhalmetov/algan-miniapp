@@ -615,10 +615,10 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <Overlay onClose={onClose} full>
-      <div className="h-full overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <div className="algan-content-safe-top h-full overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="relative h-[310px]">
           <img src={box.image} alt="" className="h-full w-full object-cover" />
-          <div className="absolute inset-x-0 top-0 flex justify-between px-5 pt-[max(1.2rem,env(safe-area-inset-top))]">
+          <div className="absolute inset-x-0 top-0 flex justify-between px-5 pt-5">
             <button onClick={onClose} className="grid h-11 w-11 place-items-center rounded-full bg-white/92 shadow-lg"><ArrowLeft size={20} /></button>
             <button onClick={toggleFavorite} className={`grid h-11 w-11 place-items-center rounded-full shadow-lg ${isFavorite ? 'bg-[#ffe9e1] text-[#db6f4b]' : 'bg-white/92'}`}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></button>
           </div>
