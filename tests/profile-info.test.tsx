@@ -35,9 +35,9 @@ describe('profile information sections', () => {
     expect(screen.queryByRole('button', { name: 'Условия использования' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Политика конфиденциальности' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'О Algan' })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Документы' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Правовая информация' }));
 
-    expect(screen.getByRole('heading', { name: 'Документы' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Правовая информация' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Условия использования' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Политика конфиденциальности' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Публичная оферта' })).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('profile information sections', () => {
     expect(screen.getByText(/Документ готовится/)).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Назад' })[0]!);
-    expect(screen.getByRole('heading', { name: 'Документы' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Правовая информация' })).toBeInTheDocument();
   });
 
 });
