@@ -353,7 +353,7 @@ function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, category, 
           ))}
         </div>
 
-        <div className="mt-7 flex items-center justify-between gap-3"><h2 className="text-xl font-black tracking-[-0.035em]">{t('nearby')}</h2><span className="shrink-0 rounded-full bg-[#ffe9e1] px-3 py-1.5 text-xs font-black text-[#c95838]">{t('availableTotal')} {filtered.length}</span></div>
+        <h2 className="mt-7 text-xl font-black tracking-[-0.035em]">{t('nearby')}</h2>
         <div className="mt-4 space-y-4 pb-6">
           {filtered.map((box) => <BoxCard key={box.id} box={box} locale={locale} t={t} favorite={favoriteStoreIds.includes(box.storeId)} toggleFavorite={() => toggleFavorite(box.storeId)} onOpen={() => openBox(box)} />)}
         </div>
