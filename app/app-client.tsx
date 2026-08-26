@@ -177,7 +177,7 @@ export default function AlganApp() {
   return (
     <PhoneShell>
       <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-[#fffdf8] sm:h-[780px]">
-        <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
+        <main className={`min-h-0 flex-1 overflow-x-hidden overscroll-contain ${tab === 'map' ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
           {tab === 'home' && (
             <HomeTab
               t={t} locale={locale} profile={profile} openProfile={() => { setTab('profile'); haptic('tap'); }}
@@ -400,7 +400,7 @@ function MapTab({ openBox }: { openBox: (box: Box) => void }) {
   const selected = storeId ? boxes.find((box) => box.storeId === storeId) : null;
   const selectStore = useCallback((id: string) => setStoreId(id), []);
   return (
-    <div className="relative min-h-[calc(100dvh-98px)] sm:min-h-[682px]">
+    <div className="relative h-full min-h-0">
       <LocationMap lat={SHYMKENT.lat} lng={SHYMKENT.lng} stores={stores} onSelectStore={selectStore} className="absolute inset-0" />
       {selected && (
         <button onClick={() => openBox(selected)} className="absolute bottom-5 left-4 right-4 z-[600] flex gap-3 rounded-[22px] bg-white p-3 text-left shadow-[0_18px_50px_rgba(23,60,49,0.22)]">
