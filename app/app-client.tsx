@@ -637,8 +637,8 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
         <div data-testid="box-details-cover" className="relative h-[260px] bg-[#eee7da]">
           <img src={box.image} alt="" className="h-full w-full object-cover object-center" />
           {box.isHalal && (
-            <span className="absolute right-4 top-4 grid h-16 w-16 place-items-center rounded-full bg-white/95 p-1.5 shadow-[0_8px_24px_rgba(23,60,49,0.22)]">
-              <img src="/images/halal-mark.svg" alt="Halal" className="h-full w-full" />
+            <span className="absolute right-4 top-4 grid h-16 w-16 place-items-center rounded-2xl bg-white p-1.5 shadow-[0_8px_24px_rgba(23,60,49,0.22)]">
+              <img src="/images/halal-sign.png" alt="Halal" className="h-full w-full object-contain" />
             </span>
           )}
           <span className="absolute -bottom-8 left-5 grid h-17 w-17 place-items-center overflow-hidden rounded-full border-4 border-[#fffdf8] bg-white shadow-[0_8px_24px_rgba(23,60,49,0.2)]">
