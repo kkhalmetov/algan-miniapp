@@ -83,8 +83,11 @@ describe('store details presentation', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Построить маршрут' }));
     const picker = screen.getByRole('dialog', { name: 'Выберите карту' });
-    expect(within(picker).getByRole('button', { name: /2GIS/ })).toBeInTheDocument();
-    expect(within(picker).getByRole('button', { name: /Яндекс Карты/ })).toBeInTheDocument();
+    expect(within(picker).queryByText('пр. Тауке хана, 47')).not.toBeInTheDocument();
+    expect(within(picker).queryByText('Маршрут будет построен от вашего местоположения.')).not.toBeInTheDocument();
+    expect(within(picker).getByAltText('2GIS logo')).toHaveAttribute('src', '/images/map-providers/2gis.jpg');
+    expect(within(picker).getByAltText('Яндекс Карты logo')).toHaveAttribute('src', '/images/map-providers/yandex-maps.jpg');
+    expect(within(picker).getByAltText('Google Maps logo')).toHaveAttribute('src', '/images/map-providers/google-maps.jpg');
     fireEvent.click(within(picker).getByRole('button', { name: /Google Maps/ }));
     expect(open).toHaveBeenCalledWith(expect.stringContaining('destination=42.3184%2C69.5907'), '_blank', 'noopener,noreferrer');
     open.mockRestore();

@@ -693,20 +693,20 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
       <footer className="shrink-0 border-t border-[#e3e7e2] bg-[#fffdf8]/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
         <button onClick={onBuy} disabled={box.quantity < 1} className="primary-button">{t('buy')}<ShoppingBag size={19} /></button>
       </footer>
-      {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} address={store.address} t={t} onClose={() => setRoutePickerOpen(false)} />}
+      {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
     </section>
   );
 }
 
-const routeProviderStyle: Record<RouteProvider, string> = {
-  '2gis': 'bg-[#79c843] text-white',
-  yandex: 'bg-[#ff4433] text-white',
-  google: 'bg-[#4285f4] text-white',
-  apple: 'bg-[#202124] text-white',
+const routeProviderLogo: Record<RouteProvider, string> = {
+  '2gis': '/images/map-providers/2gis.jpg',
+  yandex: '/images/map-providers/yandex-maps.jpg',
+  google: '/images/map-providers/google-maps.jpg',
+  apple: '/images/map-providers/apple-maps.jpg',
 };
 
-function RoutePicker({ lat, lng, address, t, onClose }: {
-  lat: number; lng: number; address: string; t: Translator; onClose: () => void;
+function RoutePicker({ lat, lng, t, onClose }: {
+  lat: number; lng: number; t: Translator; onClose: () => void;
 }) {
   const options = getRouteOptions(lat, lng);
   return (
@@ -715,13 +715,13 @@ function RoutePicker({ lat, lng, address, t, onClose }: {
       <section className="relative z-10 w-full rounded-t-[30px] bg-[#fffdf8] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-18px_60px_rgba(23,60,49,0.2)]">
         <div className="mx-auto h-1.5 w-10 rounded-full bg-[#d6ddd8]" />
         <div className="mt-4 flex items-start justify-between gap-3">
-          <div><h2 className="text-xl font-black tracking-[-0.03em]">{t('chooseMap')}</h2><p className="mt-1 text-xs leading-5 text-[#74817b]">{address}<br />{t('routeFromCurrentLocation')}</p></div>
+          <h2 className="pt-1 text-xl font-black tracking-[-0.03em]">{t('chooseMap')}</h2>
           <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('close')}><X size={18} /></button>
         </div>
         <div className="mt-4 space-y-2">
           {options.map((option) => (
             <button key={option.id} onClick={() => { openExternalLink(option.url); haptic('tap'); }} className="flex min-h-14 w-full items-center gap-3 rounded-2xl border border-[#e3e8e2] bg-white px-3.5 text-left">
-              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-xs font-black ${routeProviderStyle[option.id]}`}>{option.id === '2gis' ? '2Г' : option.label.charAt(0)}</span>
+              <img src={routeProviderLogo[option.id]} alt={`${option.label} logo`} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
               <span className="flex-1 text-sm font-black">{option.label}</span>
               <ChevronRight size={17} className="text-[#89958f]" />
             </button>
