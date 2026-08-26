@@ -26,9 +26,5 @@ describe('mock customer catalog', () => {
     expect(kk('nearby')).toBe('Қолжетімді мекемелер');
     expect(ru('orderRulesTitle')).toBe('Правила заказа, получения, отмены и возврата');
     expect(kk('orderRulesTitle')).toBe('Тапсырыс беру, алу, бас тарту және қайтару ережелері');
-    expect(ru('aboutAlgan')).toBe('О Algan');
-    expect(kk('aboutAlgan')).toBe('Algan туралы');
-    expect(ru('businessDetails')).toBe('ИП «ALGAN» | ИИН 030705500040');
-    expect(kk('businessDetails')).toBe('«ALGAN» ЖК | ЖСН 030705500040');
   });
 });

@@ -34,6 +34,7 @@ describe('profile information sections', () => {
 
     expect(screen.queryByRole('button', { name: 'Условия использования' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Политика конфиденциальности' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'О Algan' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Документы' }));
 
     expect(screen.getByRole('heading', { name: 'Документы' })).toBeInTheDocument();
@@ -49,16 +50,4 @@ describe('profile information sections', () => {
     expect(screen.getByRole('heading', { name: 'Документы' })).toBeInTheDocument();
   });
 
-  it('moves company details into the About Algan screen', () => {
-    openProfile();
-
-    expect(screen.queryByText('Версия 0.1.0')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'О Algan' }));
-
-    expect(screen.getByRole('heading', { name: 'О Algan' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Algan')).toBeInTheDocument();
-    expect(screen.getByText('Версия 0.1.0')).toBeInTheDocument();
-    expect(screen.getByText('© 2026 Algan. Все права защищены.')).toBeInTheDocument();
-    expect(screen.getByText('ИП «ALGAN» | ИИН 030705500040')).toBeInTheDocument();
-  });
 });

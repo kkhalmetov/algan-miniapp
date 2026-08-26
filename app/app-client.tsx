@@ -40,7 +40,7 @@ export default function AlganApp() {
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [legal, setLegal] = useState<LegalDocument | null>(null);
-  const [profilePanel, setProfilePanel] = useState<'documents' | 'about' | null>(null);
+  const [documentsOpen, setDocumentsOpen] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [checkoutBox, setCheckoutBox] = useState<Box | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -189,7 +189,7 @@ export default function AlganApp() {
           {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} openBox={openBox} />}
           {tab === 'profile' && (
             <ProfileTab t={t} locale={locale} setLocale={setLocale} profile={profile}
-              openDocuments={() => setProfilePanel('documents')} openAbout={() => setProfilePanel('about')}
+              openDocuments={() => setDocumentsOpen(true)}
               resetDemo={resetDemo} onEditPhone={() => setEditingPhone(true)} />
           )}
         </main>
@@ -214,8 +214,7 @@ export default function AlganApp() {
           haptic('success');
         }} />
       )}
-      {profilePanel === 'documents' && <DocumentsModal t={t} onClose={() => setProfilePanel(null)} />}
-      {profilePanel === 'about' && <AboutAlganModal t={t} onClose={() => setProfilePanel(null)} />}
+      {documentsOpen && <DocumentsModal t={t} onClose={() => setDocumentsOpen(false)} />}
       {legal && <LegalModal type={legal} t={t} onClose={() => setLegal(null)} />}
     </PhoneShell>
   );
@@ -497,9 +496,9 @@ function OrdersTab({ t, locale, orders, openBox }: {
   );
 }
 
-function ProfileTab({ t, locale, setLocale, profile, openDocuments, openAbout, resetDemo, onEditPhone }: {
+function ProfileTab({ t, locale, setLocale, profile, openDocuments, resetDemo, onEditPhone }: {
   t: Translator; locale: Locale; setLocale: (locale: Locale) => void; profile: UserProfile;
-  openDocuments: () => void; openAbout: () => void; resetDemo: () => void; onEditPhone: () => void;
+  openDocuments: () => void; resetDemo: () => void; onEditPhone: () => void;
 }) {
   return (
     <section className="pb-8">
@@ -515,7 +514,6 @@ function ProfileTab({ t, locale, setLocale, profile, openDocuments, openAbout, r
           <ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={profile.phone ? formatKazakhstanPhoneInput(profile.phone) : undefined} onClick={onEditPhone} />
           <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
-          <ProfileRow icon={<Info size={18} />} label={t('aboutAlgan')} onClick={openAbout} />
         </div>
         <button onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6 w-full rounded-2xl bg-[#fff0ea] px-4 py-4 text-sm font-black text-[#b44b2b]">{t('signOutDemo')}</button>
       </div>
@@ -728,25 +726,6 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
             ))}
           </div>
         )}
-      </div>
-    </Overlay>
-  );
-}
-
-function AboutAlganModal({ t, onClose }: { t: Translator; onClose: () => void }) {
-  return (
-    <Overlay onClose={onClose} full>
-      <div className="relative flex min-h-dvh flex-col bg-[#1f5c49] px-6 text-white sm:min-h-[780px]">
-        <h2 className="sr-only">{t('aboutAlgan')}</h2>
-        <button onClick={onClose} className="absolute right-5 top-[max(1.25rem,env(safe-area-inset-top))] z-10 grid h-10 w-10 place-items-center rounded-full bg-white/12" aria-label={t('close')}><X size={20} /></button>
-        <div className="flex flex-1 items-center justify-center py-20">
-          <AlganLogo light className="flex-col gap-3" markClassName="h-20 w-20" wordmarkClassName="h-9 w-[110px]" />
-        </div>
-        <div className="space-y-1 pb-[max(2rem,env(safe-area-inset-bottom))] text-center text-xs font-semibold leading-5 text-white/65">
-          <p>{t('version')}</p>
-          <p>{t('copyright')}</p>
-          <p>{t('businessDetails')}</p>
-        </div>
       </div>
     </Overlay>
   );
