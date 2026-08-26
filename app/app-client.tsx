@@ -3,7 +3,7 @@
 
 import {
   ArrowLeft, Check, ChevronRight, Heart, Home, Info, Languages, Map as MapIcon,
-  Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, Star, UserRound, X,
+  Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, Star, X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
@@ -172,7 +172,7 @@ export default function AlganApp() {
         <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
           {tab === 'home' && (
             <HomeTab
-              t={t} locale={locale} profileName={profile.firstName}
+              t={t} locale={locale} profile={profile} openProfile={() => { setTab('profile'); haptic('tap'); }}
               favoriteStoreIds={favoriteStoreIds} category={category} setCategory={setCategory}
               toggleFavorite={toggleFavorite} openBox={openBox}
             />
@@ -321,8 +321,8 @@ function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; set
   );
 }
 
-function HomeTab({ t, locale, profileName, favoriteStoreIds, category, setCategory, toggleFavorite, openBox }: {
-  t: Translator; locale: Locale; profileName: string; favoriteStoreIds: string[];
+function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, category, setCategory, toggleFavorite, openBox }: {
+  t: Translator; locale: Locale; profile: UserProfile; openProfile: () => void; favoriteStoreIds: string[];
   category: 'all' | 'bakery' | 'cafe' | 'market'; setCategory: (value: 'all' | 'bakery' | 'cafe' | 'market') => void;
   toggleFavorite: (id: string) => void; openBox: (box: Box) => void;
 }) {
@@ -330,7 +330,12 @@ function HomeTab({ t, locale, profileName, favoriteStoreIds, category, setCatego
   return (
     <>
       <header className="bg-[#1f5c49] px-6 pb-8 pt-[max(1.4rem,env(safe-area-inset-top))] text-white">
-        <div className="mt-2"><p className="text-sm text-white/70">{t('greeting')},</p><h1 className="mt-0.5 text-[30px] font-black tracking-[-0.045em]">{profileName}!</h1></div>
+        <div className="mt-2 flex items-center justify-between gap-4">
+          <div className="min-w-0"><p className="text-sm text-white/70">{t('greeting')},</p><h1 className="mt-0.5 truncate text-[30px] font-black tracking-[-0.045em]">{profile.firstName}!</h1></div>
+          <button type="button" onClick={openProfile} aria-label={t('profile')} className="shrink-0 rounded-full outline-none ring-white/70 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1f5c49]">
+            <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} compact />
+          </button>
+        </div>
       </header>
 
       <section className="bg-[#fffdf8] px-5 pt-6">
@@ -515,7 +520,7 @@ function ProfileTab({ t, locale, setLocale, profile, openLegal, resetDemo, onEdi
   );
 }
 
-function ProfileAvatar({ profile }: { profile: UserProfile }) {
+function ProfileAvatar({ profile, compact = false }: { profile: UserProfile; compact?: boolean }) {
   const [imageFailed, setImageFailed] = useState(false);
   const [reloadAttempt, setReloadAttempt] = useState(0);
   const initial = profile.firstName.trim().charAt(0).toUpperCase() || 'A';
@@ -529,7 +534,7 @@ function ProfileAvatar({ profile }: { profile: UserProfile }) {
   };
 
   return (
-    <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-[#d9ed9a] text-2xl font-black text-[#173c31]">
+    <div className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-[#d9ed9a] font-black text-[#173c31] ${compact ? 'h-12 w-12 text-lg' : 'h-16 w-16 text-2xl'}`}>
       {photoSource && !imageFailed
         ? <img src={photoSource} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={retryImage} />
         : initial}
@@ -577,11 +582,10 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
     { id: 'map', icon: <MapIcon size={21} />, label: 'map' },
     { id: 'favorites', icon: <Heart size={21} />, label: 'favorites' },
     { id: 'orders', icon: <ShoppingBag size={21} />, label: 'orders' },
-    { id: 'profile', icon: <UserRound size={21} />, label: 'profile' },
   ];
   return (
     <nav className="z-[800] shrink-0 border-t border-[#e3e7e2] bg-[#fffdf8]/95 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
-      <div className="grid grid-cols-5">
+      <div className="grid grid-cols-4">
         {items.map((item) => (
           <button key={item.id} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-black transition ${tab === item.id ? 'text-[#1f5c49]' : 'text-[#89958f]'}`}>
             <span className={`grid h-8 w-12 place-items-center rounded-full ${tab === item.id ? 'bg-[#dceab3]' : ''}`}>{item.icon}</span>{t(item.label)}

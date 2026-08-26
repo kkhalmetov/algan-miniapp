@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlganApp, { MINIMUM_SPLASH_MS } from '../app/app-client';
 import { useAppStore } from '../lib/store';
@@ -52,7 +52,9 @@ describe('orders tab', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
+    expect(within(screen.getByRole('navigation')).queryByRole('button', { name: 'Профиль' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Профиль' }));
+    expect(screen.getByRole('heading', { name: 'Kimal' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Заказы' })).not.toBeInTheDocument();
     expect(screen.queryByText('У вас пока нет заказов')).not.toBeInTheDocument();
   });
