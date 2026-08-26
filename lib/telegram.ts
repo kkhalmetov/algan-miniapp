@@ -10,6 +10,7 @@ type TelegramWebApp = {
   HapticFeedback?: { impactOccurred: (style: 'light' | 'medium' | 'heavy') => void; notificationOccurred: (type: 'success' | 'error' | 'warning') => void };
   setHeaderColor?: (color: string) => void;
   setBackgroundColor?: (color: string) => void;
+  openTelegramLink?: (url: string) => void;
 };
 
 declare global {
@@ -46,3 +47,12 @@ export const haptic = (kind: 'tap' | 'success' | 'error') => {
   if (kind === 'tap') feedback?.impactOccurred('light');
   else feedback?.notificationOccurred(kind);
 };
+
+export function openTelegramLink(url: string) {
+  const webApp = telegram();
+  if (webApp?.openTelegramLink) {
+    webApp.openTelegramLink(url);
+    return;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}

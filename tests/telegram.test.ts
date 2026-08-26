@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { telegramProfile } from '../lib/telegram';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { openTelegramLink, telegramProfile } from '../lib/telegram';
 
 describe('Telegram profile adapter', () => {
   afterEach(() => {
@@ -36,5 +36,30 @@ describe('Telegram profile adapter', () => {
 
   it('returns a browser fallback when Telegram data is unavailable', () => {
     expect(telegramProfile()).toEqual({ telegramId: undefined, firstName: '', lastName: '', photoUrl: '', locale: 'ru', isTelegram: false });
+  });
+});
+
+describe('Telegram links', () => {
+  it('uses the Mini App API when available', () => {
+    const openTelegramLinkMock = vi.fn();
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed', ready: vi.fn(), expand: vi.fn(), openTelegramLink: openTelegramLinkMock,
+      },
+    };
+
+    openTelegramLink('https://t.me/kkhalmetov');
+
+    expect(openTelegramLinkMock).toHaveBeenCalledWith('https://t.me/kkhalmetov');
+  });
+
+  it('falls back to a new browser tab outside Telegram', () => {
+    delete window.Telegram;
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+
+    openTelegramLink('https://t.me/kkhalmetov');
+
+    expect(open).toHaveBeenCalledWith('https://t.me/kkhalmetov', '_blank', 'noopener,noreferrer');
+    open.mockRestore();
   });
 });

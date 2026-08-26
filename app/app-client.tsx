@@ -2,8 +2,8 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  ArrowLeft, Check, ChevronRight, Heart, Home, Info, Languages, Map as MapIcon,
-  Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, Star, X,
+  ArrowLeft, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Heart, Home, Info, Languages, Mail, Map as MapIcon,
+  MessageCircle, Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, Star, X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
@@ -13,12 +13,13 @@ import { boxes, storeById, stores } from '@/lib/mock-data';
 import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phone';
 import { useAppStore } from '@/lib/store';
 import { getCopy, type CopyKey } from '@/lib/translations';
-import { haptic, prepareTelegram, telegramProfile } from '@/lib/telegram';
+import { haptic, openTelegramLink, prepareTelegram, telegramProfile } from '@/lib/telegram';
 import type { Box, Locale, Order, Tab, UserProfile } from '@/lib/types';
 
 const SHYMKENT = { lat: 42.3155, lng: 69.5869 };
 export const MINIMUM_SPLASH_MS = 900;
 const TELEGRAM_SYNC_DELAYS_MS = [0, 250, 750, 1500, 3000] as const;
+const SUPPORT_TELEGRAM_URL = 'https://t.me/kkhalmetov';
 type LegalDocument = 'terms' | 'privacy' | 'orderRules' | 'publicOffer';
 const LEGAL_TITLE_KEYS: Record<LegalDocument, CopyKey> = {
   terms: 'termsTitle', privacy: 'privacyTitle', orderRules: 'orderRulesTitle', publicOffer: 'publicOfferTitle',
@@ -41,6 +42,7 @@ export default function AlganApp() {
   const [privacy, setPrivacy] = useState(false);
   const [legal, setLegal] = useState<LegalDocument | null>(null);
   const [documentsOpen, setDocumentsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [checkoutBox, setCheckoutBox] = useState<Box | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -189,6 +191,7 @@ export default function AlganApp() {
           {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} openBox={openBox} />}
           {tab === 'profile' && (
             <ProfileTab t={t} locale={locale} setLocale={setLocale} profile={profile}
+              openHelp={() => setHelpOpen(true)}
               openDocuments={() => setDocumentsOpen(true)}
               resetDemo={resetDemo} onEditPhone={() => setEditingPhone(true)} />
           )}
@@ -215,6 +218,7 @@ export default function AlganApp() {
         }} />
       )}
       {documentsOpen && <DocumentsModal t={t} onClose={() => setDocumentsOpen(false)} />}
+      {helpOpen && <HelpModal t={t} onClose={() => setHelpOpen(false)} />}
       {legal && <LegalModal type={legal} t={t} onClose={() => setLegal(null)} />}
     </PhoneShell>
   );
@@ -496,9 +500,9 @@ function OrdersTab({ t, locale, orders, openBox }: {
   );
 }
 
-function ProfileTab({ t, locale, setLocale, profile, openDocuments, resetDemo, onEditPhone }: {
+function ProfileTab({ t, locale, setLocale, profile, openHelp, openDocuments, resetDemo, onEditPhone }: {
   t: Translator; locale: Locale; setLocale: (locale: Locale) => void; profile: UserProfile;
-  openDocuments: () => void; resetDemo: () => void; onEditPhone: () => void;
+  openHelp: () => void; openDocuments: () => void; resetDemo: () => void; onEditPhone: () => void;
 }) {
   return (
     <section className="pb-8">
@@ -513,6 +517,7 @@ function ProfileTab({ t, locale, setLocale, profile, openDocuments, resetDemo, o
         <div className="space-y-2">
           <ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={profile.phone ? formatKazakhstanPhoneInput(profile.phone) : undefined} onClick={onEditPhone} />
           <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
+          <ProfileRow icon={<CircleHelp size={18} />} label={t('support')} onClick={openHelp} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
         </div>
         <button onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6 w-full rounded-2xl bg-[#fff0ea] px-4 py-4 text-sm font-black text-[#b44b2b]">{t('signOutDemo')}</button>
@@ -724,6 +729,71 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
             {documents.map((document) => (
               <ProfileRow key={document.type} icon={document.icon} label={t(LEGAL_TITLE_KEYS[document.type])} onClick={() => setSelectedDocument(document.type)} />
             ))}
+          </div>
+        )}
+      </div>
+    </Overlay>
+  );
+}
+
+function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
+  const [view, setView] = useState<'menu' | 'faq' | 'contacts'>('menu');
+  const [openQuestion, setOpenQuestion] = useState<number | null>(null);
+  const faqItems: { question: CopyKey; answer: CopyKey }[] = [
+    { question: 'faqBuyQuestion', answer: 'faqBuyAnswer' },
+    { question: 'faqPickupQuestion', answer: 'faqPickupAnswer' },
+    { question: 'faqContentsQuestion', answer: 'faqContentsAnswer' },
+    { question: 'faqOrdersQuestion', answer: 'faqOrdersAnswer' },
+    { question: 'faqProblemQuestion', answer: 'faqProblemAnswer' },
+  ];
+  const title = view === 'faq' ? t('faq') : view === 'contacts' ? t('contacts') : t('support');
+
+  return (
+    <Overlay onClose={onClose}>
+      <div className="max-h-[82dvh] overflow-y-auto px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
+        <div className="sticky top-0 z-10 flex items-center gap-3 bg-[#fffdf8] pb-3">
+          {view !== 'menu' && (
+            <button onClick={() => setView('menu')} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('back')}><ArrowLeft size={18} /></button>
+          )}
+          <h2 className="min-w-0 flex-1 text-xl font-black">{title}</h2>
+          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('close')}><X size={18} /></button>
+        </div>
+
+        {view === 'menu' && (
+          <div className="mt-2 space-y-2">
+            <ProfileRow icon={<CircleHelp size={18} />} label={t('faq')} onClick={() => setView('faq')} />
+            <ProfileRow icon={<MessageCircle size={18} />} label={t('contactSupport')} value="@kkhalmetov" onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
+            <ProfileRow icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setView('contacts')} />
+          </div>
+        )}
+
+        {view === 'faq' && (
+          <div className="mt-2 space-y-2">
+            {faqItems.map((item, index) => {
+              const expanded = openQuestion === index;
+              return (
+                <div key={item.question} className="overflow-hidden rounded-2xl bg-[#f2f5f1]">
+                  <button type="button" aria-expanded={expanded} onClick={() => setOpenQuestion(expanded ? null : index)} className="flex w-full items-center gap-3 p-4 text-left">
+                    <span className="min-w-0 flex-1 text-sm font-black leading-5">{t(item.question)}</span>
+                    <ChevronDown size={18} className={`shrink-0 text-[#89958f] transition ${expanded ? 'rotate-180' : ''}`} />
+                  </button>
+                  {expanded && <p className="px-4 pb-4 text-sm leading-6 text-[#617169]">{t(item.answer)}</p>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {view === 'contacts' && (
+          <div className="mt-2 rounded-2xl bg-[#f2f5f1] p-5 text-sm">
+            <h3 className="text-lg font-black">{t('companyName')}</h3>
+            <p className="mt-1 font-bold text-[#617169]">{t('companyId')}</p>
+            <p className="mt-1 text-[#617169]">{t('companyCity')}</p>
+            <div className="mt-5 space-y-4">
+              <div><p className="text-xs font-black text-[#819088]">{t('addressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
+              <a href="mailto:algansupport@gmail.com" className="flex items-center gap-3 rounded-xl bg-white p-3 text-[#1f5c49]"><Mail size={18} className="shrink-0" /><span><span className="block text-xs text-[#819088]">{t('emailLabel')}</span><span className="mt-0.5 block font-bold">algansupport@gmail.com</span></span></a>
+              <a href="tel:+77059768000" className="flex items-center gap-3 rounded-xl bg-white p-3 text-[#1f5c49]"><Phone size={18} className="shrink-0" /><span><span className="block text-xs text-[#819088]">{t('contactPhoneLabel')}</span><span className="mt-0.5 block font-bold">+7 705 976 80 00</span></span></a>
+            </div>
           </div>
         )}
       </div>

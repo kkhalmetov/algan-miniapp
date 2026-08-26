@@ -24,6 +24,10 @@ describe('mock customer catalog', () => {
     expect(kk('orders')).toBe('Тапсырыстар');
     expect(ru('legal')).toBe('Правовая информация');
     expect(kk('legal')).toBe('Құқықтық ақпарат');
+    expect(ru('support')).toBe('Помощь и поддержка');
+    expect(kk('support')).toBe('Көмек және қолдау');
+    expect(ru('contacts')).toBe('Контакты');
+    expect(kk('contacts')).toBe('Байланыс деректері');
     expect(ru('nearby')).toBe('Доступные заведения');
     expect(kk('nearby')).toBe('Қолжетімді мекемелер');
     expect(ru('orderRulesTitle')).toBe('Правила заказа, получения, отмены и возврата');

@@ -50,4 +50,48 @@ describe('profile information sections', () => {
     expect(screen.getByRole('heading', { name: 'Правовая информация' })).toBeInTheDocument();
   });
 
+  it('opens help, FAQ answers and contact details', () => {
+    openProfile();
+
+    const language = screen.getByRole('button', { name: /Язык/ });
+    const support = screen.getByRole('button', { name: 'Помощь и поддержка' });
+    const legal = screen.getByRole('button', { name: 'Правовая информация' });
+    expect(language.compareDocumentPosition(support) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(support.compareDocumentPosition(legal) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    fireEvent.click(support);
+    expect(screen.getByRole('heading', { name: 'Помощь и поддержка' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'FAQ — Частые вопросы' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Связаться с поддержкой/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Контакты' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'FAQ — Частые вопросы' }));
+    const question = screen.getByRole('button', { name: 'Как купить бокс?' });
+    expect(question).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(question);
+    expect(question).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/После оплаты заказ появится/)).toBeInTheDocument();
+    fireEvent.click(question);
+    expect(screen.queryByText(/После оплаты заказ появится/)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Назад' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Контакты' }));
+    expect(screen.getByText('ИП «ALGAN»')).toBeInTheDocument();
+    expect(screen.getByText('ИИН: 030705500040')).toBeInTheDocument();
+    expect(screen.getByText(/Аль-Фарабийский район/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /algansupport@gmail.com/ })).toHaveAttribute('href', 'mailto:algansupport@gmail.com');
+    expect(screen.getByRole('link', { name: /\+7 705 976 80 00/ })).toHaveAttribute('href', 'tel:+77059768000');
+  });
+
+  it('shows localized help content in Kazakh', () => {
+    useAppStore.setState({ locale: 'kk', tab: 'profile' });
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Көмек және қолдау' }));
+    fireEvent.click(screen.getByRole('button', { name: 'FAQ — Жиі қойылатын сұрақтар' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Боксты қалай сатып алуға болады?' }));
+    expect(screen.getByText(/Төлемнен кейін тапсырыс/)).toBeInTheDocument();
+  });
+
 });
