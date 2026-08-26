@@ -38,6 +38,8 @@ describe('store details presentation', () => {
     stores.forEach((store) => {
       expect(screen.getByAltText(`${store.name} logo`)).toHaveAttribute('src', store.logo);
     });
+    expect(screen.getAllByAltText('Halal')).toHaveLength(4);
+    screen.getAllByAltText('Halal').forEach((badge) => expect(badge).toHaveAttribute('src', '/images/halal-sign.png'));
   });
 
   it('keeps navigation controls outside the scrolling cover and content', () => {

@@ -375,6 +375,11 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
       <button onClick={onOpen} className="relative block h-44 w-full overflow-hidden text-left">
         <img src={box.image} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
         <span className="absolute left-3 top-3 rounded-full bg-[#db6f4b] px-3 py-1.5 text-[11px] font-black text-white">−{discount}%</span>
+        {box.isHalal && (
+          <span className="absolute right-3 top-3 grid h-13 w-13 place-items-center rounded-xl bg-white p-1 shadow-[0_6px_18px_rgba(23,60,49,0.22)]">
+            <img src="/images/halal-sign.png" alt="Halal" className="h-full w-full object-contain" />
+          </span>
+        )}
         <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-white bg-white shadow-[0_6px_18px_rgba(23,60,49,0.22)]">
           <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
         </span>
