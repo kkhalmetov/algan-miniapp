@@ -2,19 +2,20 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  ArrowLeft, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Heart, Home, Info, Languages, Mail, Map as MapIcon,
-  Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, X,
+  AlertTriangle, ArrowLeft, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Heart, Home, Info, Languages, Mail, Map as MapIcon,
+  MapPin, Minus, PackageCheck, Phone, Plus, Route, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import { authenticateTelegram } from '@/lib/api';
+import { getRouteOptions, type RouteProvider } from '@/lib/maps';
 import { boxes, storeById, stores } from '@/lib/mock-data';
 import { createOrderId, formatOrderId } from '@/lib/order-id';
 import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phone';
 import { useAppStore } from '@/lib/store';
 import { getCopy, type CopyKey } from '@/lib/translations';
-import { haptic, openTelegramLink, prepareTelegram, telegramProfile } from '@/lib/telegram';
+import { haptic, openExternalLink, openTelegramLink, prepareTelegram, telegramProfile } from '@/lib/telegram';
 import type { Box, Locale, Order, Tab, UserProfile } from '@/lib/types';
 
 const SHYMKENT = { lat: 42.3155, lng: 69.5869 };
@@ -621,6 +622,7 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
 }) {
   const store = storeById(box.storeId);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
+  const [routePickerOpen, setRoutePickerOpen] = useState(false);
   return (
     <section className="absolute inset-0 z-[1000] flex h-full min-h-0 flex-col overflow-hidden bg-[#fffdf8]" role="dialog" aria-modal="true" aria-label={box.name}>
       <header data-testid="box-details-header" className="shrink-0 bg-[#1f5c49] px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
@@ -632,8 +634,13 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
       </header>
 
       <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <div className="relative h-[260px] bg-[#eee7da]">
+        <div data-testid="box-details-cover" className="relative h-[260px] bg-[#eee7da]">
           <img src={box.image} alt="" className="h-full w-full object-cover object-center" />
+          {box.isHalal && (
+            <span className="absolute right-4 top-4 grid h-16 w-16 place-items-center rounded-full bg-white/95 p-1.5 shadow-[0_8px_24px_rgba(23,60,49,0.22)]">
+              <img src="/images/halal-mark.svg" alt="Halal" className="h-full w-full" />
+            </span>
+          )}
           <span className="absolute -bottom-8 left-5 grid h-17 w-17 place-items-center overflow-hidden rounded-full border-4 border-[#fffdf8] bg-white shadow-[0_8px_24px_rgba(23,60,49,0.2)]">
             <img src={store.logo} alt={`${store.name} logo`} className="h-13 w-13 object-contain" />
           </span>
@@ -641,26 +648,82 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
         <div className="px-6 pb-6 pt-11">
           <p className="text-sm font-bold text-[#6c7a73]">{store.name}</p>
           <h1 className="mt-2 text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
-          <p className="mt-3 text-sm leading-6 text-[#5e7068]">{box.description}</p>
-          <div className="mt-5 flex items-center justify-between rounded-2xl bg-[#edf3db] p-4">
-            <div><p className="text-xs text-[#78857e] line-through">{formatPrice(box.originalPrice, locale)}</p><p className="text-2xl font-black text-[#1f5c49]">{formatPrice(box.salePrice, locale)}</p><span className="mt-2 inline-flex rounded-full bg-[#ffe9e1] px-2.5 py-1 text-[11px] font-black text-[#c85d3c]">−{discount}%</span></div>
-            <div className="text-right"><p className="text-xs font-bold text-[#68776f]">{t('pickup')}</p><p className="mt-1 text-sm font-black">{box.pickupFrom}–{box.pickupTo}</p></div>
+          <div className="mt-5 grid grid-cols-[1.08fr_.92fr] gap-3">
+            <div data-testid="box-price-card" className="rounded-[20px] bg-[#e9f1d5] p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#64766d]">{t('boxPrice')}</p>
+              <p className="mt-2 text-[25px] font-black tracking-[-0.04em] text-[#1f5c49]">{formatPrice(box.salePrice, locale)}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold text-[#7c8982] line-through">{formatPrice(box.originalPrice, locale)}</span>
+                <span className="rounded-full bg-[#db6f4b] px-2.5 py-1 text-[11px] font-black text-white">−{discount}%</span>
+              </div>
+            </div>
+            <div data-testid="box-pickup-card" className="flex flex-col rounded-[20px] border border-[#e3e8e2] bg-white p-4">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-[#f0f4ed] text-[#1f5c49]"><Clock3 size={18} /></span>
+              <p className="mt-3 text-[11px] font-black uppercase tracking-[0.08em] text-[#6c7972]">{t('pickup')}</p>
+              <p className="mt-1 whitespace-nowrap text-sm font-black text-[#173c31]">{box.pickupFrom}–{box.pickupTo}</p>
+            </div>
           </div>
           <h2 className="mt-6 text-lg font-black">{t('composition')}</h2>
           <p className="mt-2 text-sm leading-6 text-[#617169]">{t('surprise')}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {box.isHalal && <span className="rounded-full bg-[#e4f1dd] px-3 py-2 text-xs font-black text-[#34714b]">{t('halal')}</span>}
-            {box.allergens && <span className="rounded-full bg-[#fff0ea] px-3 py-2 text-xs font-bold text-[#a44c30]">{t('allergens')}: {box.allergens}</span>}
+          <div className="mt-4 rounded-[20px] border border-[#f2d6ca] bg-[#fff7f2] p-4">
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#ffe5da] text-[#c85d3c]"><AlertTriangle size={19} /></span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-black text-[#713b2c]">{box.allergens ? t('containsAllergens') : t('allergens')}</h3>
+                <p className="mt-1.5 text-sm leading-5 text-[#7b5549]">{box.allergens ?? t('allergensUnknown')}</p>
+              </div>
+            </div>
           </div>
-          <div className="mt-5 flex items-start gap-3 rounded-2xl bg-[#f2f4f1] p-4">
-            <Navigation size={19} className="mt-0.5 shrink-0 text-[#db6f4b]" /><div><p className="text-sm font-black">{store.address}</p><p className="mt-1 text-xs text-[#74817b]">{box.distanceKm} км</p></div>
+          <div className="mt-5 rounded-[20px] border border-[#dfe6df] bg-white p-4 shadow-[0_8px_24px_rgba(32,69,56,0.05)]">
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf3db] text-[#1f5c49]"><MapPin size={19} /></span>
+              <div className="min-w-0"><p className="text-xs font-bold text-[#74817b]">{t('addressLabel')}</p><p className="mt-1 text-sm font-black leading-5">{store.address}</p></div>
+            </div>
+            <button onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#e8efdd] px-4 text-sm font-black text-[#1f5c49]">
+              <Route size={18} />{t('buildRoute')}
+            </button>
           </div>
         </div>
       </div>
       <footer className="shrink-0 border-t border-[#e3e7e2] bg-[#fffdf8]/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
         <button onClick={onBuy} disabled={box.quantity < 1} className="primary-button">{t('buy')}<ShoppingBag size={19} /></button>
       </footer>
+      {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} address={store.address} t={t} onClose={() => setRoutePickerOpen(false)} />}
     </section>
+  );
+}
+
+const routeProviderStyle: Record<RouteProvider, string> = {
+  '2gis': 'bg-[#79c843] text-white',
+  yandex: 'bg-[#ff4433] text-white',
+  google: 'bg-[#4285f4] text-white',
+  apple: 'bg-[#202124] text-white',
+};
+
+function RoutePicker({ lat, lng, address, t, onClose }: {
+  lat: number; lng: number; address: string; t: Translator; onClose: () => void;
+}) {
+  const options = getRouteOptions(lat, lng);
+  return (
+    <div className="absolute inset-0 z-[1200] flex items-end bg-[#102b22]/45 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label={t('chooseMap')}>
+      <button onClick={onClose} className="absolute inset-0" aria-label={t('close')} />
+      <section className="relative z-10 w-full rounded-t-[30px] bg-[#fffdf8] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-18px_60px_rgba(23,60,49,0.2)]">
+        <div className="mx-auto h-1.5 w-10 rounded-full bg-[#d6ddd8]" />
+        <div className="mt-4 flex items-start justify-between gap-3">
+          <div><h2 className="text-xl font-black tracking-[-0.03em]">{t('chooseMap')}</h2><p className="mt-1 text-xs leading-5 text-[#74817b]">{address}<br />{t('routeFromCurrentLocation')}</p></div>
+          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('close')}><X size={18} /></button>
+        </div>
+        <div className="mt-4 space-y-2">
+          {options.map((option) => (
+            <button key={option.id} onClick={() => { openExternalLink(option.url); haptic('tap'); }} className="flex min-h-14 w-full items-center gap-3 rounded-2xl border border-[#e3e8e2] bg-white px-3.5 text-left">
+              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-xs font-black ${routeProviderStyle[option.id]}`}>{option.id === '2gis' ? '2Г' : option.label.charAt(0)}</span>
+              <span className="flex-1 text-sm font-black">{option.label}</span>
+              <ChevronRight size={17} className="text-[#89958f]" />
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
 

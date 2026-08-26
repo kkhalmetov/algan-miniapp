@@ -10,6 +10,7 @@ type TelegramWebApp = {
   HapticFeedback?: { impactOccurred: (style: 'light' | 'medium' | 'heavy') => void; notificationOccurred: (type: 'success' | 'error' | 'warning') => void };
   setHeaderColor?: (color: string) => void;
   setBackgroundColor?: (color: string) => void;
+  openLink?: (url: string, options?: { try_instant_view?: boolean }) => void;
   openTelegramLink?: (url: string) => void;
 };
 
@@ -52,6 +53,15 @@ export function openTelegramLink(url: string) {
   const webApp = telegram();
   if (webApp?.openTelegramLink) {
     webApp.openTelegramLink(url);
+    return;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+export function openExternalLink(url: string) {
+  const webApp = telegram();
+  if (webApp?.openLink) {
+    webApp.openLink(url);
     return;
   }
   window.open(url, '_blank', 'noopener,noreferrer');

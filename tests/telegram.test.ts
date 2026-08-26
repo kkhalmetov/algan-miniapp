@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { openTelegramLink, telegramProfile } from '../lib/telegram';
+import { openExternalLink, openTelegramLink, telegramProfile } from '../lib/telegram';
 
 describe('Telegram profile adapter', () => {
   afterEach(() => {
@@ -61,5 +61,18 @@ describe('Telegram links', () => {
 
     expect(open).toHaveBeenCalledWith('https://t.me/kkhalmetov', '_blank', 'noopener,noreferrer');
     open.mockRestore();
+  });
+
+  it('opens external map links through the Mini App API', () => {
+    const openLink = vi.fn();
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed', ready: vi.fn(), expand: vi.fn(), openLink,
+      },
+    };
+
+    openExternalLink('https://www.google.com/maps/dir/?api=1');
+
+    expect(openLink).toHaveBeenCalledWith('https://www.google.com/maps/dir/?api=1');
   });
 });
