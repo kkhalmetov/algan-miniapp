@@ -373,6 +373,9 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
       <button onClick={onOpen} className="relative block h-44 w-full overflow-hidden text-left">
         <img src={box.image} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
         <span className="absolute left-3 top-3 rounded-full bg-[#db6f4b] px-3 py-1.5 text-[11px] font-black text-white">−{discount}%</span>
+        <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-white bg-white shadow-[0_6px_18px_rgba(23,60,49,0.22)]">
+          <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
+        </span>
       </button>
       <div className="p-4">
         <div className="flex items-start gap-3">
@@ -629,7 +632,6 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
       <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <div className="relative h-[260px] bg-[#eee7da]">
           <img src={box.image} alt="" className="h-full w-full object-cover object-center" />
-          <span className="absolute bottom-4 right-5 rounded-full bg-[#db6f4b] px-3 py-1.5 text-xs font-black text-white">−{discount}% {t('discount')}</span>
           <span className="absolute -bottom-8 left-5 grid h-17 w-17 place-items-center overflow-hidden rounded-full border-4 border-[#fffdf8] bg-white shadow-[0_8px_24px_rgba(23,60,49,0.2)]">
             <img src={store.logo} alt={`${store.name} logo`} className="h-13 w-13 object-contain" />
           </span>
@@ -639,7 +641,7 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
           <h1 className="mt-2 text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
           <p className="mt-3 text-sm leading-6 text-[#5e7068]">{box.description}</p>
           <div className="mt-5 flex items-center justify-between rounded-2xl bg-[#edf3db] p-4">
-            <div><p className="text-xs text-[#78857e] line-through">{formatPrice(box.originalPrice, locale)}</p><p className="text-2xl font-black text-[#1f5c49]">{formatPrice(box.salePrice, locale)}</p></div>
+            <div><p className="text-xs text-[#78857e] line-through">{formatPrice(box.originalPrice, locale)}</p><p className="text-2xl font-black text-[#1f5c49]">{formatPrice(box.salePrice, locale)}</p><span className="mt-2 inline-flex rounded-full bg-[#ffe9e1] px-2.5 py-1 text-[11px] font-black text-[#c85d3c]">−{discount}%</span></div>
             <div className="text-right"><p className="text-xs font-bold text-[#68776f]">{t('pickup')}</p><p className="mt-1 text-sm font-black">{box.pickupFrom}–{box.pickupTo}</p></div>
           </div>
           <h2 className="mt-6 text-lg font-black">{t('composition')}</h2>

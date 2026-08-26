@@ -31,6 +31,15 @@ describe('store details presentation', () => {
     fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery Большой bakery box/ }));
   };
 
+  it('shows a store logo on every home card', () => {
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+
+    stores.forEach((store) => {
+      expect(screen.getByAltText(`${store.name} logo`)).toHaveAttribute('src', store.logo);
+    });
+  });
+
   it('keeps navigation controls outside the scrolling cover and content', () => {
     openFirstBox();
 
@@ -40,6 +49,8 @@ describe('store details presentation', () => {
     expect(within(header).getByRole('button', { name: 'Назад' })).toBeInTheDocument();
     expect(within(header).getByRole('button', { name: 'Избранное' })).toHaveAttribute('aria-pressed', 'false');
     expect(within(scroll).getByAltText('Tatti Bakery logo')).toHaveAttribute('src', stores[0]!.logo);
+    expect(within(scroll).getByText('−60%')).toBeInTheDocument();
+    expect(within(scroll).queryByText(/−60% скидка/)).not.toBeInTheDocument();
     expect(header.compareDocumentPosition(scroll) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(scroll).queryByRole('button', { name: 'Купить бокс' })).not.toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Купить бокс' }).closest('footer')).toBeInTheDocument();
