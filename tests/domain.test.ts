@@ -22,6 +22,10 @@ describe('mock customer catalog', () => {
     expect(ru('buy')).not.toBe(kk('buy'));
     expect(ru('orders')).toBe('Заказы');
     expect(kk('orders')).toBe('Тапсырыстар');
+    expect(ru('orderRulesTitle')).toBe('Правила заказа, получения, отмены и возврата');
+    expect(kk('orderRulesTitle')).toBe('Тапсырыс беру, алу, бас тарту және қайтару ережелері');
+    expect(ru('aboutAlgan')).toBe('О Algan');
+    expect(kk('aboutAlgan')).toBe('Algan туралы');
     expect(ru('businessDetails')).toBe('ИП «ALGAN» | ИИН 030705500040');
     expect(kk('businessDetails')).toBe('«ALGAN» ЖК | ЖСН 030705500040');
   });

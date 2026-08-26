@@ -19,6 +19,10 @@ import type { Box, Locale, Order, Tab, UserProfile } from '@/lib/types';
 const SHYMKENT = { lat: 42.3155, lng: 69.5869 };
 export const MINIMUM_SPLASH_MS = 900;
 const TELEGRAM_SYNC_DELAYS_MS = [0, 250, 750, 1500, 3000] as const;
+type LegalDocument = 'terms' | 'privacy' | 'orderRules' | 'publicOffer';
+const LEGAL_TITLE_KEYS: Record<LegalDocument, CopyKey> = {
+  terms: 'termsTitle', privacy: 'privacyTitle', orderRules: 'orderRulesTitle', publicOffer: 'publicOfferTitle',
+};
 
 export const avatarRetryUrl = (url: string, attempt: number) =>
   `${url}${url.includes('?') ? '&' : '?'}algan_avatar_retry=${attempt}`;
@@ -35,7 +39,8 @@ export default function AlganApp() {
   const [phone, setPhone] = useState('+7');
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
-  const [legal, setLegal] = useState<'terms' | 'privacy' | null>(null);
+  const [legal, setLegal] = useState<LegalDocument | null>(null);
+  const [profilePanel, setProfilePanel] = useState<'documents' | 'about' | null>(null);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [checkoutBox, setCheckoutBox] = useState<Box | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -184,7 +189,8 @@ export default function AlganApp() {
           {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} openBox={openBox} />}
           {tab === 'profile' && (
             <ProfileTab t={t} locale={locale} setLocale={setLocale} profile={profile}
-              openLegal={setLegal} resetDemo={resetDemo} onEditPhone={() => setEditingPhone(true)} />
+              openDocuments={() => setProfilePanel('documents')} openAbout={() => setProfilePanel('about')}
+              resetDemo={resetDemo} onEditPhone={() => setEditingPhone(true)} />
           )}
         </main>
         <BottomNav tab={tab} setTab={setTab} t={t} />
@@ -208,6 +214,8 @@ export default function AlganApp() {
           haptic('success');
         }} />
       )}
+      {profilePanel === 'documents' && <DocumentsModal t={t} onClose={() => setProfilePanel(null)} />}
+      {profilePanel === 'about' && <AboutAlganModal t={t} onClose={() => setProfilePanel(null)} />}
       {legal && <LegalModal type={legal} t={t} onClose={() => setLegal(null)} />}
     </PhoneShell>
   );
@@ -489,9 +497,9 @@ function OrdersTab({ t, locale, orders, openBox }: {
   );
 }
 
-function ProfileTab({ t, locale, setLocale, profile, openLegal, resetDemo, onEditPhone }: {
+function ProfileTab({ t, locale, setLocale, profile, openDocuments, openAbout, resetDemo, onEditPhone }: {
   t: Translator; locale: Locale; setLocale: (locale: Locale) => void; profile: UserProfile;
-  openLegal: (type: 'terms' | 'privacy') => void; resetDemo: () => void; onEditPhone: () => void;
+  openDocuments: () => void; openAbout: () => void; resetDemo: () => void; onEditPhone: () => void;
 }) {
   return (
     <section className="pb-8">
@@ -506,15 +514,10 @@ function ProfileTab({ t, locale, setLocale, profile, openLegal, resetDemo, onEdi
         <div className="space-y-2">
           <ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={profile.phone ? formatKazakhstanPhoneInput(profile.phone) : undefined} onClick={onEditPhone} />
           <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
-          <ProfileRow icon={<Info size={18} />} label={t('termsTitle')} onClick={() => openLegal('terms')} />
-          <ProfileRow icon={<PackageCheck size={18} />} label={t('privacyTitle')} onClick={() => openLegal('privacy')} />
+          <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
+          <ProfileRow icon={<Info size={18} />} label={t('aboutAlgan')} onClick={openAbout} />
         </div>
         <button onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6 w-full rounded-2xl bg-[#fff0ea] px-4 py-4 text-sm font-black text-[#b44b2b]">{t('signOutDemo')}</button>
-        <div className="mt-6 space-y-1 text-center text-[11px] font-semibold leading-5 text-[#98a29d]">
-          <p>{t('version')}</p>
-          <p>{t('copyright')}</p>
-          <p>{t('businessDetails')}</p>
-        </div>
       </div>
     </section>
   );
@@ -694,12 +697,71 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
   );
 }
 
-function LegalModal({ type, t, onClose }: { type: 'terms' | 'privacy'; t: Translator; onClose: () => void }) {
+function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) {
+  const [selectedDocument, setSelectedDocument] = useState<LegalDocument | null>(null);
+  const documents: { type: LegalDocument; icon: React.ReactNode }[] = [
+    { type: 'terms', icon: <Info size={18} /> },
+    { type: 'privacy', icon: <PackageCheck size={18} /> },
+    { type: 'orderRules', icon: <ShoppingBag size={18} /> },
+    { type: 'publicOffer', icon: <Check size={18} /> },
+  ];
+
   return (
     <Overlay onClose={onClose}>
       <div className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
-        <div className="flex items-center justify-between"><h2 className="text-xl font-black">{type === 'terms' ? t('termsTitle') : t('privacyTitle')}</h2><button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-[#edf1ed]"><X size={18} /></button></div>
-        <div className="mt-5 rounded-2xl bg-[#fff3c9] p-4 text-sm leading-6 text-[#6f5b1e]"><Info size={20} className="mb-3" />{t('placeholderLegal')}</div>
+        <div className="flex items-center gap-3">
+          {selectedDocument && (
+            <button onClick={() => setSelectedDocument(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('back')}><ArrowLeft size={18} /></button>
+          )}
+          <h2 className="min-w-0 flex-1 text-xl font-black">{selectedDocument ? t(LEGAL_TITLE_KEYS[selectedDocument]) : t('legal')}</h2>
+          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('close')}><X size={18} /></button>
+        </div>
+        {selectedDocument ? (
+          <>
+            <LegalDocumentNotice t={t} />
+            <button onClick={() => setSelectedDocument(null)} className="primary-button mt-5">{t('back')}</button>
+          </>
+        ) : (
+          <div className="mt-5 space-y-2">
+            {documents.map((document) => (
+              <ProfileRow key={document.type} icon={document.icon} label={t(LEGAL_TITLE_KEYS[document.type])} onClick={() => setSelectedDocument(document.type)} />
+            ))}
+          </div>
+        )}
+      </div>
+    </Overlay>
+  );
+}
+
+function AboutAlganModal({ t, onClose }: { t: Translator; onClose: () => void }) {
+  return (
+    <Overlay onClose={onClose} full>
+      <div className="relative flex min-h-dvh flex-col bg-[#1f5c49] px-6 text-white sm:min-h-[780px]">
+        <h2 className="sr-only">{t('aboutAlgan')}</h2>
+        <button onClick={onClose} className="absolute right-5 top-[max(1.25rem,env(safe-area-inset-top))] z-10 grid h-10 w-10 place-items-center rounded-full bg-white/12" aria-label={t('close')}><X size={20} /></button>
+        <div className="flex flex-1 items-center justify-center py-20">
+          <AlganLogo light className="flex-col gap-3" markClassName="h-20 w-20" wordmarkClassName="h-9 w-[110px]" />
+        </div>
+        <div className="space-y-1 pb-[max(2rem,env(safe-area-inset-bottom))] text-center text-xs font-semibold leading-5 text-white/65">
+          <p>{t('version')}</p>
+          <p>{t('copyright')}</p>
+          <p>{t('businessDetails')}</p>
+        </div>
+      </div>
+    </Overlay>
+  );
+}
+
+function LegalDocumentNotice({ t }: { t: Translator }) {
+  return <div className="mt-5 rounded-2xl bg-[#fff3c9] p-4 text-sm leading-6 text-[#6f5b1e]"><Info size={20} className="mb-3" />{t('placeholderLegal')}</div>;
+}
+
+function LegalModal({ type, t, onClose }: { type: LegalDocument; t: Translator; onClose: () => void }) {
+  return (
+    <Overlay onClose={onClose}>
+      <div className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
+        <div className="flex items-center justify-between gap-4"><h2 className="text-xl font-black">{t(LEGAL_TITLE_KEYS[type])}</h2><button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('close')}><X size={18} /></button></div>
+        <LegalDocumentNotice t={t} />
         <button onClick={onClose} className="primary-button mt-5">{t('back')}</button>
       </div>
     </Overlay>
