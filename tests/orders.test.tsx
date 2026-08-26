@@ -40,16 +40,16 @@ describe('orders tab', () => {
     expect(screen.getByRole('heading', { name: 'Заказы' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Активные' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Большой bakery box')).toBeInTheDocument();
-    expect(screen.getByText('ID заказа: 12345678')).toBeInTheDocument();
+    expect(screen.getByText('Номер заказа: 12345678')).toBeInTheDocument();
     expect(screen.queryByText('Кофе & булочки')).not.toBeInTheDocument();
-    expect(screen.queryByText('ID заказа: 87654321')).not.toBeInTheDocument();
+    expect(screen.queryByText('Номер заказа: 87654321')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Прошедшие' }));
     expect(screen.getByRole('button', { name: 'Прошедшие' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Кофе & булочки')).toBeInTheDocument();
-    expect(screen.getByText('ID заказа: 87654321')).toBeInTheDocument();
+    expect(screen.getByText('Номер заказа: 87654321')).toBeInTheDocument();
     expect(screen.queryByText('Большой bakery box')).not.toBeInTheDocument();
-    expect(screen.queryByText('ID заказа: 12345678')).not.toBeInTheDocument();
+    expect(screen.queryByText('Номер заказа: 12345678')).not.toBeInTheDocument();
   });
 
   it('does not show the orders block in profile', () => {
