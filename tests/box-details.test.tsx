@@ -39,7 +39,7 @@ describe('store details presentation', () => {
       expect(screen.getByAltText(`${store.name} logo`)).toHaveAttribute('src', store.logo);
     });
     expect(screen.getAllByAltText('Halal')).toHaveLength(4);
-    screen.getAllByAltText('Halal').forEach((badge) => expect(badge).toHaveAttribute('src', '/images/halal-sign.png'));
+    screen.getAllByAltText('Halal').forEach((badge) => expect(badge).toHaveAttribute('src', '/images/halal-logo.svg'));
   });
 
   it('keeps navigation controls outside the scrolling cover and content', () => {
@@ -52,7 +52,7 @@ describe('store details presentation', () => {
     expect(within(header).getByRole('button', { name: 'Назад' })).toBeInTheDocument();
     expect(within(header).getByRole('button', { name: 'Избранное' })).toHaveAttribute('aria-pressed', 'false');
     expect(within(scroll).getByAltText('Tatti Bakery logo')).toHaveAttribute('src', stores[0]!.logo);
-    expect(within(cover).getByAltText('Halal')).toHaveAttribute('src', '/images/halal-sign.png');
+    expect(within(cover).getByAltText('Halal')).toHaveAttribute('src', '/images/halal-logo.svg');
     expect(within(scroll).queryByText('Свежая выпечка дня: круассаны, слойки и хлеб. Точный состав станет сюрпризом.')).not.toBeInTheDocument();
     expect(screen.queryByText(/4\.9/)).not.toBeInTheDocument();
     expect(within(within(scroll).getByTestId('box-price-card')).getByText('−60%')).toBeInTheDocument();

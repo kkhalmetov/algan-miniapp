@@ -377,7 +377,7 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
         <span className="absolute left-3 top-3 rounded-full bg-[#db6f4b] px-3 py-1.5 text-[11px] font-black text-white">−{discount}%</span>
         {box.isHalal && (
           <span className="absolute right-3 top-3 grid h-13 w-13 place-items-center rounded-xl bg-white p-1 shadow-[0_6px_18px_rgba(23,60,49,0.22)]">
-            <img src="/images/halal-sign.png" alt="Halal" className="h-full w-full object-contain" />
+            <img src="/images/halal-logo.svg" alt="Halal" className="h-full w-full object-contain" />
           </span>
         )}
         <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-white bg-white shadow-[0_6px_18px_rgba(23,60,49,0.22)]">
@@ -643,7 +643,7 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
           <img src={box.image} alt="" className="h-full w-full object-cover object-center" />
           {box.isHalal && (
             <span className="absolute right-4 top-4 grid h-16 w-16 place-items-center rounded-2xl bg-white p-1.5 shadow-[0_8px_24px_rgba(23,60,49,0.22)]">
-              <img src="/images/halal-sign.png" alt="Halal" className="h-full w-full object-contain" />
+              <img src="/images/halal-logo.svg" alt="Halal" className="h-full w-full object-contain" />
             </span>
           )}
           <span className="absolute -bottom-8 left-5 grid h-17 w-17 place-items-center overflow-hidden rounded-full border-4 border-[#fffdf8] bg-white shadow-[0_8px_24px_rgba(23,60,49,0.2)]">
