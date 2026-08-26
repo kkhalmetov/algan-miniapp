@@ -3,7 +3,7 @@
 
 import {
   ArrowLeft, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Heart, Home, Info, Languages, Mail, Map as MapIcon,
-  Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, Star, X,
+  Minus, Navigation, PackageCheck, Phone, Plus, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
@@ -380,7 +380,7 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
       <div className="p-4">
         <div className="flex items-start gap-3">
           <button onClick={onOpen} className="min-w-0 flex-1 text-left">
-            <p className="flex items-center gap-1 text-xs font-bold text-[#718078]"><Star size={13} fill="#f5b968" strokeWidth={0} />{store.rating} · {store.name}</p>
+            <p className="text-xs font-bold text-[#718078]">{store.name}</p>
             <h3 className="mt-1 truncate text-lg font-black tracking-[-0.03em]">{box.name}</h3>
           </button>
           <button onClick={toggleFavorite} aria-label={t('favorites')} className={`grid h-10 w-10 place-items-center rounded-full ${favorite ? 'bg-[#ffe9e1] text-[#db6f4b]' : 'bg-[#f1f3ef] text-[#65766e]'}`}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></button>
@@ -637,7 +637,7 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
           </span>
         </div>
         <div className="px-6 pb-6 pt-11">
-          <p className="flex items-center gap-1 text-sm font-bold text-[#6c7a73]"><Star size={15} fill="#f5b968" strokeWidth={0} />{store.rating} · {store.name}</p>
+          <p className="text-sm font-bold text-[#6c7a73]">{store.name}</p>
           <h1 className="mt-2 text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
           <p className="mt-3 text-sm leading-6 text-[#5e7068]">{box.description}</p>
           <div className="mt-5 flex items-center justify-between rounded-2xl bg-[#edf3db] p-4">

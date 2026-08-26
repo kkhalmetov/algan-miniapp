@@ -49,6 +49,7 @@ describe('store details presentation', () => {
     expect(within(header).getByRole('button', { name: 'Назад' })).toBeInTheDocument();
     expect(within(header).getByRole('button', { name: 'Избранное' })).toHaveAttribute('aria-pressed', 'false');
     expect(within(scroll).getByAltText('Tatti Bakery logo')).toHaveAttribute('src', stores[0]!.logo);
+    expect(screen.queryByText(/4\.9/)).not.toBeInTheDocument();
     expect(within(scroll).getByText('−60%')).toBeInTheDocument();
     expect(within(scroll).queryByText(/−60% скидка/)).not.toBeInTheDocument();
     expect(header.compareDocumentPosition(scroll) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
