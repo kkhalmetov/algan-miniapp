@@ -10,6 +10,7 @@ import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import { authenticateTelegram } from '@/lib/api';
 import { boxes, storeById, stores } from '@/lib/mock-data';
+import { createOrderId, formatOrderId } from '@/lib/order-id';
 import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phone';
 import { useAppStore } from '@/lib/store';
 import { getCopy, type CopyKey } from '@/lib/translations';
@@ -145,7 +146,7 @@ export default function AlganApp() {
   const pay = () => {
     if (!checkoutBox) return;
     const order: Order = {
-      id: `order-${Date.now()}`,
+      id: createOrderId(orders.map((order) => order.id)),
       boxId: checkoutBox.id,
       quantity,
       total: checkoutBox.salePrice * quantity,
@@ -481,7 +482,7 @@ function OrdersTab({ t, locale, orders, openBox }: {
                   <span className="min-w-0 flex-1 py-0.5">
                     <span className="block truncate text-xs font-bold text-[#74817b]">{store.name}</span>
                     <span className="mt-1 block truncate text-base font-black">{box.name}</span>
-                    <span className="mt-1 block truncate text-[11px] font-semibold text-[#8a9690]">{t('orderId')}: {order.id}</span>
+                    <span className="mt-1 block truncate text-[11px] font-semibold text-[#8a9690]">{t('orderId')}: {formatOrderId(order.id)}</span>
                     <span className="mt-2 flex items-center justify-between gap-3 text-xs text-[#66756e]">
                       <span>{t('quantity')}: {order.quantity}</span>
                       <b className="text-sm text-[#1f5c49]">{formatPrice(order.total, locale)}</b>

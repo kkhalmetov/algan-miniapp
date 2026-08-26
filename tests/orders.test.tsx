@@ -16,11 +16,11 @@ describe('orders tab', () => {
       favoriteStoreIds: [],
       orders: [
         {
-          id: 'active-order', boxId: 'bakery-surprise', quantity: 1, total: 2490,
+          id: '12345678', boxId: 'bakery-surprise', quantity: 1, total: 2490,
           pickupCode: '1234', createdAt: '2026-08-25T10:00:00.000Z', status: 'paid',
         },
         {
-          id: 'past-order', boxId: 'coffee-pair', quantity: 2, total: 2980,
+          id: '87654321', boxId: 'coffee-pair', quantity: 2, total: 2980,
           pickupCode: '5678', createdAt: '2026-08-20T10:00:00.000Z', status: 'collected',
         },
       ],
@@ -40,16 +40,16 @@ describe('orders tab', () => {
     expect(screen.getByRole('heading', { name: 'Заказы' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Активные' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Большой bakery box')).toBeInTheDocument();
-    expect(screen.getByText('ID заказа: active-order')).toBeInTheDocument();
+    expect(screen.getByText('ID заказа: 12345678')).toBeInTheDocument();
     expect(screen.queryByText('Кофе & булочки')).not.toBeInTheDocument();
-    expect(screen.queryByText('ID заказа: past-order')).not.toBeInTheDocument();
+    expect(screen.queryByText('ID заказа: 87654321')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Прошедшие' }));
     expect(screen.getByRole('button', { name: 'Прошедшие' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Кофе & булочки')).toBeInTheDocument();
-    expect(screen.getByText('ID заказа: past-order')).toBeInTheDocument();
+    expect(screen.getByText('ID заказа: 87654321')).toBeInTheDocument();
     expect(screen.queryByText('Большой bakery box')).not.toBeInTheDocument();
-    expect(screen.queryByText('ID заказа: active-order')).not.toBeInTheDocument();
+    expect(screen.queryByText('ID заказа: 12345678')).not.toBeInTheDocument();
   });
 
   it('does not show the orders block in profile', () => {
