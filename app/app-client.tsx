@@ -510,12 +510,12 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
                   </span>
                   <span className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
                     {view === 'active' ? (
-                      <span className="font-bold text-ink-secondary">{t('pickup')}: {pickupWindow}</span>
+                      <><span className="font-bold text-ink-secondary">{t('pickup')}: {pickupWindow}</span><span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total, locale)}</span></>
                     ) : (
                       <><span className="font-bold text-ink-muted">{orderDate}</span><ChevronRight size={17} className="text-ink-subtle" /></>
                     )}
                   </span>
-                  <span className="mt-3 block text-right text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>
+                  {view === 'past' && <span className="mt-3 block text-right text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>}
                 </button>
                 {view === 'active' && (
                   <button type="button" onClick={() => { setSelectedOrder(order); haptic('tap'); }} className="flex min-h-12 w-full items-center justify-center gap-2 border-t border-border px-4 text-sm font-black text-brand">
