@@ -76,6 +76,19 @@ describe('orders tab', () => {
     expect(within(dialog).queryByText('Tatti-box')).not.toBeInTheDocument();
   });
 
+  it('opens route providers from an active order card', () => {
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+    fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Построить маршрут' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Выберите карту' });
+    expect(within(dialog).getByText('2GIS')).toBeInTheDocument();
+    expect(within(dialog).getByText('Яндекс Карты')).toBeInTheDocument();
+    expect(within(dialog).getByText('Google Maps')).toBeInTheDocument();
+    expect(within(dialog).queryByTitle('QR-код')).not.toBeInTheDocument();
+  });
+
   it('does not show the orders block in profile', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));

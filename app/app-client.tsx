@@ -460,6 +460,7 @@ function orderPickupWindow(order: Order) {
 function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; orders: Order[] }) {
   const [view, setView] = useState<'active' | 'past'>('active');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [routeStore, setRouteStore] = useState<Store | null>(null);
   const visibleOrders = orders.filter((order) => view === 'active' ? order.status === 'paid' : order.status === 'collected');
   const emptyTitle = view === 'active' ? t('noActiveOrders') : t('noPastOrders');
   const emptyText = view === 'active' ? t('noActiveOrdersText') : t('noPastOrdersText');
@@ -494,32 +495,40 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
             }).format(new Date(order.createdAt));
             const pickupWindow = orderPickupWindow(order);
             return (
-              <button key={order.id} type="button" onClick={() => setSelectedOrder(order)} className="w-full rounded-card border border-border bg-panel p-4 text-left shadow-card">
-                <span className="flex gap-3">
-                  {store && <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-surface"><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></span>}
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-xs font-bold text-ink-muted">{store?.name}</span>
-                    <span className="mt-1 block truncate text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</span>
-                    <span className="mt-2 block space-y-1">{order.items.map((item) => {
-                      const box = boxes.find((candidate) => candidate.id === item.boxId);
-                      return <span key={item.boxId} className="flex items-center justify-between gap-3 text-xs"><span className="truncate font-bold">{box?.name}</span><span className="shrink-0 text-ink-muted">× {item.quantity}</span></span>;
-                    })}</span>
+              <article key={order.id} className="overflow-hidden rounded-card border border-border bg-panel shadow-card">
+                <button type="button" onClick={() => setSelectedOrder(order)} className="w-full p-4 text-left">
+                  <span className="flex gap-3">
+                    {store && <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-surface"><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></span>}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-xs font-bold text-ink-muted">{store?.name}</span>
+                      <span className="mt-1 block truncate text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</span>
+                      <span className="mt-2 block space-y-1">{order.items.map((item) => {
+                        const box = boxes.find((candidate) => candidate.id === item.boxId);
+                        return <span key={item.boxId} className="flex items-center justify-between gap-3 text-xs"><span className="truncate font-bold">{box?.name}</span><span className="shrink-0 text-ink-muted">× {item.quantity}</span></span>;
+                      })}</span>
+                    </span>
                   </span>
-                </span>
-                <span className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
-                  {view === 'active' ? (
-                    <><span className="font-bold text-ink-secondary">{t('pickup')}: {pickupWindow}</span><span className="rounded-full bg-brand-soft px-3 py-1.5 font-black text-brand">{t('showQr')}</span></>
-                  ) : (
-                    <><span className="font-bold text-ink-muted">{orderDate}</span><ChevronRight size={17} className="text-ink-subtle" /></>
-                  )}
-                </span>
-                <span className="mt-3 block text-right text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>
-              </button>
+                  <span className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
+                    {view === 'active' ? (
+                      <><span className="font-bold text-ink-secondary">{t('pickup')}: {pickupWindow}</span><span className="rounded-full bg-brand-soft px-3 py-1.5 font-black text-brand">{t('showQr')}</span></>
+                    ) : (
+                      <><span className="font-bold text-ink-muted">{orderDate}</span><ChevronRight size={17} className="text-ink-subtle" /></>
+                    )}
+                  </span>
+                  <span className="mt-3 block text-right text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>
+                </button>
+                {view === 'active' && store && (
+                  <button type="button" onClick={() => { setRouteStore(store); haptic('tap'); }} className="flex min-h-12 w-full items-center justify-center gap-2 border-t border-border px-4 text-sm font-black text-brand">
+                    <Route size={18} />{t('buildRoute')}
+                  </button>
+                )}
+              </article>
             );
           })}
         </div>
       )}
       {selectedOrder && <OrderDetails order={selectedOrder} locale={locale} t={t} onClose={() => setSelectedOrder(null)} />}
+      {routeStore && <RoutePicker lat={routeStore.lat} lng={routeStore.lng} t={t} onClose={() => setRouteStore(null)} />}
     </section>
   );
 }
