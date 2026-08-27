@@ -699,11 +699,10 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <article className={`overflow-hidden rounded-card border bg-panel shadow-card ${available > 0 ? 'border-border' : 'border-danger/25'}`}>
-      <button type="button" onClick={onOpen} className="flex w-full gap-3 p-3 text-left" aria-label={`${t('details')} ${box.name}`}>
-        <img src={box.image} alt="" className="h-24 w-24 shrink-0 rounded-2xl object-cover" />
-        <span className="min-w-0 flex-1 py-0.5">
-          <span className="flex items-start justify-between gap-2">
-            <span className="line-clamp-2 text-base font-black leading-5">{box.name}</span>
+      <button type="button" onClick={onOpen} className="flex w-full items-start gap-3 p-4 text-left" aria-label={`${t('details')} ${box.name}`}>
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="text-base font-black leading-5">{box.name}</span>
             {box.type === 'SURPRISE' && <SurpriseBadge className="shrink-0 px-2 py-1 text-[8px]" />}
           </span>
           <span className={`mt-2 flex items-center gap-1.5 text-[11px] font-black ${available > 0 ? 'text-accent-strong' : 'text-danger'}`}><Package size={14} />{formatBoxesLeft(available, locale)}</span>
@@ -712,6 +711,9 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
             <span className="text-[11px] text-ink-muted line-through">{formatPrice(box.originalPrice, locale)}</span>
             <span className="rounded-full bg-accent px-2 py-1 text-[10px] font-black text-white">−{discount}%</span>
           </span>
+        </span>
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-pale text-brand" aria-hidden="true">
+          <ChevronRight size={18} strokeWidth={2.5} />
         </span>
       </button>
       <div className="border-t border-border px-3 py-3">
