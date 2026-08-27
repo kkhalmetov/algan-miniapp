@@ -3,7 +3,7 @@
 
 import {
   AlertTriangle, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Heart, Home, Info, Languages, Mail, Map as MapIcon,
-  MapPin, Minus, Package, PackageCheck, Phone, Plus, Route, ShoppingBag, Sparkles, X,
+  MapPin, Minus, Package, PackageCheck, Phone, Plus, QrCode, Route, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -510,13 +510,18 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
                   </span>
                   <span className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
                     {view === 'active' ? (
-                      <><span className="font-bold text-ink-secondary">{t('pickup')}: {pickupWindow}</span><span className="rounded-full bg-brand-soft px-3 py-1.5 font-black text-brand">{t('showQr')}</span></>
+                      <span className="font-bold text-ink-secondary">{t('pickup')}: {pickupWindow}</span>
                     ) : (
                       <><span className="font-bold text-ink-muted">{orderDate}</span><ChevronRight size={17} className="text-ink-subtle" /></>
                     )}
                   </span>
                   <span className="mt-3 block text-right text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>
                 </button>
+                {view === 'active' && (
+                  <button type="button" onClick={() => { setSelectedOrder(order); haptic('tap'); }} className="flex min-h-12 w-full items-center justify-center gap-2 border-t border-border px-4 text-sm font-black text-brand">
+                    <QrCode size={18} />{t('showQr')}
+                  </button>
+                )}
                 {view === 'active' && store && (
                   <button type="button" onClick={() => { setRouteStore(store); haptic('tap'); }} className="flex min-h-12 w-full items-center justify-center gap-2 border-t border-border px-4 text-sm font-black text-brand">
                     <Route size={18} />{t('buildRoute')}

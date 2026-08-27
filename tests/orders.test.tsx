@@ -45,7 +45,7 @@ describe('orders tab', () => {
     expect(screen.getByText('Surprise Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 12345678')).toBeInTheDocument();
-    expect(screen.getByText('Получить заказ')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Получить заказ' })).toBeInTheDocument();
     expect(screen.queryByText('Кофе & булочки')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 87654321')).not.toBeInTheDocument();
 
@@ -61,7 +61,7 @@ describe('orders tab', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
-    fireEvent.click(screen.getByText('Номер заказа: 12345678').closest('button')!);
+    fireEvent.click(screen.getByRole('button', { name: 'Получить заказ' }));
 
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByTitle('QR-код')).toBeInTheDocument();
