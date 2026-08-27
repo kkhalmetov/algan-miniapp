@@ -2,6 +2,8 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { boxes } from './mock-data';
+import { normalizePickupCode } from './order-id';
 import type { CartItem, Locale, Order, Tab, UserLocation, UserProfile } from './types';
 
 interface AppState {
@@ -27,9 +29,40 @@ interface AppState {
   addOrder: (order: Order) => void;
   setCartItemQuantity: (boxId: string, storeId: string, quantity: number) => void;
   clearCart: () => void;
-  completePurchase: (orders: Order[]) => void;
+  completePurchase: (order: Order) => void;
   resetDemo: () => void;
 }
+
+type LegacyOrder = {
+  id: string; boxId: string; quantity: number; total: number; pickupCode: string;
+  createdAt: string; status: 'paid' | 'collected';
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === 'object';
+
+export const migratePersistedState = (persistedState: unknown) => {
+  if (!isRecord(persistedState) || !Array.isArray(persistedState.orders)) return persistedState;
+  const orders = persistedState.orders.flatMap((candidate): Order[] => {
+    if (!isRecord(candidate)) return [];
+    if (Array.isArray(candidate.items)) {
+      return [{ ...candidate, pickupCode: normalizePickupCode(String(candidate.pickupCode ?? '')) } as unknown as Order];
+    }
+    if (typeof candidate.boxId !== 'string') return [];
+    const legacy = candidate as unknown as LegacyOrder;
+    const box = boxes.find((item) => item.id === legacy.boxId);
+    const quantity = Math.max(1, Number(legacy.quantity) || 1);
+    return [{
+      id: legacy.id,
+      storeId: box?.storeId ?? '',
+      items: [{ boxId: legacy.boxId, quantity, unitPrice: legacy.total / quantity }],
+      total: legacy.total,
+      pickupCode: normalizePickupCode(legacy.pickupCode),
+      createdAt: legacy.createdAt,
+      status: legacy.status,
+    }];
+  });
+  return { ...persistedState, orders };
+};
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -79,13 +112,13 @@ export const useAppStore = create<AppState>()(
         return { cartItems: nextItems, cartStoreId: nextItems.length > 0 ? storeId : undefined };
       }),
       clearCart: () => set({ cartStoreId: undefined, cartItems: [] }),
-      completePurchase: (newOrders) => set((state) => {
+      completePurchase: (order) => set((state) => {
         const purchasedBoxQuantities = { ...state.purchasedBoxQuantities };
-        newOrders.forEach((order) => {
-          purchasedBoxQuantities[order.boxId] = (purchasedBoxQuantities[order.boxId] ?? 0) + order.quantity;
+        order.items.forEach((item) => {
+          purchasedBoxQuantities[item.boxId] = (purchasedBoxQuantities[item.boxId] ?? 0) + item.quantity;
         });
         return {
-          orders: [...newOrders, ...state.orders],
+          orders: [order, ...state.orders],
           purchasedBoxQuantities,
           cartStoreId: undefined,
           cartItems: [],
@@ -98,6 +131,8 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'algan-miniapp',
+      version: 2,
+      migrate: (persistedState) => migratePersistedState(persistedState) as never,
       partialize: ({ onboardingDone, profile, location, locale, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities }) => ({
         onboardingDone, profile, location, locale, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
       }),

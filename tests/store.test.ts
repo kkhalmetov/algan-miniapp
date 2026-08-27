@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { useAppStore } from '../lib/store';
+import { migratePersistedState, useAppStore } from '../lib/store';
 
 describe('local MVP state', () => {
   beforeEach(() => {
@@ -58,10 +58,10 @@ describe('local MVP state', () => {
 
   it('adds paid demo orders to the top of history', () => {
     useAppStore.getState().addOrder({
-      id: 'order-1', boxId: 'bakery-surprise', quantity: 1, total: 2490,
-      pickupCode: '1234', createdAt: '2026-08-25T00:00:00.000Z', status: 'paid',
+      id: 'order-1', storeId: 'tatti', items: [{ boxId: 'bakery-surprise', quantity: 1, unitPrice: 2490 }], total: 2490,
+      pickupCode: '123456', createdAt: '2026-08-25T00:00:00.000Z', status: 'paid',
     });
-    expect(useAppStore.getState().orders[0]?.pickupCode).toBe('1234');
+    expect(useAppStore.getState().orders[0]?.pickupCode).toBe('123456');
   });
 
   it('adds, changes and removes box quantities in the cart', () => {
@@ -81,14 +81,16 @@ describe('local MVP state', () => {
     expect(useAppStore.getState()).toMatchObject({ cartStoreId: undefined, cartItems: [] });
   });
 
-  it('creates separate orders and reduces the available mock stock', () => {
+  it('creates one grouped order and reduces the available mock stock', () => {
     useAppStore.getState().setCartItemQuantity('bakery-surprise', 'tatti', 2);
     useAppStore.getState().setCartItemQuantity('tatti-defined', 'tatti', 1);
-    useAppStore.getState().completePurchase([
-      { id: '12345678', boxId: 'bakery-surprise', quantity: 2, total: 4980, pickupCode: '1234', createdAt: '2026-08-25T00:00:00.000Z', status: 'paid' },
-      { id: '87654321', boxId: 'tatti-defined', quantity: 1, total: 2390, pickupCode: '5678', createdAt: '2026-08-25T00:00:00.000Z', status: 'paid' },
-    ]);
-    expect(useAppStore.getState().orders.map((order) => order.id)).toEqual(['12345678', '87654321']);
+    useAppStore.getState().completePurchase({
+      id: '12345678', storeId: 'tatti', items: [
+        { boxId: 'bakery-surprise', quantity: 2, unitPrice: 2490 },
+        { boxId: 'tatti-defined', quantity: 1, unitPrice: 2390 },
+      ], total: 7370, pickupCode: '123456', createdAt: '2026-08-25T00:00:00.000Z', status: 'paid',
+    });
+    expect(useAppStore.getState().orders.map((order) => order.id)).toEqual(['12345678']);
     expect(useAppStore.getState().purchasedBoxQuantities).toEqual({ 'bakery-surprise': 2, 'tatti-defined': 1 });
     expect(useAppStore.getState()).toMatchObject({ cartStoreId: undefined, cartItems: [] });
   });
@@ -100,5 +102,13 @@ describe('local MVP state', () => {
       cartStoreId: 'kofi',
       cartItems: [{ boxId: 'coffee', quantity: 1 }],
     });
+  });
+
+  it('migrates legacy one-box orders without dropping history', () => {
+    const migrated = migratePersistedState({
+      orders: [{ id: '12345678', boxId: 'bakery-surprise', quantity: 2, total: 4980, pickupCode: '1234', createdAt: '2026-08-25T00:00:00.000Z', status: 'paid' }],
+    }) as { orders: Array<{ storeId: string; pickupCode: string; items: unknown[] }> };
+    expect(migrated.orders[0]).toMatchObject({ storeId: 'tatti', pickupCode: '001234' });
+    expect(migrated.orders[0]?.items).toEqual([{ boxId: 'bakery-surprise', quantity: 2, unitPrice: 2490 }]);
   });
 });

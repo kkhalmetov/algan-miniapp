@@ -16,12 +16,15 @@ describe('orders tab', () => {
       favoriteStoreIds: [],
       orders: [
         {
-          id: '12345678', boxId: 'bakery-surprise', quantity: 1, total: 2490,
-          pickupCode: '1234', createdAt: '2026-08-25T10:00:00.000Z', status: 'paid',
+          id: '12345678', storeId: 'tatti', items: [
+            { boxId: 'bakery-surprise', quantity: 2, unitPrice: 2490 },
+            { boxId: 'tatti-defined', quantity: 1, unitPrice: 2390 },
+          ], total: 7370,
+          pickupCode: '123456', createdAt: '2026-08-25T10:00:00.000Z', status: 'paid',
         },
         {
-          id: '87654321', boxId: 'coffee-pair', quantity: 2, total: 2980,
-          pickupCode: '5678', createdAt: '2026-08-20T10:00:00.000Z', status: 'collected',
+          id: '87654321', storeId: 'kofi', items: [{ boxId: 'coffee-pair', quantity: 2, unitPrice: 1990 }], total: 3980,
+          pickupCode: '567890', createdAt: '2026-08-20T10:00:00.000Z', status: 'collected',
         },
       ],
     });
@@ -40,7 +43,9 @@ describe('orders tab', () => {
     expect(screen.getByRole('heading', { name: 'Заказы' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Активные' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Surprise Tatti-box')).toBeInTheDocument();
+    expect(screen.getByText('Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 12345678')).toBeInTheDocument();
+    expect(screen.getByText('Показать QR-код')).toBeInTheDocument();
     expect(screen.queryByText('Кофе & булочки')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 87654321')).not.toBeInTheDocument();
 
@@ -50,6 +55,18 @@ describe('orders tab', () => {
     expect(screen.getByText('Номер заказа: 87654321')).toBeInTheDocument();
     expect(screen.queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 12345678')).not.toBeInTheDocument();
+  });
+
+  it('opens one active order with QR, one code and all purchased boxes', () => {
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+    fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
+    fireEvent.click(screen.getByText('Номер заказа: 12345678').closest('button')!);
+
+    expect(screen.getByTitle('QR-код')).toBeInTheDocument();
+    expect(screen.getByText('123-456')).toBeInTheDocument();
+    expect(screen.getAllByText('Surprise Tatti-box').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Tatti-box').length).toBeGreaterThan(0);
   });
 
   it('does not show the orders block in profile', () => {

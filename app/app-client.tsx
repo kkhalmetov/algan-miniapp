@@ -5,6 +5,7 @@ import {
   AlertTriangle, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Heart, Home, Info, Languages, Mail, Map as MapIcon,
   MapPin, Minus, Package, PackageCheck, Phone, Plus, Route, ShoppingBag, Sparkles,
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
@@ -12,7 +13,7 @@ import { DangerButton, EmptyState, IconBadge, IconButton, ListRow, ModalHeader, 
 import { authenticateTelegram } from '@/lib/api';
 import { getRouteOptions, type RouteProvider } from '@/lib/maps';
 import { boxes, storeById, stores } from '@/lib/mock-data';
-import { createOrderId, formatOrderId } from '@/lib/order-id';
+import { createOrderId, createOrderQrPayload, createPickupCode, formatOrderId, formatPickupCode } from '@/lib/order-id';
 import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phone';
 import { formatBoxesLeft } from '@/lib/stock';
 import { useAppStore } from '@/lib/store';
@@ -54,7 +55,7 @@ export default function AlganApp() {
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
-  const [successOrders, setSuccessOrders] = useState<Order[] | null>(null);
+  const [successOrder, setSuccessOrder] = useState<Order | null>(null);
   const [editingPhone, setEditingPhone] = useState(false);
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
   const onboardingLocaleInitialized = useRef(false);
@@ -165,30 +166,29 @@ export default function AlganApp() {
   };
 
   const payCart = () => {
-    const existingIds = orders.map((order) => order.id);
-    const pickupCodes = new Set<string>();
     const createdAt = new Date().toISOString();
-    const newOrders = cartItems.flatMap((item) => {
+    const items = cartItems.flatMap((item) => {
       const box = boxes.find((candidate) => candidate.id === item.boxId);
       if (!box) return [];
       const quantity = Math.min(item.quantity, availableQuantity(box, purchasedBoxQuantities));
       if (quantity < 1) return [];
-      const id = createOrderId(existingIds);
-      existingIds.push(id);
-      let pickupCode = '';
-      do pickupCode = String(Math.floor(1000 + Math.random() * 9000)); while (pickupCodes.has(pickupCode));
-      pickupCodes.add(pickupCode);
-      return [{
-        id, boxId: box.id, quantity, total: box.salePrice * quantity,
-        pickupCode, createdAt, status: 'paid' as const,
-      }];
+      return [{ boxId: box.id, quantity, unitPrice: box.salePrice }];
     });
-    if (newOrders.length === 0) return;
-    completePurchase(newOrders);
+    if (items.length === 0) return;
+    const order: Order = {
+      id: createOrderId(orders.map((item) => item.id)),
+      storeId: cartStoreId ?? boxes.find((box) => box.id === items[0]?.boxId)?.storeId ?? '',
+      items,
+      total: items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
+      pickupCode: createPickupCode(orders.map((item) => item.pickupCode)),
+      createdAt,
+      status: 'paid',
+    };
+    completePurchase(order);
     setCartOpen(false);
     setSelectedBox(null);
     setSelectedStoreId(null);
-    setSuccessOrders(newOrders);
+    setSuccessOrder(order);
     haptic('success');
   };
 
@@ -220,7 +220,7 @@ export default function AlganApp() {
           {tab === 'favorites' && (
             <FavoritesTab t={t} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openStore={openStore} />
           )}
-          {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} openBox={openBox} />}
+          {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} />}
           {tab === 'profile' && (
             <ProfileTab t={t} locale={locale} setLocale={setLocale} profile={profile}
               openHelp={() => setHelpOpen(true)}
@@ -248,8 +248,8 @@ export default function AlganApp() {
         <CartSheet items={cartItems} purchasedBoxQuantities={purchasedBoxQuantities} locale={locale} t={t}
           onChangeQuantity={changeCartQuantity} onClose={() => setCartOpen(false)} onPay={payCart} />
       )}
-      {successOrders && (
-        <Success orders={successOrders} t={t} onDone={() => { setSuccessOrders(null); setTab('orders'); }} />
+      {successOrder && (
+        <Success order={successOrder} locale={locale} t={t} onDone={() => { setSuccessOrder(null); setTab('orders'); }} />
       )}
       {editingPhone && (
         <PhoneEditor currentPhone={profile.phone} t={t} onClose={() => setEditingPhone(false)} onSave={(value) => {
@@ -447,10 +447,19 @@ function FavoritesTab({ t, favoriteStoreIds, toggleFavorite, openStore }: { t: T
   );
 }
 
-function OrdersTab({ t, locale, orders, openBox }: {
-  t: Translator; locale: Locale; orders: Order[]; openBox: (box: Box) => void;
-}) {
+function orderPickupWindow(order: Order) {
+  const orderBoxes = order.items.flatMap((item) => {
+    const box = boxes.find((candidate) => candidate.id === item.boxId);
+    return box ? [box] : [];
+  });
+  const from = orderBoxes.map((box) => box.pickupFrom).sort()[0];
+  const to = orderBoxes.map((box) => box.pickupTo).sort().at(-1);
+  return from && to ? `${from}–${to}` : undefined;
+}
+
+function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; orders: Order[] }) {
   const [view, setView] = useState<'active' | 'past'>('active');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const visibleOrders = orders.filter((order) => view === 'active' ? order.status === 'paid' : order.status === 'collected');
   const emptyTitle = view === 'active' ? t('noActiveOrders') : t('noPastOrders');
   const emptyText = view === 'active' ? t('noActiveOrdersText') : t('noPastOrdersText');
@@ -479,39 +488,99 @@ function OrdersTab({ t, locale, orders, openBox }: {
       ) : (
         <div className="mt-5 space-y-3">
           {visibleOrders.map((order) => {
-            const box = boxes.find((item) => item.id === order.boxId);
-            if (!box) return null;
-            const store = storeById(box.storeId);
+            const store = stores.find((item) => item.id === order.storeId);
             const orderDate = new Intl.DateTimeFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ', {
               day: 'numeric', month: 'long', year: 'numeric',
             }).format(new Date(order.createdAt));
+            const pickupWindow = orderPickupWindow(order);
             return (
-              <button key={order.id} type="button" onClick={() => openBox(box)} className="w-full rounded-card border border-border bg-panel p-3 text-left shadow-card">
+              <button key={order.id} type="button" onClick={() => setSelectedOrder(order)} className="w-full rounded-card border border-border bg-panel p-4 text-left shadow-card">
                 <span className="flex gap-3">
-                  <img src={box.image} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
-                  <span className="min-w-0 flex-1 py-0.5">
-                    <span className="block truncate text-xs font-bold text-ink-muted">{store.name}</span>
-                    <span className="mt-1 block truncate text-base font-black">{box.name}</span>
+                  {store && <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-surface"><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></span>}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-bold text-ink-muted">{store?.name}</span>
                     <span className="mt-1 block truncate text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</span>
-                    <span className="mt-2 flex items-center justify-between gap-3 text-xs text-ink-secondary">
-                      <span>{t('quantity')}: {order.quantity}</span>
-                      <b className="text-sm text-brand">{formatPrice(order.total, locale)}</b>
-                    </span>
+                    <span className="mt-2 block space-y-1">{order.items.map((item) => {
+                      const box = boxes.find((candidate) => candidate.id === item.boxId);
+                      return <span key={item.boxId} className="flex items-center justify-between gap-3 text-xs"><span className="truncate font-bold">{box?.name}</span><span className="shrink-0 text-ink-muted">× {item.quantity}</span></span>;
+                    })}</span>
                   </span>
                 </span>
                 <span className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
                   {view === 'active' ? (
-                    <><span className="font-bold text-ink-secondary">{t('pickup')}: {box.pickupFrom}–{box.pickupTo}</span><span className="rounded-full bg-brand-soft px-3 py-1.5 font-black text-brand">{t('pickupCode')}: {order.pickupCode}</span></>
+                    <><span className="font-bold text-ink-secondary">{t('pickup')}: {pickupWindow}</span><span className="rounded-full bg-brand-soft px-3 py-1.5 font-black text-brand">{t('showQr')}</span></>
                   ) : (
                     <><span className="font-bold text-ink-muted">{orderDate}</span><ChevronRight size={17} className="text-ink-subtle" /></>
                   )}
                 </span>
+                <span className="mt-3 block text-right text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>
               </button>
             );
           })}
         </div>
       )}
+      {selectedOrder && <OrderDetails order={selectedOrder} locale={locale} t={t} onClose={() => setSelectedOrder(null)} />}
     </section>
+  );
+}
+
+function OrderQr({ order, t }: { order: Order; t: Translator }) {
+  return (
+    <div className="mx-auto w-fit rounded-card border border-border bg-white p-4 text-brand shadow-card">
+      <QRCodeSVG
+        value={createOrderQrPayload(order.id, order.pickupCode)}
+        size={184}
+        level="M"
+        marginSize={1}
+        bgColor="white"
+        fgColor="currentColor"
+        title={t('qrCode')}
+      />
+    </div>
+  );
+}
+
+function OrderItemsList({ order, locale }: { order: Order; locale: Locale }) {
+  return (
+    <div className="space-y-2">
+      {order.items.map((item) => {
+        const box = boxes.find((candidate) => candidate.id === item.boxId);
+        return (
+          <div key={item.boxId} className="flex items-start justify-between gap-4 rounded-control bg-surface-soft px-4 py-3">
+            <div className="min-w-0"><p className="text-sm font-black">{box?.name}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice, locale)} × {item.quantity}</p></div>
+            <b className="shrink-0 text-sm text-brand">{formatPrice(item.unitPrice * item.quantity, locale)}</b>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Locale; t: Translator; onClose: () => void }) {
+  const store = stores.find((item) => item.id === order.storeId);
+  const pickupWindow = orderPickupWindow(order);
+  const orderDate = new Intl.DateTimeFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  }).format(new Date(order.createdAt));
+  return (
+    <Overlay onClose={onClose}>
+      <div className="max-h-[90dvh] overflow-y-auto px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
+        <SheetHandle />
+        <div className="mt-5"><ModalHeader title={store?.name ?? t('orders')} onClose={onClose} closeLabel={t('close')} /></div>
+        <p className="mt-5 text-center text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
+        {order.status === 'paid' && (
+          <>
+            <div className="mt-4"><OrderQr order={order} t={t} /></div>
+            <p className="mx-auto mt-4 max-w-[300px] text-center text-xs leading-5 text-ink-secondary">{t('successText')}</p>
+            <div className="mt-4 rounded-control bg-brand p-4 text-center text-white"><p className="text-xs font-bold text-white/65">{t('pickupCode')}</p><p className="mt-1 text-3xl font-black tracking-[0.12em]">{formatPickupCode(order.pickupCode)}</p></div>
+          </>
+        )}
+        <h3 className="mt-6 text-base font-black">{t('orderContents')}</h3>
+        <div className="mt-3"><OrderItemsList order={order} locale={locale} /></div>
+        <div className="mt-4 flex items-center justify-between border-t border-border pt-4"><span className="text-sm font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-brand">{formatPrice(order.total, locale)}</b></div>
+        <p className="mt-3 text-sm font-bold text-ink-secondary">{order.status === 'paid' ? `${t('pickup')}: ${pickupWindow}` : orderDate}</p>
+      </div>
+    </Overlay>
   );
 }
 
@@ -900,31 +969,24 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
   );
 }
 
-function Success({ orders, t, onDone }: { orders: Order[]; t: Translator; onDone: () => void }) {
+function Success({ order, locale, t, onDone }: { order: Order; locale: Locale; t: Translator; onDone: () => void }) {
   return (
     <Overlay onClose={onDone} full>
-      <div className="flex min-h-dvh flex-col items-center justify-center px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]">
-        <div className="relative grid h-28 w-28 place-items-center rounded-full bg-highlight text-brand">
-          <Check size={52} strokeWidth={3} />
-          <Sparkles className="absolute -right-3 -top-2 text-accent" size={28} />
+      <div className="flex min-h-dvh flex-col overflow-y-auto px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]">
+        <div className="mx-auto relative grid h-16 w-16 shrink-0 place-items-center rounded-full bg-highlight text-brand">
+          <Check size={32} strokeWidth={3} />
+          <Sparkles className="absolute -right-2 -top-1 text-accent" size={20} />
         </div>
-        <h1 className="mt-6 text-[32px] font-black tracking-[-0.05em]">{t('ordersCreated')}</h1>
-        <p className="mt-3 max-w-[300px] text-sm leading-6 text-ink-secondary">{t('successText')}</p>
-        <div className="mt-6 max-h-[42vh] w-full space-y-3 overflow-y-auto">
-          {orders.map((order) => {
-            const box = boxes.find((candidate) => candidate.id === order.boxId);
-            return (
-              <div key={order.id} className="rounded-card bg-brand p-4 text-left text-white">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0"><p className="truncate text-sm font-black">{box?.name}</p><p className="mt-1 text-[11px] text-white/60">{t('orderId')}: {formatOrderId(order.id)}</p></div>
-                  <p className="shrink-0 text-xs font-bold text-white/70">× {order.quantity}</p>
-                </div>
-                <div className="mt-3 flex items-end justify-between border-t border-white/15 pt-3"><span className="text-xs font-bold text-white/60">{t('pickupCode')}</span><b className="text-2xl tracking-[0.12em]">{order.pickupCode}</b></div>
-              </div>
-            );
-          })}
+        <h1 className="mt-4 text-[30px] font-black tracking-[-0.05em]">{t('ordersCreated')}</h1>
+        <p className="mx-auto mt-2 max-w-[320px] text-sm leading-5 text-ink-secondary">{t('successText')}</p>
+        <div className="mt-5"><OrderQr order={order} t={t} /></div>
+        <div className="mx-auto mt-4 w-full max-w-[320px] rounded-control bg-brand p-3 text-white">
+          <p className="text-xs font-bold text-white/65">{t('pickupCode')}</p>
+          <p className="mt-1 text-3xl font-black tracking-[0.12em]">{formatPickupCode(order.pickupCode)}</p>
         </div>
-        <PrimaryButton onClick={onDone} className="mt-8">{t('toOrders')}<ChevronRight size={19} /></PrimaryButton>
+        <p className="mt-4 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
+        <div className="mt-4 w-full text-left"><OrderItemsList order={order} locale={locale} /></div>
+        <PrimaryButton onClick={onDone} className="mt-6 shrink-0">{t('toOrders')}<ChevronRight size={19} /></PrimaryButton>
       </div>
     </Overlay>
   );

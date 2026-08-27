@@ -33,7 +33,7 @@ describe('multi-box cart', () => {
     fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery пр\. Тауке хана, 47/ }));
   };
 
-  it('adds different box types, changes quantities and creates separate orders', () => {
+  it('adds different box types and creates one grouped order', () => {
     openTatti();
     fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
     fireEvent.click(screen.getByRole('button', { name: 'Добавить Tatti-box' }));
@@ -50,14 +50,17 @@ describe('multi-box cart', () => {
     expect(screen.getAllByText((content) => content.replace(/\s/g, '') === '7370₸').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole('button', { name: /Оформить заказ/ }));
 
-    expect(screen.getByText('Заказы оформлены!')).toBeInTheDocument();
+    expect(screen.getByText('Заказ оформлен!')).toBeInTheDocument();
+    expect(screen.getByText('Покажите QR-код или код получения сотруднику заведения при получении заказа.')).toBeInTheDocument();
     const orders = useAppStore.getState().orders;
-    expect(orders).toHaveLength(2);
-    expect(orders.map((order) => order.quantity)).toEqual([2, 1]);
-    orders.forEach((order) => {
-      expect(order.id).toMatch(/^\d{8}$/);
-      expect(order.pickupCode).toMatch(/^\d{4}$/);
-    });
+    expect(orders).toHaveLength(1);
+    expect(orders[0]?.items).toEqual([
+      { boxId: 'bakery-surprise', quantity: 2, unitPrice: 2490 },
+      { boxId: 'tatti-defined', quantity: 1, unitPrice: 2390 },
+    ]);
+    expect(orders[0]?.id).toMatch(/^\d{8}$/);
+    expect(orders[0]?.pickupCode).toMatch(/^\d{6}$/);
+    expect(screen.getByText(/^\d{3}-\d{3}$/)).toBeInTheDocument();
     expect(useAppStore.getState().purchasedBoxQuantities).toEqual({ 'bakery-surprise': 2, 'tatti-defined': 1 });
     expect(useAppStore.getState().cartItems).toEqual([]);
   });

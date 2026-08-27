@@ -52,10 +52,16 @@ export interface Box {
   distanceKm: number;
 }
 
-export interface Order {
-  id: string;
+export interface OrderItem {
   boxId: string;
   quantity: number;
+  unitPrice: number;
+}
+
+export interface Order {
+  id: string;
+  storeId: string;
+  items: OrderItem[];
   total: number;
   pickupCode: string;
   createdAt: string;

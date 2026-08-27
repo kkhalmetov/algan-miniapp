@@ -22,3 +22,25 @@ export const formatOrderId = (id: string) => {
   for (const character of id) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
   return String((hash % ORDER_ID_RANGE) + ORDER_ID_MIN);
 };
+
+export const normalizePickupCode = (code: string) => {
+  const digits = code.replace(/\D/g, '');
+  return digits.slice(-6).padStart(6, '0');
+};
+
+export const formatPickupCode = (code: string) => {
+  const normalized = normalizePickupCode(code);
+  return `${normalized.slice(0, 3)}-${normalized.slice(3)}`;
+};
+
+export const createPickupCode = (existingCodes: string[] = [], random = Math.random) => {
+  const existing = new Set(existingCodes.map(normalizePickupCode));
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const code = String(Math.floor(random() * 1_000_000)).padStart(6, '0');
+    if (!existing.has(code)) return code;
+  }
+  throw new Error('Не удалось создать уникальный код получения');
+};
+
+export const createOrderQrPayload = (orderId: string, pickupCode: string) =>
+  `ALGAN|ORDER=${formatOrderId(orderId)}|CODE=${normalizePickupCode(pickupCode)}`;

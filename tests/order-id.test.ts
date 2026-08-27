@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createOrderId, formatOrderId } from '../lib/order-id';
+import { createOrderId, createOrderQrPayload, createPickupCode, formatOrderId, formatPickupCode } from '../lib/order-id';
 
 describe('order IDs', () => {
   it('creates an eight-digit numeric ID', () => {
@@ -13,5 +13,15 @@ describe('order IDs', () => {
 
   it('shows legacy timestamp IDs as eight digits', () => {
     expect(formatOrderId('order-1756234567890')).toBe('34567890');
+  });
+
+  it('creates and formats a six-digit pickup code', () => {
+    expect(createPickupCode([], () => 0.123456)).toBe('123456');
+    expect(formatPickupCode('123456')).toBe('123-456');
+    expect(formatPickupCode('1234')).toBe('001-234');
+  });
+
+  it('puts the order number and pickup code into the QR payload', () => {
+    expect(createOrderQrPayload('12345678', '123456')).toBe('ALGAN|ORDER=12345678|CODE=123456');
   });
 });
