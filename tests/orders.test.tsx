@@ -102,4 +102,14 @@ describe('orders tab', () => {
     expect(screen.queryByRole('heading', { name: 'Заказы' })).not.toBeInTheDocument();
     expect(screen.queryByText('У вас пока нет заказов')).not.toBeInTheDocument();
   });
+
+  it('shows complete kazakh labels in the compact navigation', () => {
+    useAppStore.setState({ locale: 'kk' });
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+
+    const navigation = screen.getByRole('navigation');
+    expect(within(navigation).getByRole('button', { name: 'Таңдаулылар' })).toHaveTextContent('Таңдаулылар');
+    expect(within(navigation).getByRole('button', { name: 'Тапсырыстар' })).toHaveTextContent('Тапсырыстар');
+  });
 });

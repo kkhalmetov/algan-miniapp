@@ -698,12 +698,12 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
     { id: 'orders', icon: <ShoppingBag size={21} />, label: 'orders' },
   ];
   return (
-    <nav className="z-[800] shrink-0 border-t border-border bg-surface/95 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
+    <nav className="z-[800] shrink-0 border-t border-border bg-surface/95 px-1 pb-[max(.4rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl">
       <div className="grid grid-cols-4">
         {items.map((item) => (
-          <button key={item.id} type="button" aria-current={tab === item.id ? 'page' : undefined} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-xl text-[10px] font-black transition ${tab === item.id ? 'text-brand' : 'text-ink-subtle'}`}>
-            <span className={`grid h-8 w-12 shrink-0 place-items-center rounded-full ${tab === item.id ? 'bg-brand-soft' : ''}`}>{item.icon}</span>
-            <span className="block w-full truncate px-0.5 text-center leading-tight">{t(item.label)}</span>
+          <button key={item.id} type="button" aria-current={tab === item.id ? 'page' : undefined} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[9px] font-extrabold tracking-[-0.02em] transition ${tab === item.id ? 'text-brand' : 'text-ink-subtle'}`}>
+            <span className={`grid h-7 w-11 shrink-0 place-items-center rounded-full ${tab === item.id ? 'bg-brand-soft' : ''}`}>{item.icon}</span>
+            <span className="whitespace-nowrap text-center leading-none">{t(item.label)}</span>
           </button>
         ))}
       </div>
