@@ -698,8 +698,9 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
     <nav className="z-[800] shrink-0 border-t border-border bg-surface/95 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
       <div className="grid grid-cols-4">
         {items.map((item) => (
-          <button key={item.id} type="button" aria-current={tab === item.id ? 'page' : undefined} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-black transition ${tab === item.id ? 'text-brand' : 'text-ink-subtle'}`}>
-            <span className={`grid h-8 w-12 place-items-center rounded-full ${tab === item.id ? 'bg-brand-soft' : ''}`}>{item.icon}</span>{t(item.label)}
+          <button key={item.id} type="button" aria-current={tab === item.id ? 'page' : undefined} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-xl text-[10px] font-black transition ${tab === item.id ? 'text-brand' : 'text-ink-subtle'}`}>
+            <span className={`grid h-8 w-12 shrink-0 place-items-center rounded-full ${tab === item.id ? 'bg-brand-soft' : ''}`}>{item.icon}</span>
+            <span className="block w-full truncate px-0.5 text-center leading-tight">{t(item.label)}</span>
           </button>
         ))}
       </div>
