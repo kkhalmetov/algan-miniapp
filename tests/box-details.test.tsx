@@ -141,13 +141,14 @@ describe('store details presentation', () => {
     expect(within(soldOutCard!).queryByText('Боксы закончились')).not.toBeInTheDocument();
     fireEvent.click(within(soldOutCard!).getByRole('button', { name: /Qamyr Bakery ул\. Рыскулова, 18/ }));
     const storeDialog = screen.getByRole('dialog', { name: 'Qamyr Bakery' });
-    expect(within(storeDialog).getAllByText('Боксы закончились')).toHaveLength(2);
-    expect(within(storeDialog).getByRole('button', { name: 'Добавить Вечерний бокс' })).toBeDisabled();
+    expect(within(storeDialog).getAllByText('Боксы закончились')).toHaveLength(1);
+    expect(within(storeDialog).queryByRole('button', { name: 'Добавить Вечерний бокс' })).not.toBeInTheDocument();
     fireEvent.click(within(storeDialog).getByRole('button', { name: 'Подробнее Вечерний бокс' }));
 
     const dialog = screen.getByRole('dialog', { name: 'Вечерний бокс' });
     expect(within(dialog).getByTestId('box-stock')).toHaveTextContent('Боксы закончились');
-    expect(within(dialog).getByRole('button', { name: 'Добавить Вечерний бокс' })).toBeDisabled();
+    expect(within(dialog).queryByRole('button', { name: 'Добавить Вечерний бокс' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('contentinfo')).not.toBeInTheDocument();
   });
 });
 

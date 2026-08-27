@@ -723,21 +723,24 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
           <ChevronRight size={18} strokeWidth={2.5} />
         </span>
       </button>
-      <div className="border-t border-border px-3 py-3">
-        <CartQuantityControl boxName={box.name} quantity={cartQuantity} max={available} locale={locale} t={t} onChange={onChangeQuantity} />
-      </div>
+      {(available > 0 || cartQuantity > 0) && (
+        <div className="border-t border-border px-3 py-3">
+          <CartQuantityControl boxName={box.name} quantity={cartQuantity} max={available} t={t} onChange={onChangeQuantity} />
+        </div>
+      )}
     </article>
   );
 }
 
-function CartQuantityControl({ boxName, quantity, max, locale, t, onChange }: {
-  boxName: string; quantity: number; max: number; locale: Locale; t: Translator; onChange: (quantity: number) => void;
+function CartQuantityControl({ boxName, quantity, max, t, onChange }: {
+  boxName: string; quantity: number; max: number; t: Translator; onChange: (quantity: number) => void;
 }) {
   if (quantity < 1) {
+    if (max < 1) return null;
     return (
-      <button type="button" disabled={max < 1} onClick={() => onChange(1)} aria-label={`${t('addToCart')} ${boxName}`}
-        className="min-h-11 w-full rounded-control bg-brand px-4 text-sm font-black text-white transition disabled:bg-surface-muted disabled:text-ink-subtle">
-        {max > 0 ? t('addToCart') : formatBoxesLeft(0, locale)}
+      <button type="button" onClick={() => onChange(1)} aria-label={`${t('addToCart')} ${boxName}`}
+        className="min-h-11 w-full rounded-control bg-brand px-4 text-sm font-black text-white transition">
+        {t('addToCart')}
       </button>
     );
   }
@@ -815,9 +818,11 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
           </div>
         </div>
       </div>
-      <footer className="shrink-0 border-t border-border bg-surface/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
-        <CartQuantityControl boxName={box.name} quantity={cartQuantity} max={available} locale={locale} t={t} onChange={onChangeQuantity} />
-      </footer>
+      {(available > 0 || cartQuantity > 0) && (
+        <footer className="shrink-0 border-t border-border bg-surface/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
+          <CartQuantityControl boxName={box.name} quantity={cartQuantity} max={available} t={t} onChange={onChangeQuantity} />
+        </footer>
+      )}
     </section>
   );
 }
@@ -879,7 +884,7 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
                   <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity, locale)}</p>
                 </div>
                 <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
-                  <CartQuantityControl boxName={box.name} quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} locale={locale} t={t} onChange={(next) => onChangeQuantity(box, next)} />
+                  <CartQuantityControl boxName={box.name} quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} t={t} onChange={(next) => onChangeQuantity(box, next)} />
                   <button type="button" onClick={() => onChangeQuantity(box, 0)} className="px-2 text-xs font-black text-danger">{t('removeFromCart')}</button>
                 </div>
               </div>
