@@ -188,7 +188,7 @@ export default function AlganApp() {
               toggleFavorite={toggleFavorite} openBox={openBox}
             />
           )}
-          {tab === 'map' && <MapTab openBox={openBox} />}
+          {tab === 'map' && <MapTab locale={locale} openBox={openBox} />}
           {tab === 'favorites' && (
             <FavoritesTab t={t} locale={locale} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openBox={openBox} />
           )}
@@ -364,6 +364,7 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
       <button type="button" onClick={onOpen} className="relative block h-44 w-full overflow-hidden text-left">
         <img src={box.image} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
         <span className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1.5 text-[11px] font-black text-white">−{discount}%</span>
+        {box.type === 'SURPRISE' && <SurpriseBadge className="absolute right-3 top-3" />}
         <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-panel bg-panel shadow-card">
           <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
         </span>
@@ -385,19 +386,40 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
   );
 }
 
-function MapTab({ openBox }: { openBox: (box: Box) => void }) {
+function SurpriseBadge({ className = '' }: { className?: string }) {
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full bg-brand-deep/92 px-2.5 py-1.5 text-[10px] font-black tracking-[0.08em] text-white shadow-card backdrop-blur-sm ${className}`}>
+      <Sparkles size={12} aria-hidden="true" />SURPRISE
+    </span>
+  );
+}
+
+function MapTab({ locale, openBox }: { locale: Locale; openBox: (box: Box) => void }) {
   const [storeId, setStoreId] = useState<string | null>(null);
-  const selected = storeId ? boxes.find((box) => box.storeId === storeId) : null;
+  const selectedBoxes = storeId ? boxes.filter((box) => box.storeId === storeId) : [];
   const selectStore = useCallback((id: string) => setStoreId(id), []);
   return (
     <div className="relative h-full min-h-0">
       <LocationMap lat={SHYMKENT.lat} lng={SHYMKENT.lng} stores={stores} onSelectStore={selectStore} className="absolute inset-0" />
-      {selected && (
-        <button type="button" onClick={() => openBox(selected)} className="absolute bottom-5 left-4 right-4 z-[600] flex gap-3 rounded-card bg-panel p-3 text-left shadow-floating">
-          <img src={selected.image} alt="" className="h-20 w-20 rounded-2xl object-cover" />
-          <span className="min-w-0 flex-1 py-1"><span className="block text-xs font-bold text-ink-muted">{storeById(selected.storeId).name}</span><span className="mt-1 block truncate text-base font-black">{selected.name}</span><span className="mt-2 block text-sm font-black text-brand">{formatPrice(selected.salePrice, 'ru')}</span></span>
-          <ChevronRight className="mt-7 text-ink-muted" size={19} />
-        </button>
+      {selectedBoxes.length > 0 && (
+        <div data-testid="map-box-options" className="hide-scrollbar absolute bottom-5 left-0 right-0 z-[600] flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">
+          {selectedBoxes.map((box) => (
+            <button key={box.id} type="button" onClick={() => openBox(box)} className="flex w-[calc(100%_-_2rem)] shrink-0 snap-center gap-3 rounded-card bg-panel p-3 text-left shadow-floating">
+              <span className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl">
+                <img src={box.image} alt="" className="h-full w-full object-cover" />
+              </span>
+              <span className="min-w-0 flex-1 py-1">
+                <span className="flex items-start justify-between gap-2">
+                  <span className="block truncate text-xs font-bold text-ink-muted">{storeById(box.storeId).name}</span>
+                  {box.type === 'SURPRISE' && <SurpriseBadge className="shrink-0 px-2 py-1 text-[8px]" />}
+                </span>
+                <span className="mt-1 block truncate text-base font-black">{box.name}</span>
+                <span className="mt-2 block text-sm font-black text-brand">{formatPrice(box.salePrice, locale)}</span>
+              </span>
+              <ChevronRight className="mt-7 shrink-0 text-ink-muted" size={19} />
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -624,6 +646,7 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
         <div className="px-6 pb-6 pt-11">
           <p className="text-sm font-bold text-ink-secondary">{store.name}</p>
           <h1 className="mt-2 text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
+          {box.type === 'SURPRISE' && <SurpriseBadge className="mt-3" />}
           <span data-testid="box-stock" className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${box.quantity > 0 ? 'bg-accent-soft text-accent-strong' : 'bg-danger-soft text-danger'}`}>
             <Package size={15} />{formatBoxesLeft(box.quantity, locale)}
           </span>
@@ -643,7 +666,18 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
             </div>
           </div>
           <h2 className="mt-6 text-lg font-black">{t('composition')}</h2>
-          <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprise')}</p>
+          {box.type === 'SURPRISE' ? (
+            <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprise')}</p>
+          ) : (
+            <ul className="mt-3 space-y-2" data-testid="box-contents">
+              {box.contents?.map((item) => (
+                <li key={item.contentName} className="flex items-center justify-between gap-4 rounded-control bg-surface-soft px-4 py-3 text-sm">
+                  <span className="font-bold text-ink">{item.contentName}</span>
+                  <span className="shrink-0 font-black text-brand">× {item.quantity}</span>
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="mt-4 rounded-control border border-allergen-border bg-allergen-surface p-4">
             <div className="flex items-start gap-3">
               <IconBadge tone="accent"><AlertTriangle size={19} /></IconBadge>

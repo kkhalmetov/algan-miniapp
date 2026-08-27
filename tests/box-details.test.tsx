@@ -28,7 +28,7 @@ describe('store details presentation', () => {
   const openFirstBox = () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
-    fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery Большой bakery box/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery Surprise Tatti-box/ }));
   };
 
   it('shows a store logo on every home card', () => {
@@ -36,7 +36,7 @@ describe('store details presentation', () => {
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
     stores.forEach((store) => {
-      expect(screen.getByAltText(`${store.name} logo`)).toHaveAttribute('src', store.logo);
+      expect(screen.getAllByAltText(`${store.name} logo`)[0]).toHaveAttribute('src', store.logo);
     });
     expect(screen.queryByAltText('Halal')).not.toBeInTheDocument();
   });
@@ -44,7 +44,7 @@ describe('store details presentation', () => {
   it('keeps navigation controls outside the scrolling cover and content', () => {
     openFirstBox();
 
-    const dialog = screen.getByRole('dialog', { name: 'Большой bakery box' });
+    const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
     const header = within(dialog).getByTestId('box-details-header');
     const scroll = within(dialog).getByTestId('box-details-scroll');
     const cover = within(dialog).getByTestId('box-details-cover');
@@ -53,6 +53,9 @@ describe('store details presentation', () => {
     expect(within(scroll).getByAltText('Tatti Bakery logo')).toHaveAttribute('src', stores[0]!.logo);
     expect(within(cover).queryByAltText('Halal')).not.toBeInTheDocument();
     expect(within(scroll).queryByText('Свежая выпечка дня: круассаны, слойки и хлеб. Точный состав станет сюрпризом.')).not.toBeInTheDocument();
+    expect(within(scroll).getByText('SURPRISE')).toBeInTheDocument();
+    expect(within(cover).queryByText('SURPRISE')).not.toBeInTheDocument();
+    expect(within(scroll).getByText('Точный состав этого бокса заранее неизвестен — содержимое станет сюрпризом.')).toBeInTheDocument();
     expect(within(scroll).getByTestId('box-stock')).toHaveTextContent('Осталось 4 бокса');
     expect(screen.queryByText(/4\.9/)).not.toBeInTheDocument();
     expect(within(within(scroll).getByTestId('box-price-card')).getByText('−60%')).toBeInTheDocument();
@@ -69,12 +72,29 @@ describe('store details presentation', () => {
   it('toggles favorite and closes from the persistent header', () => {
     openFirstBox();
 
-    const dialog = screen.getByRole('dialog', { name: 'Большой bakery box' });
+    const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
     const favorite = within(dialog).getByRole('button', { name: 'Избранное' });
     fireEvent.click(favorite);
     expect(favorite).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Назад' }));
-    expect(screen.queryByRole('dialog', { name: 'Большой bakery box' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Surprise Tatti-box' })).not.toBeInTheDocument();
+  });
+
+  it('shows the exact composition for a defined Tatti-box', () => {
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+    const cardButton = screen.getByRole('button', { name: /Tatti Bakery Tatti-box/ });
+    expect(within(cardButton).queryByText('SURPRISE')).not.toBeInTheDocument();
+    fireEvent.click(cardButton);
+
+    const dialog = screen.getByRole('dialog', { name: 'Tatti-box' });
+    expect(within(dialog).queryByText('SURPRISE')).not.toBeInTheDocument();
+    const contents = within(dialog).getByTestId('box-contents');
+    expect(contents).toHaveTextContent('Круассан');
+    expect(contents).toHaveTextContent('× 2');
+    expect(contents).toHaveTextContent('Булочка с корицей');
+    expect(contents).toHaveTextContent('Багет');
+    expect(within(dialog).queryByText(/состав этого бокса заранее неизвестен/)).not.toBeInTheDocument();
   });
 
   it('opens a map picker from the redesigned address card', () => {

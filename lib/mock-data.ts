@@ -10,32 +10,61 @@ export const stores: Store[] = [
 
 export const boxes: Box[] = [
   {
-    id: 'bakery-surprise', storeId: 'tatti', name: 'Большой bakery box',
+    id: 'bakery-surprise', storeId: 'tatti', type: 'SURPRISE', name: 'Surprise Tatti-box',
     description: 'Свежая выпечка дня: круассаны, слойки и хлеб. Точный состав станет сюрпризом.',
     originalPrice: 6200, salePrice: 2490, quantity: 4, pickupFrom: '19:30', pickupTo: '20:30',
     image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 0.8,
   },
   {
-    id: 'coffee-pair', storeId: 'kofi', name: 'Кофе & булочки',
+    id: 'tatti-defined', storeId: 'tatti', type: 'DEFINED', name: 'Tatti-box',
+    description: 'Набор свежей выпечки с заранее известным составом.',
+    contents: [
+      { contentName: 'Круассан', quantity: 2 },
+      { contentName: 'Булочка с корицей', quantity: 1 },
+      { contentName: 'Багет', quantity: 1 },
+    ],
+    originalPrice: 5600, salePrice: 2390, quantity: 3, pickupFrom: '18:30', pickupTo: '19:30',
+    image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 0.8,
+  },
+  {
+    id: 'coffee-pair', storeId: 'kofi', type: 'DEFINED', name: 'Кофе & булочки',
     description: 'Два напитка и выпечка, которые особенно хороши для неспешного вечера.',
+    contents: [
+      { contentName: 'Кофейный напиток', quantity: 2 },
+      { contentName: 'Булочка', quantity: 2 },
+    ],
     originalPrice: 4800, salePrice: 1990, quantity: 3, pickupFrom: '20:00', pickupTo: '21:00',
     image: '/images/cafe.jpg', allergens: 'Молоко, глютен, орехи', isHalal: true, distanceKm: 1.2,
   },
   {
-    id: 'green-box', storeId: 'dastarhan', name: 'Зелёный бокс',
+    id: 'green-box', storeId: 'dastarhan', type: 'DEFINED', name: 'Зелёный бокс',
     description: 'Овощи, фрукты и зелень с небольшими внешними несовершенствами, но отличным вкусом.',
+    contents: [
+      { contentName: 'Овощной набор', quantity: 1 },
+      { contentName: 'Фруктовый набор', quantity: 1 },
+      { contentName: 'Зелень', quantity: 1 },
+    ],
     originalPrice: 7000, salePrice: 2890, quantity: 6, pickupFrom: '18:00', pickupTo: '20:00',
     image: '/images/produce.jpg', isHalal: true, distanceKm: 1.9,
   },
   {
-    id: 'sweet-evening', storeId: 'bal', name: 'Сладкий вечер',
+    id: 'sweet-evening', storeId: 'bal', type: 'DEFINED', name: 'Сладкий вечер',
     description: 'Ассорти десертов дня: мини-торты, тарталетки и нежные пирожные.',
+    contents: [
+      { contentName: 'Мини-торт', quantity: 1 },
+      { contentName: 'Тарталетка', quantity: 2 },
+      { contentName: 'Пирожное', quantity: 2 },
+    ],
     originalPrice: 7600, salePrice: 3190, quantity: 2, pickupFrom: '20:30', pickupTo: '21:30',
     image: '/images/dessert.jpg', allergens: 'Молоко, яйца, глютен, орехи', isHalal: true, distanceKm: 2.4,
   },
   {
-    id: 'qamyr-evening', storeId: 'qamyr', name: 'Вечерний бокс',
+    id: 'qamyr-evening', storeId: 'qamyr', type: 'DEFINED', name: 'Вечерний бокс',
     description: 'Выпечка и хлеб, оставшиеся к концу дня.',
+    contents: [
+      { contentName: 'Хлеб', quantity: 1 },
+      { contentName: 'Слойка', quantity: 2 },
+    ],
     originalPrice: 5400, salePrice: 2190, quantity: 0, pickupFrom: '20:00', pickupTo: '21:00',
     image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 1.5,
   },

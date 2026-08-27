@@ -4,7 +4,7 @@ import { getCopy } from '../lib/translations';
 
 describe('mock customer catalog', () => {
   it('contains available and sold-out discounted boxes linked to stores', () => {
-    expect(boxes).toHaveLength(5);
+    expect(boxes).toHaveLength(6);
     expect(stores).toHaveLength(5);
     boxes.forEach((box) => {
       expect(box.salePrice).toBeLessThan(box.originalPrice);

@@ -26,11 +26,20 @@ export interface Store {
   rating: number;
 }
 
+export type BoxType = 'SURPRISE' | 'DEFINED';
+
+export interface BoxContent {
+  contentName: string;
+  quantity: number;
+}
+
 export interface Box {
   id: string;
   storeId: string;
+  type: BoxType;
   name: string;
   description: string;
+  contents?: BoxContent[];
   originalPrice: number;
   salePrice: number;
   quantity: number;
