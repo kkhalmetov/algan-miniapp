@@ -93,7 +93,7 @@ describe('startup splash', () => {
     render(<AlganApp />);
 
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
-    fireEvent.click(screen.getByRole('button', { name: 'Switch language' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Русский / Қазақша' }));
     expect(useAppStore.getState().locale).toBe('kk');
 
     act(() => vi.advanceTimersByTime(TELEGRAM_RETRY_WINDOW_MS));

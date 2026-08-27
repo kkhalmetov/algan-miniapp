@@ -2,12 +2,13 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  AlertTriangle, ArrowLeft, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Heart, Home, Info, Languages, Mail, Map as MapIcon,
-  MapPin, Minus, Package, PackageCheck, Phone, Plus, Route, ShoppingBag, Sparkles, X,
+  AlertTriangle, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Heart, Home, Info, Languages, Mail, Map as MapIcon,
+  MapPin, Minus, Package, PackageCheck, Phone, Plus, Route, ShoppingBag, Sparkles,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
+import { DangerButton, EmptyState, IconBadge, IconButton, ListRow, ModalHeader, PrimaryButton, SecondaryButton, SegmentedControl, SheetHandle, SurfaceCard, TextField } from '@/components/ui-kit';
 import { authenticateTelegram } from '@/lib/api';
 import { getRouteOptions, type RouteProvider } from '@/lib/maps';
 import { boxes, storeById, stores } from '@/lib/mock-data';
@@ -288,29 +289,16 @@ function Onboarding(props: OnboardingProps) {
         <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">{t('askName')}</h2>
         <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('nameHelp')}</p>
 
-        <Field label={t('phone')} required value={phone} setValue={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
+        <TextField label={t('phone')} required value={phone} onValueChange={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
 
         <div className="mt-5 space-y-3 text-[13px] leading-5 text-ink-secondary">
           <Consent checked={terms} setChecked={setTerms} text={t('terms')} onOpen={() => openLegal('terms')} />
           <Consent checked={privacy} setChecked={setPrivacy} text={t('privacy')} onOpen={() => openLegal('privacy')} />
         </div>
 
-        <button type="submit" disabled={!canContinue} className="primary-button mt-7">{t('continue')}<ChevronRight size={19} /></button>
+        <PrimaryButton type="submit" disabled={!canContinue} className="mt-7">{t('continue')}<ChevronRight size={19} /></PrimaryButton>
       </form>
     </div>
-  );
-}
-
-function Field({ label, optional, required, value, setValue, placeholder, autoComplete, type = 'text' }: {
-  label: string; optional?: string; required?: boolean; value: string; setValue: (value: string) => void; placeholder: string; autoComplete: string; type?: string;
-}) {
-  return (
-    <label className="mt-5 block min-w-0 text-sm font-extrabold">
-      <span>{label} {required && <span className="text-accent">*</span>}</span>
-      {optional && <span className="ml-1 text-[11px] font-medium text-ink-subtle">({optional})</span>}
-      <input type={type} value={value} onChange={(event) => setValue(event.target.value)} placeholder={placeholder} autoComplete={autoComplete}
-        className="mt-2 h-13 w-full rounded-control border border-border bg-panel px-4 text-[15px] outline-none transition placeholder:text-ink-subtle focus:border-brand-hover focus:ring-4 focus:ring-brand-hover/10" />
-    </label>
   );
 }
 
@@ -329,7 +317,7 @@ function Consent({ checked, setChecked, text, onOpen }: { checked: boolean; setC
 
 function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; setLocale: (locale: Locale) => void; dark?: boolean }) {
   return (
-    <button onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} className={`flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-black uppercase ${dark ? 'bg-white/12 text-white' : 'bg-surface-soft text-brand'}`} aria-label="Switch language">
+    <button type="button" onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} className={`flex h-11 items-center gap-1.5 rounded-full px-3 text-xs font-black uppercase ${dark ? 'bg-white/12 text-white' : 'bg-surface-soft text-brand'}`} aria-label="Русский / Қазақша">
       <Languages size={15} /> {locale === 'ru' ? 'Қаз' : 'Рус'}
     </button>
   );
@@ -355,7 +343,7 @@ function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, category, 
       <section className="bg-surface px-5 pt-6">
         <div className="hide-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5">
           {(['all', 'bakery', 'cafe', 'market'] as const).map((item) => (
-            <button key={item} onClick={() => setCategory(item)} className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-black transition ${category === item ? 'bg-brand text-white' : 'bg-surface-soft text-ink-secondary'}`}>{t(item)}</button>
+            <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)} className={`min-h-11 shrink-0 rounded-full px-4 py-2.5 text-xs font-black transition ${category === item ? 'bg-brand text-white' : 'bg-surface-soft text-ink-secondary'}`}>{t(item)}</button>
           ))}
         </div>
 
@@ -373,7 +361,7 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <article className="overflow-hidden rounded-card border border-border bg-panel shadow-card">
-      <button onClick={onOpen} className="relative block h-44 w-full overflow-hidden text-left">
+      <button type="button" onClick={onOpen} className="relative block h-44 w-full overflow-hidden text-left">
         <img src={box.image} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
         <span className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1.5 text-[11px] font-black text-white">−{discount}%</span>
         <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-panel bg-panel shadow-card">
@@ -382,11 +370,11 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
       </button>
       <div className="p-4">
         <div className="flex items-start gap-3">
-          <button onClick={onOpen} className="min-w-0 flex-1 text-left">
+          <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left">
             <p className="text-xs font-bold text-ink-muted">{store.name}</p>
             <h3 className="mt-1 truncate text-lg font-black tracking-[-0.03em]">{box.name}</h3>
           </button>
-          <button onClick={toggleFavorite} aria-label={t('favorites')} className={`grid h-10 w-10 place-items-center rounded-full ${favorite ? 'bg-accent-soft text-accent' : 'bg-surface-soft text-ink-secondary'}`}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></button>
+          <IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={favorite} tone={favorite ? 'accent' : 'muted'}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></IconButton>
         </div>
         <div className="mt-4 flex items-end justify-between gap-3">
           <div><p className="text-xs text-ink-muted line-through">{formatPrice(box.originalPrice, locale)}</p><p className="text-lg font-black text-brand">{formatPrice(box.salePrice, locale)}</p></div>
@@ -405,7 +393,7 @@ function MapTab({ openBox }: { openBox: (box: Box) => void }) {
     <div className="relative h-full min-h-0">
       <LocationMap lat={SHYMKENT.lat} lng={SHYMKENT.lng} stores={stores} onSelectStore={selectStore} className="absolute inset-0" />
       {selected && (
-        <button onClick={() => openBox(selected)} className="absolute bottom-5 left-4 right-4 z-[600] flex gap-3 rounded-card bg-panel p-3 text-left shadow-floating">
+        <button type="button" onClick={() => openBox(selected)} className="absolute bottom-5 left-4 right-4 z-[600] flex gap-3 rounded-card bg-panel p-3 text-left shadow-floating">
           <img src={selected.image} alt="" className="h-20 w-20 rounded-2xl object-cover" />
           <span className="min-w-0 flex-1 py-1"><span className="block text-xs font-bold text-ink-muted">{storeById(selected.storeId).name}</span><span className="mt-1 block truncate text-base font-black">{selected.name}</span><span className="mt-2 block text-sm font-black text-brand">{formatPrice(selected.salePrice, 'ru')}</span></span>
           <ChevronRight className="mt-7 text-ink-muted" size={19} />
@@ -421,11 +409,7 @@ function FavoritesTab({ t, locale, favoriteStoreIds, toggleFavorite, openBox }: 
     <section className="px-5 pb-7 pt-[max(1.5rem,env(safe-area-inset-top))]">
       <h1 className="mt-2 text-[30px] font-black tracking-[-0.045em]">{t('favorites')}</h1>
       {favoriteBoxes.length === 0 ? (
-        <div className="mt-20 text-center">
-          <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-accent-soft text-accent"><Heart size={34} /></span>
-          <h2 className="mx-auto mt-6 max-w-[280px] text-xl font-black">{t('noFavorites')}</h2>
-          <p className="mx-auto mt-2 max-w-[280px] text-sm leading-6 text-ink-secondary">{t('noFavoritesText')}</p>
-        </div>
+        <EmptyState icon={<Heart size={34} />} title={t('noFavorites')} description={t('noFavoritesText')} tone="accent" />
       ) : (
         <div className="mt-6 space-y-4">
           {favoriteBoxes.map((box) => <BoxCard key={box.id} box={box} locale={locale} t={t} favorite toggleFavorite={() => toggleFavorite(box.storeId)} onOpen={() => openBox(box)} />)}
@@ -446,28 +430,24 @@ function OrdersTab({ t, locale, orders, openBox }: {
   return (
     <section className="px-5 pb-7 pt-[max(1.5rem,env(safe-area-inset-top))]">
       <h1 className="mt-2 text-[30px] font-black tracking-[-0.045em]">{t('orders')}</h1>
-      <div className="mt-5 grid grid-cols-2 rounded-control bg-surface-muted p-1" role="group" aria-label={t('orders')}>
-        {(['active', 'past'] as const).map((item) => (
-          <button
-            key={item}
-            type="button"
-            aria-pressed={view === item}
-            onClick={() => { setView(item); haptic('tap'); }}
-            className={`min-h-11 rounded-xl px-3 text-sm font-black transition ${view === item ? 'bg-panel text-brand shadow-sm' : 'text-ink-muted'}`}
-          >
-            {item === 'active' ? t('activeOrders') : t('pastOrders')}
-          </button>
-        ))}
+      <div className="mt-5">
+        <SegmentedControl
+          value={view}
+          label={t('orders')}
+          items={[
+            { value: 'active', label: t('activeOrders') },
+            { value: 'past', label: t('pastOrders') },
+          ]}
+          onChange={(item) => { setView(item); haptic('tap'); }}
+        />
       </div>
 
       {visibleOrders.length === 0 ? (
-        <div className="mt-20 text-center">
-          <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-brand-pale text-brand">
-            {view === 'active' ? <ShoppingBag size={34} /> : <PackageCheck size={34} />}
-          </span>
-          <h2 className="mx-auto mt-6 max-w-[290px] text-xl font-black">{emptyTitle}</h2>
-          <p className="mx-auto mt-2 max-w-[290px] text-sm leading-6 text-ink-secondary">{emptyText}</p>
-        </div>
+        <EmptyState
+          icon={view === 'active' ? <ShoppingBag size={34} /> : <PackageCheck size={34} />}
+          title={emptyTitle}
+          description={emptyText}
+        />
       ) : (
         <div className="mt-5 space-y-3">
           {visibleOrders.map((order) => {
@@ -478,7 +458,7 @@ function OrdersTab({ t, locale, orders, openBox }: {
               day: 'numeric', month: 'long', year: 'numeric',
             }).format(new Date(order.createdAt));
             return (
-              <button key={order.id} onClick={() => openBox(box)} className="w-full rounded-card border border-border bg-panel p-3 text-left shadow-card">
+              <button key={order.id} type="button" onClick={() => openBox(box)} className="w-full rounded-card border border-border bg-panel p-3 text-left shadow-card">
                 <span className="flex gap-3">
                   <img src={box.image} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
                   <span className="min-w-0 flex-1 py-0.5">
@@ -527,7 +507,7 @@ function ProfileTab({ t, locale, setLocale, profile, openHelp, openDocuments, re
           <ProfileRow icon={<CircleHelp size={18} />} label={t('support')} onClick={openHelp} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
         </div>
-        <button onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6 w-full rounded-control bg-accent-soft px-4 py-4 text-sm font-black text-accent-strong">{t('signOutDemo')}</button>
+        <DangerButton onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6">{t('signOutDemo')}</DangerButton>
       </div>
     </section>
   );
@@ -563,17 +543,14 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
 
   return (
     <Overlay onClose={onClose}>
-      <form className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5" onSubmit={(event) => {
+      <form className="modal-body" onSubmit={(event) => {
         event.preventDefault();
         if (normalizedPhone) onSave(normalizedPhone);
       }}>
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xl font-black tracking-[-0.035em]">{t('changePhone')}</h2>
-          <button type="button" onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('back')}><X size={18} /></button>
-        </div>
-        <Field label={t('phone')} required value={value} setValue={(phone) => setValue(formatKazakhstanPhoneInput(phone))}
+        <ModalHeader title={t('changePhone')} onClose={onClose} closeLabel={t('close')} />
+        <TextField label={t('phone')} required value={value} onValueChange={(phone) => setValue(formatKazakhstanPhoneInput(phone))}
           placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
-        <button type="submit" disabled={!normalizedPhone} className="primary-button mt-6">{t('savePhone')}<Check size={19} /></button>
+        <PrimaryButton type="submit" disabled={!normalizedPhone} className="mt-6">{t('savePhone')}<Check size={19} /></PrimaryButton>
       </form>
     </Overlay>
   );
@@ -581,11 +558,14 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
 
 function ProfileRow({ icon, label, value, onClick }: { icon: React.ReactNode; label: string; value?: string; onClick?: () => void }) {
   return (
-    <button onClick={onClick} disabled={!onClick} className="flex w-full items-center gap-3 rounded-control bg-surface-soft p-4 text-left disabled:opacity-100">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-panel text-brand">{icon}</span>
-      <span className="min-w-0 flex-1"><span className="block text-sm font-black">{label}</span>{value && <span className="mt-0.5 block truncate text-xs text-ink-muted">{value}</span>}</span>
-      {onClick && <ChevronRight size={17} className="text-ink-subtle" />}
-    </button>
+    <ListRow
+      icon={icon}
+      title={label}
+      subtitle={value}
+      onClick={onClick}
+      disabled={!onClick}
+      trailing={onClick ? <ChevronRight size={17} className="text-ink-subtle" /> : undefined}
+    />
   );
 }
 
@@ -600,7 +580,7 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
     <nav className="z-[800] shrink-0 border-t border-border bg-surface/95 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
       <div className="grid grid-cols-4">
         {items.map((item) => (
-          <button key={item.id} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-black transition ${tab === item.id ? 'text-brand' : 'text-ink-subtle'}`}>
+          <button key={item.id} type="button" aria-current={tab === item.id ? 'page' : undefined} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-black transition ${tab === item.id ? 'text-brand' : 'text-ink-subtle'}`}>
             <span className={`grid h-8 w-12 place-items-center rounded-full ${tab === item.id ? 'bg-brand-soft' : ''}`}>{item.icon}</span>{t(item.label)}
           </button>
         ))}
@@ -612,7 +592,7 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
 function Overlay({ children, onClose, full = false }: { children: React.ReactNode; onClose: () => void; full?: boolean }) {
   return (
     <div className="absolute inset-0 z-[1000] flex items-end bg-brand-deep/40 backdrop-blur-[2px]" role="dialog" aria-modal="true">
-      <button onClick={onClose} className="absolute inset-0" aria-label="Close" />
+      <button type="button" onClick={onClose} className="absolute inset-0" aria-label="Close" />
       <section className={`relative z-10 w-full overflow-hidden bg-surface ${full ? 'min-h-full' : 'max-h-[92%] rounded-t-sheet'}`}>{children}</section>
     </div>
   );
@@ -628,9 +608,9 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
     <section className="absolute inset-0 z-[1000] flex h-full min-h-0 flex-col overflow-hidden bg-surface" role="dialog" aria-modal="true" aria-label={box.name}>
       <header data-testid="box-details-header" className="shrink-0 bg-brand px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
         <div className="flex min-h-11 items-center gap-3">
-          <button onClick={onClose} aria-label={t('back')} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/12"><ArrowLeft size={20} /></button>
+          <IconButton onClick={onClose} label={t('back')} tone="dark"><ChevronRight className="rotate-180" size={20} /></IconButton>
           <p className="min-w-0 flex-1 truncate text-center text-sm font-black">{store.name}</p>
-          <button onClick={toggleFavorite} aria-label={t('favorites')} aria-pressed={isFavorite} className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${isFavorite ? 'bg-accent-soft text-accent' : 'bg-white/12 text-white'}`}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></button>
+          <IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={isFavorite} tone={isFavorite ? 'accent' : 'dark'}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></IconButton>
         </div>
       </header>
 
@@ -657,7 +637,7 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
               </div>
             </div>
             <div data-testid="box-pickup-card" className="flex flex-col rounded-control border border-border bg-panel p-4">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-surface-soft text-brand"><Clock3 size={18} /></span>
+              <IconBadge tone="soft"><Clock3 size={18} /></IconBadge>
               <p className="mt-3 text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('pickup')}</p>
               <p className="mt-1 whitespace-nowrap text-sm font-black text-ink">{box.pickupFrom}–{box.pickupTo}</p>
             </div>
@@ -666,26 +646,26 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
           <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprise')}</p>
           <div className="mt-4 rounded-control border border-allergen-border bg-allergen-surface p-4">
             <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent-strong"><AlertTriangle size={19} /></span>
+              <IconBadge tone="accent"><AlertTriangle size={19} /></IconBadge>
               <div className="min-w-0">
                 <h3 className="text-sm font-black text-allergen-ink">{box.allergens ? t('containsAllergens') : t('allergens')}</h3>
                 <p className="mt-1.5 text-sm leading-5 text-allergen-body">{box.allergens ?? t('allergensUnknown')}</p>
               </div>
             </div>
           </div>
-          <div className="mt-5 rounded-control border border-border bg-panel p-4 shadow-card">
+          <SurfaceCard className="mt-5 p-4">
             <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-pale text-brand"><MapPin size={19} /></span>
+              <IconBadge><MapPin size={19} /></IconBadge>
               <div className="min-w-0"><p className="text-xs font-bold text-ink-muted">{t('addressLabel')}</p><p className="mt-1 text-sm font-black leading-5">{store.address}</p></div>
             </div>
-            <button onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-brand-pale px-4 text-sm font-black text-brand">
+            <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">
               <Route size={18} />{t('buildRoute')}
-            </button>
-          </div>
+            </SecondaryButton>
+          </SurfaceCard>
         </div>
       </div>
       <footer className="shrink-0 border-t border-border bg-surface/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
-        <button onClick={onBuy} disabled={box.quantity < 1} className="primary-button">{t('buy')}<ShoppingBag size={19} /></button>
+        <PrimaryButton onClick={onBuy} disabled={box.quantity < 1}>{t('buy')}<ShoppingBag size={19} /></PrimaryButton>
       </footer>
       {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
     </section>
@@ -705,16 +685,13 @@ function RoutePicker({ lat, lng, t, onClose }: {
   const options = getRouteOptions(lat, lng);
   return (
     <div className="absolute inset-0 z-[1200] flex items-end bg-brand-deep/45 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label={t('chooseMap')}>
-      <button onClick={onClose} className="absolute inset-0" aria-label={t('close')} />
+      <button type="button" onClick={onClose} className="absolute inset-0" aria-label={t('close')} />
       <section className="relative z-10 w-full rounded-t-sheet bg-surface px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 shadow-sheet">
-        <div className="mx-auto h-1.5 w-10 rounded-full bg-border-strong" />
-        <div className="mt-4 flex items-start justify-between gap-3">
-          <h2 className="pt-1 text-xl font-black tracking-[-0.03em]">{t('chooseMap')}</h2>
-          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('close')}><X size={18} /></button>
-        </div>
+        <SheetHandle />
+        <div className="mt-4"><ModalHeader title={t('chooseMap')} onClose={onClose} closeLabel={t('close')} /></div>
         <div className="mt-4 space-y-2">
           {options.map((option) => (
-            <button key={option.id} onClick={() => { openExternalLink(option.url); haptic('tap'); }} className="flex min-h-14 w-full items-center gap-3 rounded-control border border-border bg-panel px-3.5 text-left">
+            <button key={option.id} type="button" onClick={() => { openExternalLink(option.url); haptic('tap'); }} className="flex min-h-14 w-full items-center gap-3 rounded-control border border-border bg-panel px-3.5 text-left">
               <img src={routeProviderLogo[option.id]} alt={`${option.label} logo`} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
               <span className="flex-1 text-sm font-black">{option.label}</span>
               <ChevronRight size={17} className="text-ink-subtle" />
@@ -731,9 +708,9 @@ function Checkout({ box, quantity, setQuantity, locale, t, onClose, onPay }: {
 }) {
   return (
     <Overlay onClose={onClose}>
-      <div className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
-        <div className="mx-auto h-1.5 w-10 rounded-full bg-border-strong" />
-        <div className="mt-5 flex items-center justify-between"><h2 className="text-2xl font-black tracking-[-0.04em]">{t('demoPayment')}</h2><button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-surface-muted"><X size={18} /></button></div>
+      <div className="modal-body">
+        <SheetHandle />
+        <div className="mt-5"><ModalHeader title={t('demoPayment')} onClose={onClose} closeLabel={t('close')} /></div>
         <div className="mt-5 flex gap-4 rounded-control bg-surface-soft p-3">
           <img src={box.image} alt="" className="h-20 w-20 rounded-xl object-cover" />
           <div className="min-w-0 flex-1 py-1"><p className="truncate text-base font-black">{box.name}</p><p className="mt-1 text-xs text-ink-muted">{storeById(box.storeId).name}</p><p className="mt-2 text-sm font-black text-brand">{formatPrice(box.salePrice, locale)}</p></div>
@@ -741,15 +718,15 @@ function Checkout({ box, quantity, setQuantity, locale, t, onClose, onPay }: {
         <div className="mt-5 flex items-center justify-between">
           <span className="text-sm font-black">{t('quantity')}</span>
           <div className="flex items-center gap-3">
-            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="grid h-10 w-10 place-items-center rounded-full bg-surface-muted" disabled={quantity <= 1}><Minus size={17} /></button>
+            <IconButton onClick={() => setQuantity(Math.max(1, quantity - 1))} label={`${t('quantity')} −`} disabled={quantity <= 1}><Minus size={17} /></IconButton>
             <span className="w-5 text-center text-lg font-black">{quantity}</span>
-            <button onClick={() => setQuantity(Math.min(box.quantity, quantity + 1))} className="grid h-10 w-10 place-items-center rounded-full bg-brand text-white" disabled={quantity >= box.quantity}><Plus size={17} /></button>
+            <IconButton onClick={() => setQuantity(Math.min(box.quantity, quantity + 1))} label={`${t('quantity')} +`} tone="brand" disabled={quantity >= box.quantity}><Plus size={17} /></IconButton>
           </div>
         </div>
         <div className="my-5 h-px bg-border" />
         <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black">{formatPrice(box.salePrice * quantity, locale)}</span></div>
         <p className="mt-4 flex gap-2 rounded-control bg-warning-surface p-3 text-xs leading-5 text-warning-ink"><Info size={17} className="mt-0.5 shrink-0" />{t('paymentNote')}</p>
-        <button onClick={onPay} className="primary-button mt-5">{t('pay')}<ChevronRight size={19} /></button>
+        <PrimaryButton onClick={onPay} className="mt-5">{t('pay')}<ChevronRight size={19} /></PrimaryButton>
       </div>
     </Overlay>
   );
@@ -769,7 +746,7 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
           <p className="text-xs font-bold text-white/60">{t('pickupCode')}</p>
           <p className="mt-2 text-5xl font-black tracking-[0.16em]">{order.pickupCode}</p>
         </div>
-        <button onClick={onDone} className="primary-button mt-8">{t('toOrders')}<ChevronRight size={19} /></button>
+        <PrimaryButton onClick={onDone} className="mt-8">{t('toOrders')}<ChevronRight size={19} /></PrimaryButton>
       </div>
     </Overlay>
   );
@@ -786,18 +763,18 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
 
   return (
     <Overlay onClose={onClose}>
-      <div className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
-        <div className="flex items-center gap-3">
-          {selectedDocument && (
-            <button onClick={() => setSelectedDocument(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('back')}><ArrowLeft size={18} /></button>
-          )}
-          <h2 className="min-w-0 flex-1 text-xl font-black">{selectedDocument ? t(LEGAL_TITLE_KEYS[selectedDocument]) : t('legal')}</h2>
-          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('close')}><X size={18} /></button>
-        </div>
+      <div className="modal-body">
+        <ModalHeader
+          title={selectedDocument ? t(LEGAL_TITLE_KEYS[selectedDocument]) : t('legal')}
+          onBack={selectedDocument ? () => setSelectedDocument(null) : undefined}
+          backLabel={t('back')}
+          onClose={onClose}
+          closeLabel={t('close')}
+        />
         {selectedDocument ? (
           <>
             <LegalDocumentNotice t={t} />
-            <button onClick={() => setSelectedDocument(null)} className="primary-button mt-5">{t('back')}</button>
+            <PrimaryButton onClick={() => setSelectedDocument(null)} className="mt-5">{t('back')}</PrimaryButton>
           </>
         ) : (
           <div className="mt-5 space-y-2">
@@ -826,12 +803,14 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
   return (
     <Overlay onClose={onClose}>
       <div className="max-h-[82dvh] overflow-y-auto px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
-        <div className="sticky top-0 z-10 flex items-center gap-3 bg-surface pb-3">
-          {view !== 'menu' && (
-            <button onClick={() => setView('menu')} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('back')}><ArrowLeft size={18} /></button>
-          )}
-          <h2 className="min-w-0 flex-1 text-xl font-black">{title}</h2>
-          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('close')}><X size={18} /></button>
+        <div className="sticky top-0 z-10 bg-surface pb-3">
+          <ModalHeader
+            title={title}
+            onBack={view !== 'menu' ? () => setView('menu') : undefined}
+            backLabel={t('back')}
+            onClose={onClose}
+            closeLabel={t('close')}
+          />
         </div>
 
         {view === 'menu' && (
@@ -889,10 +868,10 @@ function LegalDocumentNotice({ t }: { t: Translator }) {
 function LegalModal({ type, t, onClose }: { type: LegalDocument; t: Translator; onClose: () => void }) {
   return (
     <Overlay onClose={onClose}>
-      <div className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
-        <div className="flex items-center justify-between gap-4"><h2 className="text-xl font-black">{t(LEGAL_TITLE_KEYS[type])}</h2><button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('close')}><X size={18} /></button></div>
+      <div className="modal-body">
+        <ModalHeader title={t(LEGAL_TITLE_KEYS[type])} onClose={onClose} closeLabel={t('close')} />
         <LegalDocumentNotice t={t} />
-        <button onClick={onClose} className="primary-button mt-5">{t('back')}</button>
+        <PrimaryButton onClick={onClose} className="mt-5">{t('back')}</PrimaryButton>
       </div>
     </Overlay>
   );

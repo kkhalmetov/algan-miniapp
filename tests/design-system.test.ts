@@ -43,5 +43,14 @@ describe('Algan design system', () => {
     expect(guide).toContain('## Tokens');
     expect(guide).toContain('## Components');
     expect(guide).toContain('new raw hex values are not allowed');
+    expect(guide).toContain('components/ui-kit.tsx');
+  });
+
+  it('routes shared controls through the UI kit', () => {
+    const app = readFileSync(resolve(root, 'app/app-client.tsx'), 'utf8');
+
+    expect(app).toContain("from '@/components/ui-kit'");
+    expect(app).not.toContain('className="primary-button');
+    expect(app).not.toContain('grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted');
   });
 });

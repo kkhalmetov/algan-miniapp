@@ -17,9 +17,16 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 
 ## Components
 
-- Primary button: 56 px minimum height, brand background, white heavy label, `rounded-control`.
+- The canonical React primitives live in `components/ui-kit.tsx`. Product screens compose these primitives instead of recreating their class lists.
+- `PrimaryButton`, `SecondaryButton`, `DangerButton`: one action hierarchy with shared sizing, pressed and disabled states.
+- `IconButton`: 44 × 44 px touch target with muted, dark, brand and accent variants; an accessible label is mandatory.
+- `TextField`: shared label, required marker, border, focus ring and placeholder treatment.
+- `ModalHeader` and `SheetHandle`: consistent navigation, close controls and sheet affordance.
+- `ListRow`: shared profile and menu row with icon container, optional supporting text and trailing action.
+- `SegmentedControl`: shared two-state selector with pressed-state semantics.
+- `EmptyState`: shared illustration container, title and supporting copy.
+- `IconBadge`: shared contextual icon container for informational cards.
 - Cards: panel background, border token, `rounded-card`, card shadow only when separation from the surface is needed.
-- Icon buttons: 36–44 px square, circular, muted surface; brand or accent indicates selection.
 - Sheets and modals: surface background, `rounded-sheet` top corners, dimmed brand-deep overlay.
 - Inputs: 52 px height, panel background, border token, brand focus ring.
 - Navigation: surface background, border token, brand-soft selected pill, muted inactive icons.
