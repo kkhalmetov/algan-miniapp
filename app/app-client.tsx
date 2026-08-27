@@ -735,10 +735,16 @@ function CartQuantityControl({ boxName, quantity, max, locale, t, onChange }: {
     );
   }
   return (
-    <div className="flex min-h-11 items-center justify-between rounded-control bg-brand-soft px-2">
-      <IconButton onClick={() => onChange(quantity - 1)} label={`${t('quantity')} −`}><Minus size={18} /></IconButton>
+    <div className="flex min-h-11 items-center justify-between rounded-control bg-brand-soft px-2.5 py-1.5">
+      <button type="button" onClick={() => onChange(quantity - 1)} aria-label={`${t('quantity')} −`}
+        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface-muted text-ink transition active:scale-95">
+        <Minus size={16} />
+      </button>
       <span className="text-base font-black text-brand">{quantity}</span>
-      <IconButton onClick={() => onChange(quantity + 1)} label={`${t('quantity')} +`} tone="brand" disabled={quantity >= max}><Plus size={18} /></IconButton>
+      <button type="button" onClick={() => onChange(quantity + 1)} aria-label={`${t('quantity')} +`} disabled={quantity >= max}
+        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-white transition active:scale-95 disabled:opacity-45">
+        <Plus size={16} />
+      </button>
     </div>
   );
 }
