@@ -646,10 +646,12 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
         <div className="px-6 pb-6 pt-11">
           <p className="text-sm font-bold text-ink-secondary">{store.name}</p>
           <h1 className="mt-2 text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
-          {box.type === 'SURPRISE' && <SurpriseBadge className="mt-3" />}
-          <span data-testid="box-stock" className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${box.quantity > 0 ? 'bg-accent-soft text-accent-strong' : 'bg-danger-soft text-danger'}`}>
-            <Package size={15} />{formatBoxesLeft(box.quantity, locale)}
-          </span>
+          {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}
+          <div className="mt-2">
+            <span data-testid="box-stock" className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${box.quantity > 0 ? 'bg-accent-soft text-accent-strong' : 'bg-danger-soft text-danger'}`}>
+              <Package size={15} />{formatBoxesLeft(box.quantity, locale)}
+            </span>
+          </div>
           <div className="mt-4 grid grid-cols-[1.08fr_.92fr] gap-3">
             <div data-testid="box-price-card" className="rounded-control bg-brand-pale p-4">
               <p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p>
