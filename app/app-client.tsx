@@ -694,8 +694,8 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
   const items: { id: Tab; icon: React.ReactNode; label: CopyKey }[] = [
     { id: 'home', icon: <Home size={21} />, label: 'home' },
     { id: 'map', icon: <MapIcon size={21} />, label: 'map' },
-    { id: 'favorites', icon: <Heart size={21} />, label: 'favorites' },
-    { id: 'orders', icon: <ShoppingBag size={21} />, label: 'orders' },
+    { id: 'favorites', icon: <Heart size={21} />, label: 'favoritesNav' },
+    { id: 'orders', icon: <ShoppingBag size={21} />, label: 'ordersNav' },
   ];
   return (
     <nav className="z-[800] shrink-0 border-t border-border bg-surface/95 px-1 pb-[max(.4rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl">
