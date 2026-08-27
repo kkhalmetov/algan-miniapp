@@ -178,7 +178,7 @@ export default function AlganApp() {
   }
   return (
     <PhoneShell>
-      <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-[#fffdf8] sm:h-[780px]">
+      <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-surface sm:h-[780px]">
         <main className={`min-h-0 flex-1 overflow-x-hidden overscroll-contain ${tab === 'map' ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
           {tab === 'home' && (
             <HomeTab
@@ -229,7 +229,7 @@ export default function AlganApp() {
 
 function Splash() {
   return (
-    <main className="grid min-h-dvh place-items-center overflow-hidden bg-[#1f5c49] px-6 text-white" aria-label="Algan загружается">
+    <main className="grid min-h-dvh place-items-center overflow-hidden bg-brand px-6 text-white" aria-label="Algan загружается">
       <div className="flex flex-col items-center">
         <AlganLogo
           light
@@ -247,8 +247,8 @@ function Splash() {
 
 function PhoneShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-dvh bg-[#eee7da] text-[#173c31] sm:grid sm:place-items-center sm:px-8 sm:py-6">
-      <section className="relative mx-auto min-h-dvh w-full max-w-[460px] overflow-hidden bg-[#fffdf8] sm:min-h-[780px] sm:rounded-[36px] sm:shadow-[0_26px_90px_rgba(24,61,49,0.18)]">
+    <main className="min-h-dvh bg-canvas text-ink sm:grid sm:place-items-center sm:px-8 sm:py-6">
+      <section className="relative mx-auto min-h-dvh w-full max-w-[460px] overflow-hidden bg-surface sm:min-h-[780px] sm:rounded-shell sm:shadow-shell">
         {children}
       </section>
     </main>
@@ -270,27 +270,27 @@ function Onboarding(props: OnboardingProps) {
   const canContinue = Boolean(normalizeKazakhstanPhone(phone) && terms && privacy);
   return (
     <div className="flex min-h-dvh flex-col sm:min-h-[780px]">
-      <div className="relative overflow-hidden bg-[#1f5c49] px-7 pb-9 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
-        <div className="absolute -right-8 -top-6 h-40 w-40 rounded-full bg-[#f5b968]/20" />
-        <div className="absolute -bottom-14 -left-8 h-36 w-36 rounded-full border-[28px] border-[#cce385]/20" />
+      <div className="relative overflow-hidden bg-brand px-7 pb-9 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
+        <div className="absolute -right-8 -top-6 h-40 w-40 rounded-full bg-warning-ink/20" />
+        <div className="absolute -bottom-14 -left-8 h-36 w-36 rounded-full border-[28px] border-highlight/20" />
         <div className="relative flex items-start justify-between">
           <AlganLogo light />
           <LanguagePill locale={locale} setLocale={setLocale} dark />
         </div>
         <div className="relative mt-12">
-          <p className="text-sm font-bold text-[#d9ed9a]">{t('slogan')}</p>
+          <p className="text-sm font-bold text-highlight">{t('slogan')}</p>
           <h1 className="mt-2 max-w-[340px] text-[34px] font-black leading-[1.04] tracking-[-0.05em]">{t('hero')}</h1>
         </div>
       </div>
 
       <form className="flex flex-1 flex-col px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-7" onSubmit={(event) => { event.preventDefault(); onContinue(); }}>
-        <p className="text-sm font-bold text-[#db6f4b]">{t('intro')}</p>
+        <p className="text-sm font-bold text-accent">{t('intro')}</p>
         <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">{t('askName')}</h2>
-        <p className="mt-2 text-sm leading-6 text-[#63736c]">{t('nameHelp')}</p>
+        <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('nameHelp')}</p>
 
         <Field label={t('phone')} required value={phone} setValue={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
 
-        <div className="mt-5 space-y-3 text-[13px] leading-5 text-[#43574f]">
+        <div className="mt-5 space-y-3 text-[13px] leading-5 text-ink-secondary">
           <Consent checked={terms} setChecked={setTerms} text={t('terms')} onOpen={() => openLegal('terms')} />
           <Consent checked={privacy} setChecked={setPrivacy} text={t('privacy')} onOpen={() => openLegal('privacy')} />
         </div>
@@ -306,10 +306,10 @@ function Field({ label, optional, required, value, setValue, placeholder, autoCo
 }) {
   return (
     <label className="mt-5 block min-w-0 text-sm font-extrabold">
-      <span>{label} {required && <span className="text-[#db6f4b]">*</span>}</span>
-      {optional && <span className="ml-1 text-[11px] font-medium text-[#8a9791]">({optional})</span>}
+      <span>{label} {required && <span className="text-accent">*</span>}</span>
+      {optional && <span className="ml-1 text-[11px] font-medium text-ink-subtle">({optional})</span>}
       <input type={type} value={value} onChange={(event) => setValue(event.target.value)} placeholder={placeholder} autoComplete={autoComplete}
-        className="mt-2 h-13 w-full rounded-2xl border border-[#dde3dd] bg-white px-4 text-[15px] outline-none transition placeholder:text-[#a4ada8] focus:border-[#2d745e] focus:ring-4 focus:ring-[#2d745e]/10" />
+        className="mt-2 h-13 w-full rounded-control border border-border bg-panel px-4 text-[15px] outline-none transition placeholder:text-ink-subtle focus:border-brand-hover focus:ring-4 focus:ring-brand-hover/10" />
     </label>
   );
 }
@@ -321,15 +321,15 @@ function Consent({ checked, setChecked, text, onOpen }: { checked: boolean; setC
   return (
     <label className="flex cursor-pointer gap-3">
       <input type="checkbox" checked={checked} onChange={(event) => setChecked(event.target.checked)} className="peer sr-only" />
-      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 border-[#b9c5bf] bg-white text-white transition peer-checked:border-[#1f5c49] peer-checked:bg-[#1f5c49]"><Check size={14} strokeWidth={3} /></span>
-      <span>{prefix}<button type="button" onClick={(event) => { event.preventDefault(); onOpen(); }} className="font-extrabold text-[#1f5c49] underline decoration-[#9ab7ac] underline-offset-2">{linked}</button></span>
+      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 border-border-strong bg-panel text-white transition peer-checked:border-brand peer-checked:bg-brand"><Check size={14} strokeWidth={3} /></span>
+      <span>{prefix}<button type="button" onClick={(event) => { event.preventDefault(); onOpen(); }} className="font-extrabold text-brand underline decoration-border-strong underline-offset-2">{linked}</button></span>
     </label>
   );
 }
 
 function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; setLocale: (locale: Locale) => void; dark?: boolean }) {
   return (
-    <button onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} className={`flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-black uppercase ${dark ? 'bg-white/12 text-white' : 'bg-[#edf3ed] text-[#1f5c49]'}`} aria-label="Switch language">
+    <button onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} className={`flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-black uppercase ${dark ? 'bg-white/12 text-white' : 'bg-surface-soft text-brand'}`} aria-label="Switch language">
       <Languages size={15} /> {locale === 'ru' ? 'Қаз' : 'Рус'}
     </button>
   );
@@ -343,19 +343,19 @@ function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, category, 
   const filtered = category === 'all' ? boxes : boxes.filter((box) => storeById(box.storeId).type === category);
   return (
     <>
-      <header className="bg-[#1f5c49] px-6 pb-8 pt-[max(1.4rem,env(safe-area-inset-top))] text-white">
+      <header className="bg-brand px-6 pb-8 pt-[max(1.4rem,env(safe-area-inset-top))] text-white">
         <div className="mt-2 flex items-center justify-between gap-4">
           <div className="min-w-0"><p className="text-sm text-white/70">{t('greeting')},</p><h1 className="mt-0.5 truncate text-[30px] font-black tracking-[-0.045em]">{profile.firstName}!</h1></div>
-          <button type="button" onClick={openProfile} aria-label={t('profile')} className="shrink-0 rounded-full outline-none ring-white/70 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1f5c49]">
+          <button type="button" onClick={openProfile} aria-label={t('profile')} className="shrink-0 rounded-full outline-none ring-white/70 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
             <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} compact />
           </button>
         </div>
       </header>
 
-      <section className="bg-[#fffdf8] px-5 pt-6">
+      <section className="bg-surface px-5 pt-6">
         <div className="hide-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5">
           {(['all', 'bakery', 'cafe', 'market'] as const).map((item) => (
-            <button key={item} onClick={() => setCategory(item)} className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-black transition ${category === item ? 'bg-[#1f5c49] text-white' : 'bg-[#edf1eb] text-[#50645b]'}`}>{t(item)}</button>
+            <button key={item} onClick={() => setCategory(item)} className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-black transition ${category === item ? 'bg-brand text-white' : 'bg-surface-soft text-ink-secondary'}`}>{t(item)}</button>
           ))}
         </div>
 
@@ -372,30 +372,30 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
   const store = storeById(box.storeId);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
-    <article className="overflow-hidden rounded-[24px] border border-[#e3e7e1] bg-white shadow-[0_9px_30px_rgba(30,72,58,0.07)]">
+    <article className="overflow-hidden rounded-card border border-border bg-panel shadow-card">
       <button onClick={onOpen} className="relative block h-44 w-full overflow-hidden text-left">
         <img src={box.image} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
-        <span className="absolute left-3 top-3 rounded-full bg-[#db6f4b] px-3 py-1.5 text-[11px] font-black text-white">−{discount}%</span>
+        <span className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1.5 text-[11px] font-black text-white">−{discount}%</span>
         {box.isHalal && (
-          <span className="absolute right-3 top-3 grid h-10 w-10 place-items-center drop-shadow-[0_5px_8px_rgba(23,60,49,0.28)]">
+          <span className="absolute right-3 top-3 grid h-10 w-10 place-items-center drop-shadow-md">
             <img src="/images/halal-logo.svg" alt="Halal" className="h-full w-full object-contain" />
           </span>
         )}
-        <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-white bg-white shadow-[0_6px_18px_rgba(23,60,49,0.22)]">
+        <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-panel bg-panel shadow-card">
           <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
         </span>
       </button>
       <div className="p-4">
         <div className="flex items-start gap-3">
           <button onClick={onOpen} className="min-w-0 flex-1 text-left">
-            <p className="text-xs font-bold text-[#718078]">{store.name}</p>
+            <p className="text-xs font-bold text-ink-muted">{store.name}</p>
             <h3 className="mt-1 truncate text-lg font-black tracking-[-0.03em]">{box.name}</h3>
           </button>
-          <button onClick={toggleFavorite} aria-label={t('favorites')} className={`grid h-10 w-10 place-items-center rounded-full ${favorite ? 'bg-[#ffe9e1] text-[#db6f4b]' : 'bg-[#f1f3ef] text-[#65766e]'}`}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></button>
+          <button onClick={toggleFavorite} aria-label={t('favorites')} className={`grid h-10 w-10 place-items-center rounded-full ${favorite ? 'bg-accent-soft text-accent' : 'bg-surface-soft text-ink-secondary'}`}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></button>
         </div>
         <div className="mt-4 flex items-end justify-between gap-3">
-          <div><p className="text-xs text-[#849088] line-through">{formatPrice(box.originalPrice, locale)}</p><p className="text-lg font-black text-[#1f5c49]">{formatPrice(box.salePrice, locale)}</p></div>
-          <div className="text-right"><p className={`text-[11px] font-bold ${box.quantity > 0 ? 'text-[#db6f4b]' : 'text-[#a43d32]'}`}>{box.quantity > 0 ? `${box.quantity} ${t('left')}` : formatBoxesLeft(0, locale)}</p><p className="mt-1 text-xs font-semibold text-[#607169]">{box.pickupFrom}–{box.pickupTo}</p></div>
+          <div><p className="text-xs text-ink-muted line-through">{formatPrice(box.originalPrice, locale)}</p><p className="text-lg font-black text-brand">{formatPrice(box.salePrice, locale)}</p></div>
+          <div className="text-right"><p className={`text-[11px] font-bold ${box.quantity > 0 ? 'text-accent' : 'text-danger'}`}>{box.quantity > 0 ? `${box.quantity} ${t('left')}` : formatBoxesLeft(0, locale)}</p><p className="mt-1 text-xs font-semibold text-ink-secondary">{box.pickupFrom}–{box.pickupTo}</p></div>
         </div>
       </div>
     </article>
@@ -410,10 +410,10 @@ function MapTab({ openBox }: { openBox: (box: Box) => void }) {
     <div className="relative h-full min-h-0">
       <LocationMap lat={SHYMKENT.lat} lng={SHYMKENT.lng} stores={stores} onSelectStore={selectStore} className="absolute inset-0" />
       {selected && (
-        <button onClick={() => openBox(selected)} className="absolute bottom-5 left-4 right-4 z-[600] flex gap-3 rounded-[22px] bg-white p-3 text-left shadow-[0_18px_50px_rgba(23,60,49,0.22)]">
+        <button onClick={() => openBox(selected)} className="absolute bottom-5 left-4 right-4 z-[600] flex gap-3 rounded-card bg-panel p-3 text-left shadow-floating">
           <img src={selected.image} alt="" className="h-20 w-20 rounded-2xl object-cover" />
-          <span className="min-w-0 flex-1 py-1"><span className="block text-xs font-bold text-[#738078]">{storeById(selected.storeId).name}</span><span className="mt-1 block truncate text-base font-black">{selected.name}</span><span className="mt-2 block text-sm font-black text-[#1f5c49]">{formatPrice(selected.salePrice, 'ru')}</span></span>
-          <ChevronRight className="mt-7 text-[#829087]" size={19} />
+          <span className="min-w-0 flex-1 py-1"><span className="block text-xs font-bold text-ink-muted">{storeById(selected.storeId).name}</span><span className="mt-1 block truncate text-base font-black">{selected.name}</span><span className="mt-2 block text-sm font-black text-brand">{formatPrice(selected.salePrice, 'ru')}</span></span>
+          <ChevronRight className="mt-7 text-ink-muted" size={19} />
         </button>
       )}
     </div>
@@ -427,9 +427,9 @@ function FavoritesTab({ t, locale, favoriteStoreIds, toggleFavorite, openBox }: 
       <h1 className="mt-2 text-[30px] font-black tracking-[-0.045em]">{t('favorites')}</h1>
       {favoriteBoxes.length === 0 ? (
         <div className="mt-20 text-center">
-          <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-[#ffe9e1] text-[#db6f4b]"><Heart size={34} /></span>
+          <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-accent-soft text-accent"><Heart size={34} /></span>
           <h2 className="mx-auto mt-6 max-w-[280px] text-xl font-black">{t('noFavorites')}</h2>
-          <p className="mx-auto mt-2 max-w-[280px] text-sm leading-6 text-[#6d7c75]">{t('noFavoritesText')}</p>
+          <p className="mx-auto mt-2 max-w-[280px] text-sm leading-6 text-ink-secondary">{t('noFavoritesText')}</p>
         </div>
       ) : (
         <div className="mt-6 space-y-4">
@@ -451,14 +451,14 @@ function OrdersTab({ t, locale, orders, openBox }: {
   return (
     <section className="px-5 pb-7 pt-[max(1.5rem,env(safe-area-inset-top))]">
       <h1 className="mt-2 text-[30px] font-black tracking-[-0.045em]">{t('orders')}</h1>
-      <div className="mt-5 grid grid-cols-2 rounded-2xl bg-[#edf1ed] p-1" role="group" aria-label={t('orders')}>
+      <div className="mt-5 grid grid-cols-2 rounded-control bg-surface-muted p-1" role="group" aria-label={t('orders')}>
         {(['active', 'past'] as const).map((item) => (
           <button
             key={item}
             type="button"
             aria-pressed={view === item}
             onClick={() => { setView(item); haptic('tap'); }}
-            className={`min-h-11 rounded-xl px-3 text-sm font-black transition ${view === item ? 'bg-white text-[#1f5c49] shadow-sm' : 'text-[#7b8982]'}`}
+            className={`min-h-11 rounded-xl px-3 text-sm font-black transition ${view === item ? 'bg-panel text-brand shadow-sm' : 'text-ink-muted'}`}
           >
             {item === 'active' ? t('activeOrders') : t('pastOrders')}
           </button>
@@ -467,11 +467,11 @@ function OrdersTab({ t, locale, orders, openBox }: {
 
       {visibleOrders.length === 0 ? (
         <div className="mt-20 text-center">
-          <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-[#e7efcf] text-[#1f5c49]">
+          <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-brand-pale text-brand">
             {view === 'active' ? <ShoppingBag size={34} /> : <PackageCheck size={34} />}
           </span>
           <h2 className="mx-auto mt-6 max-w-[290px] text-xl font-black">{emptyTitle}</h2>
-          <p className="mx-auto mt-2 max-w-[290px] text-sm leading-6 text-[#6d7c75]">{emptyText}</p>
+          <p className="mx-auto mt-2 max-w-[290px] text-sm leading-6 text-ink-secondary">{emptyText}</p>
         </div>
       ) : (
         <div className="mt-5 space-y-3">
@@ -483,24 +483,24 @@ function OrdersTab({ t, locale, orders, openBox }: {
               day: 'numeric', month: 'long', year: 'numeric',
             }).format(new Date(order.createdAt));
             return (
-              <button key={order.id} onClick={() => openBox(box)} className="w-full rounded-[22px] border border-[#e0e6df] bg-white p-3 text-left shadow-[0_8px_24px_rgba(32,69,56,0.06)]">
+              <button key={order.id} onClick={() => openBox(box)} className="w-full rounded-card border border-border bg-panel p-3 text-left shadow-card">
                 <span className="flex gap-3">
                   <img src={box.image} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
                   <span className="min-w-0 flex-1 py-0.5">
-                    <span className="block truncate text-xs font-bold text-[#74817b]">{store.name}</span>
+                    <span className="block truncate text-xs font-bold text-ink-muted">{store.name}</span>
                     <span className="mt-1 block truncate text-base font-black">{box.name}</span>
-                    <span className="mt-1 block truncate text-[11px] font-semibold text-[#8a9690]">{t('orderId')}: {formatOrderId(order.id)}</span>
-                    <span className="mt-2 flex items-center justify-between gap-3 text-xs text-[#66756e]">
+                    <span className="mt-1 block truncate text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</span>
+                    <span className="mt-2 flex items-center justify-between gap-3 text-xs text-ink-secondary">
                       <span>{t('quantity')}: {order.quantity}</span>
-                      <b className="text-sm text-[#1f5c49]">{formatPrice(order.total, locale)}</b>
+                      <b className="text-sm text-brand">{formatPrice(order.total, locale)}</b>
                     </span>
                   </span>
                 </span>
-                <span className="mt-3 flex items-center justify-between gap-3 border-t border-[#edf0ed] pt-3 text-xs">
+                <span className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
                   {view === 'active' ? (
-                    <><span className="font-bold text-[#68776f]">{t('pickup')}: {box.pickupFrom}–{box.pickupTo}</span><span className="rounded-full bg-[#dceab3] px-3 py-1.5 font-black text-[#1f5c49]">{t('pickupCode')}: {order.pickupCode}</span></>
+                    <><span className="font-bold text-ink-secondary">{t('pickup')}: {box.pickupFrom}–{box.pickupTo}</span><span className="rounded-full bg-brand-soft px-3 py-1.5 font-black text-brand">{t('pickupCode')}: {order.pickupCode}</span></>
                   ) : (
-                    <><span className="font-bold text-[#7a8781]">{orderDate}</span><ChevronRight size={17} className="text-[#89958f]" /></>
+                    <><span className="font-bold text-ink-muted">{orderDate}</span><ChevronRight size={17} className="text-ink-subtle" /></>
                   )}
                 </span>
               </button>
@@ -518,21 +518,21 @@ function ProfileTab({ t, locale, setLocale, profile, openHelp, openDocuments, re
 }) {
   return (
     <section className="pb-8">
-      <header className="bg-[#1f5c49] px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
+      <header className="bg-brand px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
         <div className="mt-2 flex items-center gap-4">
           <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} />
           <div><h1 className="text-2xl font-black">{profile.firstName} {profile.lastName}</h1><p className="mt-1 text-sm text-white/65">{profile.phone ? formatKazakhstanPhoneInput(profile.phone) : 'Telegram Mini App'}</p></div>
         </div>
       </header>
 
-      <div className="bg-[#fffdf8] px-5 pt-6">
+      <div className="bg-surface px-5 pt-6">
         <div className="space-y-2">
           <ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={profile.phone ? formatKazakhstanPhoneInput(profile.phone) : undefined} onClick={onEditPhone} />
           <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
           <ProfileRow icon={<CircleHelp size={18} />} label={t('support')} onClick={openHelp} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
         </div>
-        <button onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6 w-full rounded-2xl bg-[#fff0ea] px-4 py-4 text-sm font-black text-[#b44b2b]">{t('signOutDemo')}</button>
+        <button onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6 w-full rounded-control bg-accent-soft px-4 py-4 text-sm font-black text-accent-strong">{t('signOutDemo')}</button>
       </div>
     </section>
   );
@@ -552,7 +552,7 @@ function ProfileAvatar({ profile, compact = false }: { profile: UserProfile; com
   };
 
   return (
-    <div className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-[#d9ed9a] font-black text-[#173c31] ${compact ? 'h-12 w-12 text-lg' : 'h-16 w-16 text-2xl'}`}>
+    <div className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-highlight font-black text-ink ${compact ? 'h-12 w-12 text-lg' : 'h-16 w-16 text-2xl'}`}>
       {photoSource && !imageFailed
         ? <img src={photoSource} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={retryImage} />
         : initial}
@@ -574,7 +574,7 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
       }}>
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-xl font-black tracking-[-0.035em]">{t('changePhone')}</h2>
-          <button type="button" onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('back')}><X size={18} /></button>
+          <button type="button" onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('back')}><X size={18} /></button>
         </div>
         <Field label={t('phone')} required value={value} setValue={(phone) => setValue(formatKazakhstanPhoneInput(phone))}
           placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
@@ -586,10 +586,10 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
 
 function ProfileRow({ icon, label, value, onClick }: { icon: React.ReactNode; label: string; value?: string; onClick?: () => void }) {
   return (
-    <button onClick={onClick} disabled={!onClick} className="flex w-full items-center gap-3 rounded-2xl bg-[#f2f5f1] p-4 text-left disabled:opacity-100">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-[#1f5c49]">{icon}</span>
-      <span className="min-w-0 flex-1"><span className="block text-sm font-black">{label}</span>{value && <span className="mt-0.5 block truncate text-xs text-[#74817b]">{value}</span>}</span>
-      {onClick && <ChevronRight size={17} className="text-[#89958f]" />}
+    <button onClick={onClick} disabled={!onClick} className="flex w-full items-center gap-3 rounded-control bg-surface-soft p-4 text-left disabled:opacity-100">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-panel text-brand">{icon}</span>
+      <span className="min-w-0 flex-1"><span className="block text-sm font-black">{label}</span>{value && <span className="mt-0.5 block truncate text-xs text-ink-muted">{value}</span>}</span>
+      {onClick && <ChevronRight size={17} className="text-ink-subtle" />}
     </button>
   );
 }
@@ -602,11 +602,11 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
     { id: 'orders', icon: <ShoppingBag size={21} />, label: 'orders' },
   ];
   return (
-    <nav className="z-[800] shrink-0 border-t border-[#e3e7e2] bg-[#fffdf8]/95 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
+    <nav className="z-[800] shrink-0 border-t border-border bg-surface/95 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
       <div className="grid grid-cols-4">
         {items.map((item) => (
-          <button key={item.id} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-black transition ${tab === item.id ? 'text-[#1f5c49]' : 'text-[#89958f]'}`}>
-            <span className={`grid h-8 w-12 place-items-center rounded-full ${tab === item.id ? 'bg-[#dceab3]' : ''}`}>{item.icon}</span>{t(item.label)}
+          <button key={item.id} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-black transition ${tab === item.id ? 'text-brand' : 'text-ink-subtle'}`}>
+            <span className={`grid h-8 w-12 place-items-center rounded-full ${tab === item.id ? 'bg-brand-soft' : ''}`}>{item.icon}</span>{t(item.label)}
           </button>
         ))}
       </div>
@@ -616,9 +616,9 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
 
 function Overlay({ children, onClose, full = false }: { children: React.ReactNode; onClose: () => void; full?: boolean }) {
   return (
-    <div className="absolute inset-0 z-[1000] flex items-end bg-[#102b22]/40 backdrop-blur-[2px]" role="dialog" aria-modal="true">
+    <div className="absolute inset-0 z-[1000] flex items-end bg-brand-deep/40 backdrop-blur-[2px]" role="dialog" aria-modal="true">
       <button onClick={onClose} className="absolute inset-0" aria-label="Close" />
-      <section className={`relative z-10 w-full overflow-hidden bg-[#fffdf8] ${full ? 'min-h-full' : 'max-h-[92%] rounded-t-[30px]'}`}>{children}</section>
+      <section className={`relative z-10 w-full overflow-hidden bg-surface ${full ? 'min-h-full' : 'max-h-[92%] rounded-t-sheet'}`}>{children}</section>
     </div>
   );
 }
@@ -630,71 +630,71 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   const [routePickerOpen, setRoutePickerOpen] = useState(false);
   return (
-    <section className="absolute inset-0 z-[1000] flex h-full min-h-0 flex-col overflow-hidden bg-[#fffdf8]" role="dialog" aria-modal="true" aria-label={box.name}>
-      <header data-testid="box-details-header" className="shrink-0 bg-[#1f5c49] px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
+    <section className="absolute inset-0 z-[1000] flex h-full min-h-0 flex-col overflow-hidden bg-surface" role="dialog" aria-modal="true" aria-label={box.name}>
+      <header data-testid="box-details-header" className="shrink-0 bg-brand px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
         <div className="flex min-h-11 items-center gap-3">
           <button onClick={onClose} aria-label={t('back')} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/12"><ArrowLeft size={20} /></button>
           <p className="min-w-0 flex-1 truncate text-center text-sm font-black">{store.name}</p>
-          <button onClick={toggleFavorite} aria-label={t('favorites')} aria-pressed={isFavorite} className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${isFavorite ? 'bg-[#ffe9e1] text-[#db6f4b]' : 'bg-white/12 text-white'}`}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></button>
+          <button onClick={toggleFavorite} aria-label={t('favorites')} aria-pressed={isFavorite} className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${isFavorite ? 'bg-accent-soft text-accent' : 'bg-white/12 text-white'}`}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></button>
         </div>
       </header>
 
       <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <div data-testid="box-details-cover" className="relative h-[260px] bg-[#eee7da]">
+        <div data-testid="box-details-cover" className="relative h-[260px] bg-canvas">
           <img src={box.image} alt="" className="h-full w-full object-cover object-center" />
           {box.isHalal && (
-            <span className="absolute right-4 top-4 grid h-12 w-12 place-items-center drop-shadow-[0_6px_10px_rgba(23,60,49,0.3)]">
+            <span className="absolute right-4 top-4 grid h-12 w-12 place-items-center drop-shadow-md">
               <img src="/images/halal-logo.svg" alt="Halal" className="h-full w-full object-contain" />
             </span>
           )}
-          <span className="absolute -bottom-8 left-5 grid h-17 w-17 place-items-center overflow-hidden rounded-full border-4 border-[#fffdf8] bg-white shadow-[0_8px_24px_rgba(23,60,49,0.2)]">
+          <span className="absolute -bottom-8 left-5 grid h-17 w-17 place-items-center overflow-hidden rounded-full border-4 border-surface bg-panel shadow-card">
             <img src={store.logo} alt={`${store.name} logo`} className="h-13 w-13 object-contain" />
           </span>
         </div>
         <div className="px-6 pb-6 pt-11">
-          <p className="text-sm font-bold text-[#6c7a73]">{store.name}</p>
+          <p className="text-sm font-bold text-ink-secondary">{store.name}</p>
           <h1 className="mt-2 text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
-          <span data-testid="box-stock" className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${box.quantity > 0 ? 'bg-[#fff0e8] text-[#bd593c]' : 'bg-[#f9dcd8] text-[#a43d32]'}`}>
+          <span data-testid="box-stock" className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${box.quantity > 0 ? 'bg-accent-soft text-accent-strong' : 'bg-danger-soft text-danger'}`}>
             <Package size={15} />{formatBoxesLeft(box.quantity, locale)}
           </span>
           <div className="mt-4 grid grid-cols-[1.08fr_.92fr] gap-3">
-            <div data-testid="box-price-card" className="rounded-[20px] bg-[#e9f1d5] p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#64766d]">{t('boxPrice')}</p>
-              <p className="mt-2 text-[25px] font-black tracking-[-0.04em] text-[#1f5c49]">{formatPrice(box.salePrice, locale)}</p>
+            <div data-testid="box-price-card" className="rounded-control bg-brand-pale p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p>
+              <p className="mt-2 text-[25px] font-black tracking-[-0.04em] text-brand">{formatPrice(box.salePrice, locale)}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-[#7c8982] line-through">{formatPrice(box.originalPrice, locale)}</span>
-                <span className="rounded-full bg-[#db6f4b] px-2.5 py-1 text-[11px] font-black text-white">−{discount}%</span>
+                <span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice, locale)}</span>
+                <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-black text-white">−{discount}%</span>
               </div>
             </div>
-            <div data-testid="box-pickup-card" className="flex flex-col rounded-[20px] border border-[#e3e8e2] bg-white p-4">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-[#f0f4ed] text-[#1f5c49]"><Clock3 size={18} /></span>
-              <p className="mt-3 text-[11px] font-black uppercase tracking-[0.08em] text-[#6c7972]">{t('pickup')}</p>
-              <p className="mt-1 whitespace-nowrap text-sm font-black text-[#173c31]">{box.pickupFrom}–{box.pickupTo}</p>
+            <div data-testid="box-pickup-card" className="flex flex-col rounded-control border border-border bg-panel p-4">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-surface-soft text-brand"><Clock3 size={18} /></span>
+              <p className="mt-3 text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('pickup')}</p>
+              <p className="mt-1 whitespace-nowrap text-sm font-black text-ink">{box.pickupFrom}–{box.pickupTo}</p>
             </div>
           </div>
           <h2 className="mt-6 text-lg font-black">{t('composition')}</h2>
-          <p className="mt-2 text-sm leading-6 text-[#617169]">{t('surprise')}</p>
-          <div className="mt-4 rounded-[20px] border border-[#f2d6ca] bg-[#fff7f2] p-4">
+          <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprise')}</p>
+          <div className="mt-4 rounded-control border border-allergen-border bg-allergen-surface p-4">
             <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#ffe5da] text-[#c85d3c]"><AlertTriangle size={19} /></span>
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent-strong"><AlertTriangle size={19} /></span>
               <div className="min-w-0">
-                <h3 className="text-sm font-black text-[#713b2c]">{box.allergens ? t('containsAllergens') : t('allergens')}</h3>
-                <p className="mt-1.5 text-sm leading-5 text-[#7b5549]">{box.allergens ?? t('allergensUnknown')}</p>
+                <h3 className="text-sm font-black text-allergen-ink">{box.allergens ? t('containsAllergens') : t('allergens')}</h3>
+                <p className="mt-1.5 text-sm leading-5 text-allergen-body">{box.allergens ?? t('allergensUnknown')}</p>
               </div>
             </div>
           </div>
-          <div className="mt-5 rounded-[20px] border border-[#dfe6df] bg-white p-4 shadow-[0_8px_24px_rgba(32,69,56,0.05)]">
+          <div className="mt-5 rounded-control border border-border bg-panel p-4 shadow-card">
             <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#edf3db] text-[#1f5c49]"><MapPin size={19} /></span>
-              <div className="min-w-0"><p className="text-xs font-bold text-[#74817b]">{t('addressLabel')}</p><p className="mt-1 text-sm font-black leading-5">{store.address}</p></div>
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-pale text-brand"><MapPin size={19} /></span>
+              <div className="min-w-0"><p className="text-xs font-bold text-ink-muted">{t('addressLabel')}</p><p className="mt-1 text-sm font-black leading-5">{store.address}</p></div>
             </div>
-            <button onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#e8efdd] px-4 text-sm font-black text-[#1f5c49]">
+            <button onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-brand-pale px-4 text-sm font-black text-brand">
               <Route size={18} />{t('buildRoute')}
             </button>
           </div>
         </div>
       </div>
-      <footer className="shrink-0 border-t border-[#e3e7e2] bg-[#fffdf8]/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
+      <footer className="shrink-0 border-t border-border bg-surface/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
         <button onClick={onBuy} disabled={box.quantity < 1} className="primary-button">{t('buy')}<ShoppingBag size={19} /></button>
       </footer>
       {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
@@ -714,20 +714,20 @@ function RoutePicker({ lat, lng, t, onClose }: {
 }) {
   const options = getRouteOptions(lat, lng);
   return (
-    <div className="absolute inset-0 z-[1200] flex items-end bg-[#102b22]/45 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label={t('chooseMap')}>
+    <div className="absolute inset-0 z-[1200] flex items-end bg-brand-deep/45 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label={t('chooseMap')}>
       <button onClick={onClose} className="absolute inset-0" aria-label={t('close')} />
-      <section className="relative z-10 w-full rounded-t-[30px] bg-[#fffdf8] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-18px_60px_rgba(23,60,49,0.2)]">
-        <div className="mx-auto h-1.5 w-10 rounded-full bg-[#d6ddd8]" />
+      <section className="relative z-10 w-full rounded-t-sheet bg-surface px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 shadow-sheet">
+        <div className="mx-auto h-1.5 w-10 rounded-full bg-border-strong" />
         <div className="mt-4 flex items-start justify-between gap-3">
           <h2 className="pt-1 text-xl font-black tracking-[-0.03em]">{t('chooseMap')}</h2>
-          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('close')}><X size={18} /></button>
+          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('close')}><X size={18} /></button>
         </div>
         <div className="mt-4 space-y-2">
           {options.map((option) => (
-            <button key={option.id} onClick={() => { openExternalLink(option.url); haptic('tap'); }} className="flex min-h-14 w-full items-center gap-3 rounded-2xl border border-[#e3e8e2] bg-white px-3.5 text-left">
+            <button key={option.id} onClick={() => { openExternalLink(option.url); haptic('tap'); }} className="flex min-h-14 w-full items-center gap-3 rounded-control border border-border bg-panel px-3.5 text-left">
               <img src={routeProviderLogo[option.id]} alt={`${option.label} logo`} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
               <span className="flex-1 text-sm font-black">{option.label}</span>
-              <ChevronRight size={17} className="text-[#89958f]" />
+              <ChevronRight size={17} className="text-ink-subtle" />
             </button>
           ))}
         </div>
@@ -742,23 +742,23 @@ function Checkout({ box, quantity, setQuantity, locale, t, onClose, onPay }: {
   return (
     <Overlay onClose={onClose}>
       <div className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
-        <div className="mx-auto h-1.5 w-10 rounded-full bg-[#d6ddd8]" />
-        <div className="mt-5 flex items-center justify-between"><h2 className="text-2xl font-black tracking-[-0.04em]">{t('demoPayment')}</h2><button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-[#edf1ed]"><X size={18} /></button></div>
-        <div className="mt-5 flex gap-4 rounded-2xl bg-[#f1f4ef] p-3">
+        <div className="mx-auto h-1.5 w-10 rounded-full bg-border-strong" />
+        <div className="mt-5 flex items-center justify-between"><h2 className="text-2xl font-black tracking-[-0.04em]">{t('demoPayment')}</h2><button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-surface-muted"><X size={18} /></button></div>
+        <div className="mt-5 flex gap-4 rounded-control bg-surface-soft p-3">
           <img src={box.image} alt="" className="h-20 w-20 rounded-xl object-cover" />
-          <div className="min-w-0 flex-1 py-1"><p className="truncate text-base font-black">{box.name}</p><p className="mt-1 text-xs text-[#718078]">{storeById(box.storeId).name}</p><p className="mt-2 text-sm font-black text-[#1f5c49]">{formatPrice(box.salePrice, locale)}</p></div>
+          <div className="min-w-0 flex-1 py-1"><p className="truncate text-base font-black">{box.name}</p><p className="mt-1 text-xs text-ink-muted">{storeById(box.storeId).name}</p><p className="mt-2 text-sm font-black text-brand">{formatPrice(box.salePrice, locale)}</p></div>
         </div>
         <div className="mt-5 flex items-center justify-between">
           <span className="text-sm font-black">{t('quantity')}</span>
           <div className="flex items-center gap-3">
-            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="grid h-10 w-10 place-items-center rounded-full bg-[#edf1ed]" disabled={quantity <= 1}><Minus size={17} /></button>
+            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="grid h-10 w-10 place-items-center rounded-full bg-surface-muted" disabled={quantity <= 1}><Minus size={17} /></button>
             <span className="w-5 text-center text-lg font-black">{quantity}</span>
-            <button onClick={() => setQuantity(Math.min(box.quantity, quantity + 1))} className="grid h-10 w-10 place-items-center rounded-full bg-[#1f5c49] text-white" disabled={quantity >= box.quantity}><Plus size={17} /></button>
+            <button onClick={() => setQuantity(Math.min(box.quantity, quantity + 1))} className="grid h-10 w-10 place-items-center rounded-full bg-brand text-white" disabled={quantity >= box.quantity}><Plus size={17} /></button>
           </div>
         </div>
-        <div className="my-5 h-px bg-[#e1e5e1]" />
-        <div className="flex items-end justify-between"><span className="text-sm font-bold text-[#607169]">{t('total')}</span><span className="text-2xl font-black">{formatPrice(box.salePrice * quantity, locale)}</span></div>
-        <p className="mt-4 flex gap-2 rounded-2xl bg-[#fff3c9] p-3 text-xs leading-5 text-[#765f17]"><Info size={17} className="mt-0.5 shrink-0" />{t('paymentNote')}</p>
+        <div className="my-5 h-px bg-border" />
+        <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black">{formatPrice(box.salePrice * quantity, locale)}</span></div>
+        <p className="mt-4 flex gap-2 rounded-control bg-warning-surface p-3 text-xs leading-5 text-warning-ink"><Info size={17} className="mt-0.5 shrink-0" />{t('paymentNote')}</p>
         <button onClick={onPay} className="primary-button mt-5">{t('pay')}<ChevronRight size={19} /></button>
       </div>
     </Overlay>
@@ -769,13 +769,13 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
   return (
     <Overlay onClose={onDone} full>
       <div className="flex min-h-dvh flex-col items-center justify-center px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-center sm:min-h-[780px]">
-        <div className="relative grid h-28 w-28 place-items-center rounded-full bg-[#d9ed9a] text-[#1f5c49]">
+        <div className="relative grid h-28 w-28 place-items-center rounded-full bg-highlight text-brand">
           <Check size={52} strokeWidth={3} />
-          <Sparkles className="absolute -right-3 -top-2 text-[#db6f4b]" size={28} />
+          <Sparkles className="absolute -right-3 -top-2 text-accent" size={28} />
         </div>
         <h1 className="mt-8 text-[34px] font-black tracking-[-0.05em]">{t('success')}</h1>
-        <p className="mt-3 max-w-[300px] text-sm leading-6 text-[#617169]">{t('successText')}</p>
-        <div className="mt-8 w-full rounded-[26px] bg-[#1f5c49] p-6 text-white">
+        <p className="mt-3 max-w-[300px] text-sm leading-6 text-ink-secondary">{t('successText')}</p>
+        <div className="mt-8 w-full rounded-card bg-brand p-6 text-white">
           <p className="text-xs font-bold text-white/60">{t('pickupCode')}</p>
           <p className="mt-2 text-5xl font-black tracking-[0.16em]">{order.pickupCode}</p>
         </div>
@@ -799,10 +799,10 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
       <div className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
         <div className="flex items-center gap-3">
           {selectedDocument && (
-            <button onClick={() => setSelectedDocument(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('back')}><ArrowLeft size={18} /></button>
+            <button onClick={() => setSelectedDocument(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('back')}><ArrowLeft size={18} /></button>
           )}
           <h2 className="min-w-0 flex-1 text-xl font-black">{selectedDocument ? t(LEGAL_TITLE_KEYS[selectedDocument]) : t('legal')}</h2>
-          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('close')}><X size={18} /></button>
+          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('close')}><X size={18} /></button>
         </div>
         {selectedDocument ? (
           <>
@@ -836,12 +836,12 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
   return (
     <Overlay onClose={onClose}>
       <div className="max-h-[82dvh] overflow-y-auto px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
-        <div className="sticky top-0 z-10 flex items-center gap-3 bg-[#fffdf8] pb-3">
+        <div className="sticky top-0 z-10 flex items-center gap-3 bg-surface pb-3">
           {view !== 'menu' && (
-            <button onClick={() => setView('menu')} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('back')}><ArrowLeft size={18} /></button>
+            <button onClick={() => setView('menu')} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('back')}><ArrowLeft size={18} /></button>
           )}
           <h2 className="min-w-0 flex-1 text-xl font-black">{title}</h2>
-          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('close')}><X size={18} /></button>
+          <button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('close')}><X size={18} /></button>
         </div>
 
         {view === 'menu' && (
@@ -857,12 +857,12 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
             {faqItems.map((item, index) => {
               const expanded = openQuestion === index;
               return (
-                <div key={item.question} className="overflow-hidden rounded-2xl bg-[#f2f5f1]">
+                <div key={item.question} className="overflow-hidden rounded-control bg-surface-soft">
                   <button type="button" aria-expanded={expanded} onClick={() => setOpenQuestion(expanded ? null : index)} className="flex w-full items-center gap-3 p-4 text-left">
                     <span className="min-w-0 flex-1 text-sm font-black leading-5">{t(item.question)}</span>
-                    <ChevronDown size={18} className={`shrink-0 text-[#89958f] transition ${expanded ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={18} className={`shrink-0 text-ink-subtle transition ${expanded ? 'rotate-180' : ''}`} />
                   </button>
-                  {expanded && <p className="px-4 pb-4 text-sm leading-6 text-[#617169]">{t(item.answer)}</p>}
+                  {expanded && <p className="px-4 pb-4 text-sm leading-6 text-ink-secondary">{t(item.answer)}</p>}
                 </div>
               );
             })}
@@ -870,13 +870,13 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
         )}
 
         {view === 'contacts' && (
-          <div className="mt-2 rounded-2xl bg-[#f2f5f1] p-5 text-sm">
+          <div className="mt-2 rounded-card bg-surface-soft p-5 text-sm">
             <h3 className="text-lg font-black">{t('companyName')}</h3>
-            <p className="mt-1 font-bold text-[#617169]">{t('companyId')}</p>
+            <p className="mt-1 font-bold text-ink-secondary">{t('companyId')}</p>
             <div className="mt-5 space-y-4">
-              <div><p className="text-xs font-black text-[#819088]">{t('addressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
-              <a href="mailto:algansupport@gmail.com" className="flex items-center gap-3 rounded-xl bg-white p-3 text-[#1f5c49]"><Mail size={18} className="shrink-0" /><span><span className="block text-xs text-[#819088]">{t('emailLabel')}</span><span className="mt-0.5 block font-bold">algansupport@gmail.com</span></span></a>
-              <a href="tel:+77059768000" className="flex items-center gap-3 rounded-xl bg-white p-3 text-[#1f5c49]"><Phone size={18} className="shrink-0" /><span><span className="block text-xs text-[#819088]">{t('contactPhoneLabel')}</span><span className="mt-0.5 block font-bold">+7 705 976 80 00</span></span></a>
+              <div><p className="text-xs font-black text-ink-muted">{t('addressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
+              <a href="mailto:algansupport@gmail.com" className="flex items-center gap-3 rounded-control bg-panel p-3 text-brand"><Mail size={18} className="shrink-0" /><span><span className="block text-xs text-ink-muted">{t('emailLabel')}</span><span className="mt-0.5 block font-bold">algansupport@gmail.com</span></span></a>
+              <a href="tel:+77059768000" className="flex items-center gap-3 rounded-control bg-panel p-3 text-brand"><Phone size={18} className="shrink-0" /><span><span className="block text-xs text-ink-muted">{t('contactPhoneLabel')}</span><span className="mt-0.5 block font-bold">+7 705 976 80 00</span></span></a>
             </div>
           </div>
         )}
@@ -894,14 +894,13 @@ function TelegramIcon() {
 }
 
 function LegalDocumentNotice({ t }: { t: Translator }) {
-  return <div className="mt-5 rounded-2xl bg-[#fff3c9] p-4 text-sm leading-6 text-[#6f5b1e]"><Info size={20} className="mb-3" />{t('placeholderLegal')}</div>;
+  return <div className="mt-5 rounded-control bg-warning-surface p-4 text-sm leading-6 text-warning-ink"><Info size={20} className="mb-3" />{t('placeholderLegal')}</div>;
 }
-
 function LegalModal({ type, t, onClose }: { type: LegalDocument; t: Translator; onClose: () => void }) {
   return (
     <Overlay onClose={onClose}>
       <div className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
-        <div className="flex items-center justify-between gap-4"><h2 className="text-xl font-black">{t(LEGAL_TITLE_KEYS[type])}</h2><button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#edf1ed]" aria-label={t('close')}><X size={18} /></button></div>
+        <div className="flex items-center justify-between gap-4"><h2 className="text-xl font-black">{t(LEGAL_TITLE_KEYS[type])}</h2><button onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-muted" aria-label={t('close')}><X size={18} /></button></div>
         <LegalDocumentNotice t={t} />
         <button onClick={onClose} className="primary-button mt-5">{t('back')}</button>
       </div>

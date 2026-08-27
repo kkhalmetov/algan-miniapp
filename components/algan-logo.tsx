@@ -17,7 +17,6 @@ const wordmarkMask = createMask('/algan-wordmark.svg');
 export function AlganMark({ className = '' }: { className?: string }) {
   return <span aria-hidden="true" className={`inline-block shrink-0 bg-current ${className}`} style={markMask} />;
 }
-
 export function AlganWordmark({ className = '' }: { className?: string }) {
   return <span aria-hidden="true" className={`inline-block shrink-0 bg-current ${className}`} style={wordmarkMask} />;
 }
@@ -35,7 +34,7 @@ export function AlganLogo({
 }) {
   return (
     <div
-      className={`flex items-center gap-2 ${light ? 'text-[#d9ed9a]' : 'text-[#1f5c49]'} ${className}`}
+      className={`flex items-center gap-2 ${light ? 'text-highlight' : 'text-brand'} ${className}`}
       aria-label="Algan"
     >
       <AlganMark className={markClassName} />

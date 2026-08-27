@@ -1,9 +1,58 @@
 @import 'tailwindcss';
 @import 'leaflet/dist/leaflet.css';
 
+@theme {
+  --font-sans: "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+
+  --color-brand: #1f5c49;
+  --color-brand-hover: #2d745e;
+  --color-brand-deep: #173c31;
+  --color-brand-soft: #dceab3;
+  --color-brand-pale: #e8efdd;
+  --color-highlight: #d9ed9a;
+  --color-accent: #db6f4b;
+  --color-accent-strong: #b44b2b;
+  --color-accent-soft: #fff0e8;
+
+  --color-canvas: #eee7da;
+  --color-surface: #fffdf8;
+  --color-panel: #ffffff;
+  --color-surface-muted: #edf1ed;
+  --color-surface-soft: #f2f5f1;
+  --color-border: #e3e7e2;
+  --color-border-strong: #b9c5bf;
+
+  --color-ink: #173c31;
+  --color-ink-secondary: #617169;
+  --color-ink-muted: #74817b;
+  --color-ink-subtle: #89958f;
+
+  --color-warning-surface: #fff3c9;
+  --color-warning-ink: #765f17;
+  --color-danger: #a43d32;
+  --color-danger-soft: #f9dcd8;
+  --color-allergen-surface: #fff7f2;
+  --color-allergen-border: #f2d6ca;
+  --color-allergen-ink: #713b2c;
+  --color-allergen-body: #7b5549;
+
+  --radius-control: 1rem;
+  --radius-card: 1.5rem;
+  --radius-sheet: 1.875rem;
+  --radius-shell: 2.25rem;
+
+  --shadow-card: 0 9px 30px rgba(30, 72, 58, .07);
+  --shadow-floating: 0 18px 50px rgba(23, 60, 49, .22);
+  --shadow-shell: 0 26px 90px rgba(24, 61, 49, .18);
+  --shadow-action: 0 12px 28px rgba(31, 92, 73, .22);
+  --shadow-sheet: 0 -18px 60px rgba(23, 60, 49, .20);
+  --shadow-marker: 0 8px 22px rgba(31, 92, 73, .28);
+  --shadow-control: 0 7px 22px rgba(31, 92, 73, .16);
+}
+
 :root {
-  --background: #eee7da;
-  --foreground: #173c31;
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
 }
 
 * { box-sizing: border-box; }
@@ -13,7 +62,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -31,7 +80,7 @@ button:disabled { cursor: not-allowed; }
   width: 30px;
   height: 30px;
   border: 3px solid rgba(255, 255, 255, .28);
-  border-top-color: #d9ed9a;
+  border-top-color: var(--color-highlight);
   border-radius: 999px;
   animation: algan-loader-spin .8s linear infinite;
 }
@@ -43,20 +92,20 @@ button:disabled { cursor: not-allowed; }
   align-items: center;
   justify-content: center;
   gap: .5rem;
-  border-radius: 1rem;
-  background: #1f5c49;
+  border-radius: var(--radius-control);
+  background: var(--color-brand);
   padding-inline: 1rem;
   color: white;
   font-size: .95rem;
   font-weight: 900;
-  box-shadow: 0 12px 28px rgba(31, 92, 73, .22);
+  box-shadow: var(--shadow-action);
   transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
 }
 
 .primary-button:active { transform: scale(.99); }
 .primary-button:disabled {
-  background: #dfe4df;
-  color: #93a098;
+  background: var(--color-surface-muted);
+  color: var(--color-ink-subtle);
   box-shadow: none;
 }
 
@@ -75,8 +124,8 @@ button:disabled { cursor: not-allowed; }
   height: 38px;
   border: 5px solid white;
   border-radius: 50% 50% 50% 8px;
-  background: #db6f4b;
-  box-shadow: 0 8px 22px rgba(31, 92, 73, .28);
+  background: var(--color-accent);
+  box-shadow: var(--shadow-marker);
   transform: rotate(-45deg);
 }
 
@@ -94,10 +143,10 @@ button:disabled { cursor: not-allowed; }
   height: 48px;
   place-items: center;
   overflow: hidden;
-  border: 3px solid #1f5c49;
+  border: 3px solid var(--color-brand);
   border-radius: 50%;
   background: white;
-  box-shadow: 0 8px 22px rgba(31, 92, 73, .28);
+  box-shadow: var(--shadow-marker);
 }
 
 .algan-store-marker img {
@@ -115,12 +164,12 @@ button:disabled { cursor: not-allowed; }
   overflow: hidden;
   border: 0 !important;
   border-radius: 14px !important;
-  box-shadow: 0 7px 22px rgba(31, 92, 73, .16) !important;
+  box-shadow: var(--shadow-control) !important;
 }
 
 .leaflet-control-zoom a {
   border: 0 !important;
-  color: #1f5c49 !important;
+  color: var(--color-brand) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
