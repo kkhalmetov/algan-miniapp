@@ -26,7 +26,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 
 ## Typography and spacing
 
-- Font: Segoe UI Variable with system fallbacks.
+- Font: self-hosted Inter Variable (`100–900`) with Cyrillic and Kazakh character support. The same bundled font files are used on every platform.
 - Page title: 30–34 px, weight 900, tight tracking.
 - Section title: 18–20 px, weight 900.
 - Body: 14–15 px, line height 1.5–1.7.

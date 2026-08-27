@@ -31,6 +31,10 @@ describe('Algan design system', () => {
     ];
 
     for (const token of requiredTokens) expect(css).toContain(token);
+    expect(css).toContain("url('/fonts/inter-cyrillic-ext-wght-normal.woff2')");
+    expect(css).toContain("url('/fonts/inter-cyrillic-wght-normal.woff2')");
+    expect(css).toContain("url('/fonts/inter-latin-wght-normal.woff2')");
+    expect(css).toContain('--font-sans: "Inter Variable", sans-serif');
   });
 
   it('documents the rules for extending the interface', () => {
