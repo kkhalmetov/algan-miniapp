@@ -679,8 +679,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
             </SecondaryButton>
           </SurfaceCard>
 
-          <h2 className="mt-7 text-xl font-black tracking-[-0.035em]">{t('availableBoxes')}</h2>
-          <div className="mt-4 space-y-3">
+          <div className="mt-6 space-y-3">
             {storeBoxes.map((box) => (
               <BoxOfferCard key={box.id} box={box} locale={locale} t={t}
                 available={availableQuantity(box, purchasedBoxQuantities)}
@@ -774,9 +773,6 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
       </header>
 
       <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <div data-testid="box-details-cover" className="h-[230px] bg-canvas">
-          <img src={box.image} alt="" className="h-full w-full object-cover object-center" />
-        </div>
         <div className="px-6 pb-6 pt-6">
           <h1 className="text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
           {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}

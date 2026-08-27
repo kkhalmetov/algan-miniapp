@@ -69,7 +69,7 @@ describe('store details presentation', () => {
     expect(within(header).getByRole('button', { name: 'Избранное' })).toHaveAttribute('aria-pressed', 'false');
     expect(within(scroll).getByAltText('Tatti Bakery logo')).toHaveAttribute('src', stores[0]!.logo);
     expect(within(cover).queryByAltText('Halal')).not.toBeInTheDocument();
-    expect(within(scroll).getByText('Доступные боксы')).toBeInTheDocument();
+    expect(within(scroll).queryByText('Доступные боксы')).not.toBeInTheDocument();
     expect(within(scroll).getAllByRole('button', { name: /^Подробнее / })).toHaveLength(5);
     expect(within(scroll).getAllByText('SURPRISE')).toHaveLength(2);
     expect(within(scroll).getByText('пр. Тауке хана, 47')).toBeInTheDocument();
@@ -83,6 +83,7 @@ describe('store details presentation', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
     const scroll = within(dialog).getByTestId('box-details-scroll');
+    expect(within(dialog).queryByTestId('box-details-cover')).not.toBeInTheDocument();
     expect(within(scroll).getByText('SURPRISE')).toBeInTheDocument();
     expect(within(scroll).getByText('Точный состав этого бокса заранее неизвестен — содержимое станет сюрпризом.')).toBeInTheDocument();
     expect(within(scroll).getByTestId('box-stock')).toHaveTextContent('Осталось 4 бокса');
