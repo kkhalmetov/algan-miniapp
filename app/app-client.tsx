@@ -249,7 +249,7 @@ export default function AlganApp() {
           onChangeQuantity={changeCartQuantity} onClose={() => setCartOpen(false)} onPay={payCart} />
       )}
       {successOrder && (
-        <Success order={successOrder} locale={locale} t={t} onDone={() => { setSuccessOrder(null); setTab('orders'); }} />
+        <Success order={successOrder} t={t} onDone={() => { setSuccessOrder(null); setTab('orders'); }} />
       )}
       {editingPhone && (
         <PhoneEditor currentPhone={profile.phone} t={t} onClose={() => setEditingPhone(false)} onSave={(value) => {
@@ -969,7 +969,7 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
   );
 }
 
-function Success({ order, locale, t, onDone }: { order: Order; locale: Locale; t: Translator; onDone: () => void }) {
+function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: () => void }) {
   return (
     <Overlay onClose={onDone} full>
       <div className="flex min-h-dvh flex-col overflow-y-auto px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]">
@@ -985,7 +985,6 @@ function Success({ order, locale, t, onDone }: { order: Order; locale: Locale; t
           <p className="mt-1 text-3xl font-black tracking-[0.12em]">{formatPickupCode(order.pickupCode)}</p>
         </div>
         <p className="mt-4 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
-        <div className="mt-4 w-full text-left"><OrderItemsList order={order} locale={locale} /></div>
         <PrimaryButton onClick={onDone} className="mt-6 shrink-0">{t('toOrders')}<ChevronRight size={19} /></PrimaryButton>
       </div>
     </Overlay>

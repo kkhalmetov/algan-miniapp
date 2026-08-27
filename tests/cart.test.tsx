@@ -52,6 +52,9 @@ describe('multi-box cart', () => {
 
     expect(screen.getByText('Заказ оформлен!')).toBeInTheDocument();
     expect(screen.getByText('Покажите QR-код или код получения сотруднику заведения при получении заказа.')).toBeInTheDocument();
+    const successDialog = screen.getByRole('dialog');
+    expect(within(successDialog).queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
+    expect(within(successDialog).queryByText('Tatti-box')).not.toBeInTheDocument();
     const orders = useAppStore.getState().orders;
     expect(orders).toHaveLength(1);
     expect(orders[0]?.items).toEqual([
