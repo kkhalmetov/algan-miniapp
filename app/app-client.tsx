@@ -3,7 +3,7 @@
 
 import {
   AlertTriangle, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Heart, Home, Info, Languages, Mail, Map as MapIcon,
-  MapPin, Minus, Package, PackageCheck, Phone, Plus, Route, ShoppingBag, Sparkles,
+  MapPin, Minus, Package, PackageCheck, Phone, Plus, Route, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -565,8 +565,11 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
     <Overlay onClose={onClose}>
       <div className="max-h-[90dvh] overflow-y-auto px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
         <SheetHandle />
-        <div className="mt-5"><ModalHeader title={order.status === 'paid' ? t('qrCode') : (store?.name ?? t('orders'))} onClose={onClose} closeLabel={t('close')} /></div>
-        <p className="mt-5 text-center text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
+        {order.status === 'paid' ? (
+          <div className="mt-3 flex justify-end"><IconButton onClick={onClose} label={t('close')}><X size={18} /></IconButton></div>
+        ) : (
+          <div className="mt-5"><ModalHeader title={store?.name ?? t('orders')} onClose={onClose} closeLabel={t('close')} /></div>
+        )}
         {order.status === 'paid' && (
           <>
             <div className="mt-4"><OrderQr order={order} t={t} /></div>
@@ -576,6 +579,7 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
         )}
         {order.status === 'collected' && (
           <>
+            <p className="mt-5 text-center text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
             <h3 className="mt-6 text-base font-black">{t('orderContents')}</h3>
             <div className="mt-3"><OrderItemsList order={order} locale={locale} /></div>
             <div className="mt-4 flex items-center justify-between border-t border-border pt-4"><span className="text-sm font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-brand">{formatPrice(order.total, locale)}</b></div>

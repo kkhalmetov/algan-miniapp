@@ -45,7 +45,7 @@ describe('orders tab', () => {
     expect(screen.getByText('Surprise Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 12345678')).toBeInTheDocument();
-    expect(screen.getByText('Показать QR-код')).toBeInTheDocument();
+    expect(screen.getByText('Получить заказ')).toBeInTheDocument();
     expect(screen.queryByText('Кофе & булочки')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 87654321')).not.toBeInTheDocument();
 
@@ -66,6 +66,8 @@ describe('orders tab', () => {
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByTitle('QR-код')).toBeInTheDocument();
     expect(within(dialog).getByText('123-456')).toBeInTheDocument();
+    expect(within(dialog).queryByRole('heading', { name: 'QR-код' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('Номер заказа: 12345678')).not.toBeInTheDocument();
     expect(within(dialog).queryByText('Tatti Bakery')).not.toBeInTheDocument();
     expect(within(dialog).queryByText('Состав заказа')).not.toBeInTheDocument();
     expect(within(dialog).queryByText('Итого')).not.toBeInTheDocument();
