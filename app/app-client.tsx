@@ -711,9 +711,9 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
   );
 }
 
-function Overlay({ children, onClose, full = false }: { children: React.ReactNode; onClose: () => void; full?: boolean }) {
+function Overlay({ children, onClose, full = false, ariaLabel }: { children: React.ReactNode; onClose: () => void; full?: boolean; ariaLabel?: string }) {
   return (
-    <div className="absolute inset-0 z-[1000] flex items-end bg-brand-deep/40 backdrop-blur-[2px]" role="dialog" aria-modal="true">
+    <div className="absolute inset-0 z-[1000] flex items-end bg-brand-deep/40 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label={ariaLabel}>
       <button type="button" onClick={onClose} className="absolute inset-0" aria-label="Close" />
       <section className={`relative z-10 w-full overflow-hidden bg-surface ${full ? 'min-h-full' : 'max-h-[92%] rounded-t-sheet'}`}>{children}</section>
     </div>
@@ -860,17 +860,15 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
   const store = storeById(box.storeId);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
-    <section className="absolute inset-0 z-[1100] flex h-full min-h-0 flex-col overflow-hidden bg-surface" role="dialog" aria-modal="true" aria-label={box.name}>
-      <header data-testid="box-details-header" className="shrink-0 bg-brand px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
-        <div className="flex min-h-11 items-center gap-3">
-          <IconButton onClick={onClose} label={t('back')} tone="dark"><ChevronRight className="rotate-180" size={20} /></IconButton>
-          <p className="min-w-0 flex-1 truncate text-center text-sm font-black">{store.name}</p>
-          <span className="h-11 w-11 shrink-0" />
+    <Overlay onClose={onClose} ariaLabel={box.name}>
+      <div data-testid="box-details-sheet" className="flex h-[58dvh] min-h-0 flex-col sm:h-[460px]">
+        <div className="shrink-0 px-5 pt-4">
+          <SheetHandle />
+          <div className="mt-4"><ModalHeader title={store.name} onClose={onClose} closeLabel={t('close')} /></div>
         </div>
-      </header>
 
-      <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <div className="px-6 pb-6 pt-6">
+        <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="px-6 pb-6 pt-4">
           <h1 className="text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
           {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}
           <div className="mt-2">
@@ -910,14 +908,15 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
               </div>
             </div>
           </div>
+          </div>
         </div>
+        {(available > 0 || cartQuantity > 0) && (
+          <footer className="shrink-0 border-t border-border bg-surface/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
+            <CartQuantityControl boxName={box.name} quantity={cartQuantity} max={available} t={t} onChange={onChangeQuantity} />
+          </footer>
+        )}
       </div>
-      {(available > 0 || cartQuantity > 0) && (
-        <footer className="shrink-0 border-t border-border bg-surface/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
-          <CartQuantityControl boxName={box.name} quantity={cartQuantity} max={available} t={t} onChange={onChangeQuantity} />
-        </footer>
-      )}
-    </section>
+    </Overlay>
   );
 }
 
