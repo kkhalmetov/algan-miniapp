@@ -47,6 +47,11 @@ describe('store details presentation', () => {
     expect(screen.queryByText('19:30–20:30')).not.toBeInTheDocument();
     expect(screen.queryByText('SURPRISE')).not.toBeInTheDocument();
     expect(screen.queryByText('−60%')).not.toBeInTheDocument();
+    expect(screen.queryByText('Доступные заведения')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Все' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Пекарни' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Кофейни' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Магазины' })).not.toBeInTheDocument();
     expect(screen.queryByAltText('Halal')).not.toBeInTheDocument();
   });
 

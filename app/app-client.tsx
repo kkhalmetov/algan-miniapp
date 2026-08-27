@@ -52,7 +52,6 @@ export default function AlganApp() {
   const [quantity, setQuantity] = useState(1);
   const [successOrder, setSuccessOrder] = useState<Order | null>(null);
   const [editingPhone, setEditingPhone] = useState(false);
-  const [category, setCategory] = useState<'all' | 'bakery' | 'cafe' | 'market'>('all');
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
   const onboardingLocaleInitialized = useRef(false);
   const onboardingLocaleChosenManually = useRef(false);
@@ -184,8 +183,7 @@ export default function AlganApp() {
           {tab === 'home' && (
             <HomeTab
               t={t} profile={profile} openProfile={() => { setTab('profile'); haptic('tap'); }}
-              favoriteStoreIds={favoriteStoreIds} category={category} setCategory={setCategory}
-              toggleFavorite={toggleFavorite} openBox={openBox}
+              favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openBox={openBox}
             />
           )}
           {tab === 'map' && <MapTab openBox={openBox} />}
@@ -323,12 +321,10 @@ function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; set
   );
 }
 
-function HomeTab({ t, profile, openProfile, favoriteStoreIds, category, setCategory, toggleFavorite, openBox }: {
+function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, openBox }: {
   t: Translator; profile: UserProfile; openProfile: () => void; favoriteStoreIds: string[];
-  category: 'all' | 'bakery' | 'cafe' | 'market'; setCategory: (value: 'all' | 'bakery' | 'cafe' | 'market') => void;
   toggleFavorite: (id: string) => void; openBox: (box: Box) => void;
 }) {
-  const filteredStores = category === 'all' ? stores : stores.filter((store) => store.type === category);
   return (
     <>
       <header className="bg-brand px-6 pb-8 pt-[max(1.4rem,env(safe-area-inset-top))] text-white">
@@ -341,15 +337,8 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, category, setCateg
       </header>
 
       <section className="bg-surface px-5 pt-6">
-        <div className="hide-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5">
-          {(['all', 'bakery', 'cafe', 'market'] as const).map((item) => (
-            <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)} className={`min-h-11 shrink-0 rounded-full px-4 py-2.5 text-xs font-black transition ${category === item ? 'bg-brand text-white' : 'bg-surface-soft text-ink-secondary'}`}>{t(item)}</button>
-          ))}
-        </div>
-
-        <h2 className="mt-7 text-xl font-black tracking-[-0.035em]">{t('nearby')}</h2>
-        <div className="mt-4 space-y-4 pb-6">
-          {filteredStores.map((store) => {
+        <div className="space-y-4 pb-6">
+          {stores.map((store) => {
             const box = boxes.find((item) => item.storeId === store.id);
             return box ? <StoreCard key={store.id} box={box} t={t} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openBox(box)} /> : null;
           })}
