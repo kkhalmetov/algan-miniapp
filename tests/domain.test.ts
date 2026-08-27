@@ -41,6 +41,8 @@ describe('mock customer catalog', () => {
     expect(kk('nearby')).toBe('Қолжетімді мекемелер');
     expect(ru('buildRoute')).toBe('Построить маршрут');
     expect(kk('buildRoute')).toBe('Бағыт құру');
+    expect(ru('pickupTime')).toBe('Время выдачи');
+    expect(kk('pickupTime')).toBe('Алу уақыты');
     expect(ru('containsAllergens')).toBe('Содержит аллергены');
     expect(kk('containsAllergens')).toBe('Құрамында аллергендер бар');
     expect(ru('orderRulesTitle')).toBe('Правила заказа, получения, отмены и возврата');

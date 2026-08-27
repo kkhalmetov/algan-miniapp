@@ -634,6 +634,8 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
 }) {
   const storeBoxes = boxes.filter((box) => box.storeId === store.id);
   const fallbackImage = storeBoxes[0]?.image ?? '/images/bakery.jpg';
+  const pickupFrom = storeBoxes.map((box) => box.pickupFrom).sort()[0];
+  const pickupTo = storeBoxes.map((box) => box.pickupTo).sort().at(-1);
   const cartLines = cartItems.flatMap((item) => {
     const box = storeBoxes.find((candidate) => candidate.id === item.boxId);
     return box ? [{ box, quantity: item.quantity }] : [];
@@ -666,6 +668,12 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
               <IconBadge><MapPin size={19} /></IconBadge>
               <div className="min-w-0"><p className="text-xs font-bold text-ink-muted">{t('addressLabel')}</p><p className="mt-1 text-sm font-black leading-5">{store.address}</p></div>
             </div>
+            {pickupFrom && pickupTo && (
+              <div data-testid="store-pickup-time" className="mt-4 flex items-start gap-3 border-t border-border pt-4">
+                <IconBadge tone="soft"><Clock3 size={18} /></IconBadge>
+                <div className="min-w-0"><p className="text-xs font-bold text-ink-muted">{t('pickupTime')}</p><p className="mt-1 text-sm font-black leading-5">{pickupFrom}–{pickupTo}</p></div>
+              </div>
+            )}
             <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">
               <Route size={18} />{t('buildRoute')}
             </SecondaryButton>
@@ -777,7 +785,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
               <Package size={15} />{formatBoxesLeft(available, locale)}
             </span>
           </div>
-          <div className="mt-4 grid grid-cols-[1.08fr_.92fr] gap-3">
+          <div className="mt-4">
             <div data-testid="box-price-card" className="rounded-control bg-brand-pale p-4">
               <p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p>
               <p className="mt-2 text-[25px] font-black tracking-[-0.04em] text-brand">{formatPrice(box.salePrice, locale)}</p>
@@ -785,11 +793,6 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
                 <span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice, locale)}</span>
                 <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-black text-white">−{discount}%</span>
               </div>
-            </div>
-            <div data-testid="box-pickup-card" className="flex flex-col rounded-control border border-border bg-panel p-4">
-              <IconBadge tone="soft"><Clock3 size={18} /></IconBadge>
-              <p className="mt-3 text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('pickup')}</p>
-              <p className="mt-1 whitespace-nowrap text-sm font-black text-ink">{box.pickupFrom}–{box.pickupTo}</p>
             </div>
           </div>
           <h2 className="mt-6 text-lg font-black">{t('composition')}</h2>

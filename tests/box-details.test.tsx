@@ -73,6 +73,7 @@ describe('store details presentation', () => {
     expect(within(scroll).getAllByRole('button', { name: /^Подробнее / })).toHaveLength(5);
     expect(within(scroll).getAllByText('SURPRISE')).toHaveLength(2);
     expect(within(scroll).getByText('пр. Тауке хана, 47')).toBeInTheDocument();
+    expect(within(scroll).getByTestId('store-pickup-time')).toHaveTextContent('Время выдачи10:30–21:00');
     expect(header.compareDocumentPosition(scroll) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
@@ -86,7 +87,7 @@ describe('store details presentation', () => {
     expect(within(scroll).getByText('Точный состав этого бокса заранее неизвестен — содержимое станет сюрпризом.')).toBeInTheDocument();
     expect(within(scroll).getByTestId('box-stock')).toHaveTextContent('Осталось 4 бокса');
     expect(within(within(scroll).getByTestId('box-price-card')).getByText('−60%')).toBeInTheDocument();
-    expect(within(scroll).getByTestId('box-pickup-card')).toHaveTextContent('19:30–20:30');
+    expect(within(scroll).queryByText('19:30–20:30')).not.toBeInTheDocument();
     expect(within(scroll).getByText('Содержит аллергены')).toBeInTheDocument();
     expect(within(scroll).getByText('Глютен, молоко, яйца')).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Добавить Surprise Tatti-box' }).closest('footer')).toBeInTheDocument();
