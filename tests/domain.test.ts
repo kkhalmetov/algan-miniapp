@@ -4,8 +4,11 @@ import { getCopy } from '../lib/translations';
 
 describe('mock customer catalog', () => {
   it('contains available and sold-out discounted boxes linked to stores', () => {
-    expect(boxes).toHaveLength(6);
+    expect(boxes).toHaveLength(9);
     expect(stores).toHaveLength(5);
+    expect(boxes.filter((box) => box.storeId === 'tatti')).toHaveLength(5);
+    expect(boxes.filter((box) => box.storeId === 'tatti' && box.type === 'SURPRISE')).toHaveLength(2);
+    expect(boxes.filter((box) => box.storeId === 'tatti' && box.type === 'DEFINED')).toHaveLength(3);
     boxes.forEach((box) => {
       expect(box.salePrice).toBeLessThan(box.originalPrice);
       expect(box.quantity).toBeGreaterThanOrEqual(0);

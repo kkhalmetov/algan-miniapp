@@ -30,6 +30,9 @@ describe('box types', () => {
       tab: 'home',
       favoriteStoreIds: [],
       orders: [],
+      cartStoreId: undefined,
+      cartItems: [],
+      purchasedBoxQuantities: {},
     });
   });
 
@@ -60,8 +63,9 @@ describe('box types', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery пр\. Тауке хана, 47/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Толығырақ Surprise Tatti-box' }));
 
-    const dialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
+    const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
     expect(within(dialog).getByText('Бұл бокстың нақты құрамы алдын ала белгісіз — ішіндегісі тосынсый болады.')).toBeInTheDocument();
     expect(within(dialog).getByText('SURPRISE')).toBeInTheDocument();
   });

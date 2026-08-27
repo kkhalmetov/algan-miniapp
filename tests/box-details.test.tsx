@@ -17,6 +17,9 @@ describe('store details presentation', () => {
       tab: 'home',
       favoriteStoreIds: [],
       orders: [],
+      cartStoreId: undefined,
+      cartItems: [],
+      purchasedBoxQuantities: {},
     });
   });
 
@@ -55,33 +58,38 @@ describe('store details presentation', () => {
     expect(screen.queryByAltText('Halal')).not.toBeInTheDocument();
   });
 
-  it('keeps navigation controls outside the scrolling cover and content', () => {
+  it('shows venue information and all five Tatti boxes', () => {
     openFirstStore();
 
     const dialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
-    const header = within(dialog).getByTestId('box-details-header');
-    const scroll = within(dialog).getByTestId('box-details-scroll');
-    const cover = within(dialog).getByTestId('box-details-cover');
+    const header = within(dialog).getByTestId('store-details-header');
+    const scroll = within(dialog).getByTestId('store-details-scroll');
+    const cover = within(dialog).getByTestId('store-details-cover');
     expect(within(header).getByRole('button', { name: 'Назад' })).toBeInTheDocument();
     expect(within(header).getByRole('button', { name: 'Избранное' })).toHaveAttribute('aria-pressed', 'false');
     expect(within(scroll).getByAltText('Tatti Bakery logo')).toHaveAttribute('src', stores[0]!.logo);
     expect(within(cover).queryByAltText('Halal')).not.toBeInTheDocument();
-    expect(within(scroll).queryByText('Свежая выпечка дня: круассаны, слойки и хлеб. Точный состав станет сюрпризом.')).not.toBeInTheDocument();
+    expect(within(scroll).getByText('Доступные боксы')).toBeInTheDocument();
+    expect(within(scroll).getAllByRole('button', { name: /^Подробнее / })).toHaveLength(5);
+    expect(within(scroll).getAllByText('SURPRISE')).toHaveLength(2);
+    expect(within(scroll).getByText('пр. Тауке хана, 47')).toBeInTheDocument();
+    expect(header.compareDocumentPosition(scroll) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('opens a box with its full catalog information', () => {
+    openFirstStore();
+    fireEvent.click(screen.getByRole('button', { name: 'Подробнее Surprise Tatti-box' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
+    const scroll = within(dialog).getByTestId('box-details-scroll');
     expect(within(scroll).getByText('SURPRISE')).toBeInTheDocument();
-    expect(within(cover).queryByText('SURPRISE')).not.toBeInTheDocument();
     expect(within(scroll).getByText('Точный состав этого бокса заранее неизвестен — содержимое станет сюрпризом.')).toBeInTheDocument();
-    expect(within(scroll).queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
     expect(within(scroll).getByTestId('box-stock')).toHaveTextContent('Осталось 4 бокса');
-    expect(screen.queryByText(/4\.9/)).not.toBeInTheDocument();
     expect(within(within(scroll).getByTestId('box-price-card')).getByText('−60%')).toBeInTheDocument();
     expect(within(scroll).getByTestId('box-pickup-card')).toHaveTextContent('19:30–20:30');
     expect(within(scroll).getByText('Содержит аллергены')).toBeInTheDocument();
     expect(within(scroll).getByText('Глютен, молоко, яйца')).toBeInTheDocument();
-    expect(within(scroll).queryByText('0.8 км')).not.toBeInTheDocument();
-    expect(within(scroll).queryByText(/−60% скидка/)).not.toBeInTheDocument();
-    expect(header.compareDocumentPosition(scroll) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(within(scroll).queryByRole('button', { name: 'Купить бокс' })).not.toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Купить бокс' }).closest('footer')).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Добавить Surprise Tatti-box' }).closest('footer')).toBeInTheDocument();
   });
 
   it('toggles favorite and closes from the persistent header', () => {
@@ -115,8 +123,9 @@ describe('store details presentation', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: /Dastarhan Market ул\. Желтоксан, 19/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Подробнее Зелёный бокс' }));
 
-    const dialog = screen.getByRole('dialog', { name: 'Dastarhan Market' });
+    const dialog = screen.getByRole('dialog', { name: 'Зелёный бокс' });
     expect(within(dialog).getByText('Аллергены')).toBeInTheDocument();
     expect(within(dialog).getByText('Информация об аллергенах не указана. Уточните её у заведения.')).toBeInTheDocument();
   });
@@ -129,10 +138,14 @@ describe('store details presentation', () => {
     expect(soldOutCard).not.toBeNull();
     expect(within(soldOutCard!).queryByText('Боксы закончились')).not.toBeInTheDocument();
     fireEvent.click(within(soldOutCard!).getByRole('button', { name: /Qamyr Bakery ул\. Рыскулова, 18/ }));
+    const storeDialog = screen.getByRole('dialog', { name: 'Qamyr Bakery' });
+    expect(within(storeDialog).getAllByText('Боксы закончились')).toHaveLength(2);
+    expect(within(storeDialog).getByRole('button', { name: 'Добавить Вечерний бокс' })).toBeDisabled();
+    fireEvent.click(within(storeDialog).getByRole('button', { name: 'Подробнее Вечерний бокс' }));
 
-    const dialog = screen.getByRole('dialog', { name: 'Qamyr Bakery' });
+    const dialog = screen.getByRole('dialog', { name: 'Вечерний бокс' });
     expect(within(dialog).getByTestId('box-stock')).toHaveTextContent('Боксы закончились');
-    expect(within(dialog).getByRole('button', { name: 'Купить бокс' })).toBeDisabled();
+    expect(within(dialog).getByRole('button', { name: 'Добавить Вечерний бокс' })).toBeDisabled();
   });
 });
 

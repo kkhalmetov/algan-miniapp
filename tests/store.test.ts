@@ -11,6 +11,9 @@ describe('local MVP state', () => {
       tab: 'home',
       favoriteStoreIds: [],
       orders: [],
+      cartStoreId: undefined,
+      cartItems: [],
+      purchasedBoxQuantities: {},
     });
   });
 
@@ -59,5 +62,43 @@ describe('local MVP state', () => {
       pickupCode: '1234', createdAt: '2026-08-25T00:00:00.000Z', status: 'paid',
     });
     expect(useAppStore.getState().orders[0]?.pickupCode).toBe('1234');
+  });
+
+  it('adds, changes and removes box quantities in the cart', () => {
+    const store = useAppStore.getState();
+    store.setCartItemQuantity('bakery-surprise', 'tatti', 2);
+    store.setCartItemQuantity('tatti-defined', 'tatti', 1);
+    expect(useAppStore.getState()).toMatchObject({
+      cartStoreId: 'tatti',
+      cartItems: [
+        { boxId: 'bakery-surprise', quantity: 2 },
+        { boxId: 'tatti-defined', quantity: 1 },
+      ],
+    });
+    useAppStore.getState().setCartItemQuantity('bakery-surprise', 'tatti', 0);
+    expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'tatti-defined', quantity: 1 }]);
+    useAppStore.getState().setCartItemQuantity('tatti-defined', 'tatti', 0);
+    expect(useAppStore.getState()).toMatchObject({ cartStoreId: undefined, cartItems: [] });
+  });
+
+  it('creates separate orders and reduces the available mock stock', () => {
+    useAppStore.getState().setCartItemQuantity('bakery-surprise', 'tatti', 2);
+    useAppStore.getState().setCartItemQuantity('tatti-defined', 'tatti', 1);
+    useAppStore.getState().completePurchase([
+      { id: '12345678', boxId: 'bakery-surprise', quantity: 2, total: 4980, pickupCode: '1234', createdAt: '2026-08-25T00:00:00.000Z', status: 'paid' },
+      { id: '87654321', boxId: 'tatti-defined', quantity: 1, total: 2390, pickupCode: '5678', createdAt: '2026-08-25T00:00:00.000Z', status: 'paid' },
+    ]);
+    expect(useAppStore.getState().orders.map((order) => order.id)).toEqual(['12345678', '87654321']);
+    expect(useAppStore.getState().purchasedBoxQuantities).toEqual({ 'bakery-surprise': 2, 'tatti-defined': 1 });
+    expect(useAppStore.getState()).toMatchObject({ cartStoreId: undefined, cartItems: [] });
+  });
+
+  it('never mixes boxes from different venues', () => {
+    useAppStore.getState().setCartItemQuantity('bakery-surprise', 'tatti', 1);
+    useAppStore.getState().setCartItemQuantity('coffee', 'kofi', 1);
+    expect(useAppStore.getState()).toMatchObject({
+      cartStoreId: 'kofi',
+      cartItems: [{ boxId: 'coffee', quantity: 1 }],
+    });
   });
 });

@@ -1,11 +1,11 @@
 import type { Box, Store } from './types';
 
 export const stores: Store[] = [
-  { id: 'tatti', name: 'Tatti Bakery', logo: '/images/store-logos/tatti.svg', type: 'bakery', address: 'пр. Тауке хана, 47', lat: 42.3184, lng: 69.5907, rating: 4.9 },
-  { id: 'kofi', name: 'Köfi', logo: '/images/store-logos/kofi.svg', type: 'cafe', address: 'ул. Байтурсынова, 12', lat: 42.3122, lng: 69.5823, rating: 4.8 },
-  { id: 'dastarhan', name: 'Dastarhan Market', logo: '/images/store-logos/dastarhan.svg', type: 'market', address: 'ул. Желтоксан, 19', lat: 42.3268, lng: 69.5979, rating: 4.7 },
-  { id: 'bal', name: 'Bal Dessert', logo: '/images/store-logos/bal.svg', type: 'dessert', address: 'пр. Кунаева, 38', lat: 42.3058, lng: 69.6038, rating: 4.9 },
-  { id: 'qamyr', name: 'Qamyr Bakery', logo: '/images/store-logos/qamyr.svg', type: 'bakery', address: 'ул. Рыскулова, 18', lat: 42.321, lng: 69.5795, rating: 4.8 },
+  { id: 'tatti', name: 'Tatti Bakery', logo: '/images/store-logos/tatti.svg', coverImage: '/images/bakery.jpg', type: 'bakery', address: 'пр. Тауке хана, 47', lat: 42.3184, lng: 69.5907, rating: 4.9 },
+  { id: 'kofi', name: 'Köfi', logo: '/images/store-logos/kofi.svg', coverImage: '/images/cafe.jpg', type: 'cafe', address: 'ул. Байтурсынова, 12', lat: 42.3122, lng: 69.5823, rating: 4.8 },
+  { id: 'dastarhan', name: 'Dastarhan Market', logo: '/images/store-logos/dastarhan.svg', coverImage: '/images/produce.jpg', type: 'market', address: 'ул. Желтоксан, 19', lat: 42.3268, lng: 69.5979, rating: 4.7 },
+  { id: 'bal', name: 'Bal Dessert', logo: '/images/store-logos/bal.svg', coverImage: '/images/dessert.jpg', type: 'dessert', address: 'пр. Кунаева, 38', lat: 42.3058, lng: 69.6038, rating: 4.9 },
+  { id: 'qamyr', name: 'Qamyr Bakery', logo: '/images/store-logos/qamyr.svg', coverImage: '/images/bakery.jpg', type: 'bakery', address: 'ул. Рыскулова, 18', lat: 42.321, lng: 69.5795, rating: 4.8 },
 ];
 
 export const boxes: Box[] = [
@@ -24,6 +24,34 @@ export const boxes: Box[] = [
       { contentName: 'Багет', quantity: 1 },
     ],
     originalPrice: 5600, salePrice: 2390, quantity: 3, pickupFrom: '18:30', pickupTo: '19:30',
+    image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 0.8,
+  },
+  {
+    id: 'tatti-morning', storeId: 'tatti', type: 'DEFINED', name: 'Утренний Tatti-box',
+    description: 'Готовый набор выпечки для завтрака.',
+    contents: [
+      { contentName: 'Круассан', quantity: 2 },
+      { contentName: 'Булочка', quantity: 1 },
+      { contentName: 'Бейгл', quantity: 1 },
+    ],
+    originalPrice: 4200, salePrice: 1790, quantity: 5, pickupFrom: '10:30', pickupTo: '11:30',
+    image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 0.8,
+  },
+  {
+    id: 'tatti-family', storeId: 'tatti', type: 'DEFINED', name: 'Семейный Tatti-box',
+    description: 'Большой набор свежей выпечки для всей семьи.',
+    contents: [
+      { contentName: 'Багет', quantity: 1 },
+      { contentName: 'Круассан', quantity: 4 },
+      { contentName: 'Булочка с корицей', quantity: 2 },
+    ],
+    originalPrice: 8900, salePrice: 3790, quantity: 1, pickupFrom: '19:00', pickupTo: '20:00',
+    image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 0.8,
+  },
+  {
+    id: 'tatti-evening-surprise', storeId: 'tatti', type: 'SURPRISE', name: 'Вечерний Surprise Tatti-box',
+    description: 'Нераспроданная выпечка дня с неизвестным заранее составом.',
+    originalPrice: 5800, salePrice: 2290, quantity: 2, pickupFrom: '20:00', pickupTo: '21:00',
     image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 0.8,
   },
   {

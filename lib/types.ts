@@ -19,6 +19,7 @@ export interface Store {
   id: string;
   name: string;
   logo: string;
+  coverImage?: string;
   type: 'bakery' | 'cafe' | 'market' | 'dessert';
   address: string;
   lat: number;
@@ -59,6 +60,11 @@ export interface Order {
   pickupCode: string;
   createdAt: string;
   status: 'paid' | 'collected';
+}
+
+export interface CartItem {
+  boxId: string;
+  quantity: number;
 }
 
 export interface GeocodingResult {

@@ -18,7 +18,7 @@ import { formatBoxesLeft } from '@/lib/stock';
 import { useAppStore } from '@/lib/store';
 import { getCopy, type CopyKey } from '@/lib/translations';
 import { haptic, openExternalLink, openTelegramLink, prepareTelegram, telegramProfile } from '@/lib/telegram';
-import type { Box, Locale, Order, Tab, UserProfile } from '@/lib/types';
+import type { Box, CartItem, Locale, Order, Store, Tab, UserProfile } from '@/lib/types';
 
 const SHYMKENT = { lat: 42.3155, lng: 69.5869 };
 export const MINIMUM_SPLASH_MS = 900;
@@ -35,22 +35,26 @@ export const avatarRetryUrl = (url: string, attempt: number) =>
 const formatPrice = (value: number, locale: Locale) =>
   `${new Intl.NumberFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ').format(value)} ₸`;
 
+const availableQuantity = (box: Box, purchasedBoxQuantities: Record<string, number>) =>
+  Math.max(0, box.quantity - (purchasedBoxQuantities[box.id] ?? 0));
+
 export default function AlganApp() {
   const {
-    hydrated, onboardingDone, profile, locale, tab, favoriteStoreIds, orders,
-    completeOnboarding, syncTelegramProfile, updatePhone, setLocale, setTab, toggleFavorite, addOrder, resetDemo,
+    hydrated, onboardingDone, profile, locale, tab, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
+    completeOnboarding, syncTelegramProfile, updatePhone, setLocale, setTab, toggleFavorite,
+    setCartItemQuantity, clearCart, completePurchase, resetDemo,
   } = useAppStore();
-  const t = getCopy(locale);
+  const t = useCallback((key: CopyKey) => getCopy(locale)(key), [locale]);
   const [phone, setPhone] = useState('+7');
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [legal, setLegal] = useState<LegalDocument | null>(null);
   const [documentsOpen, setDocumentsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
-  const [checkoutBox, setCheckoutBox] = useState<Box | null>(null);
-  const [quantity, setQuantity] = useState(1);
-  const [successOrder, setSuccessOrder] = useState<Order | null>(null);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [successOrders, setSuccessOrders] = useState<Order[] | null>(null);
   const [editingPhone, setEditingPhone] = useState(false);
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
   const onboardingLocaleInitialized = useRef(false);
@@ -134,31 +138,57 @@ export default function AlganApp() {
     });
   };
 
+  const openStore = useCallback((storeId: string) => {
+    if (cartItems.length > 0 && cartStoreId && cartStoreId !== storeId) {
+      if (!window.confirm(t('replaceCartConfirm'))) return;
+      clearCart();
+    }
+    haptic('tap');
+    setSelectedBox(null);
+    setSelectedStoreId(storeId);
+  }, [cartItems.length, cartStoreId, clearCart, t]);
+
   const openBox = (box: Box) => {
     haptic('tap');
+    setSelectedStoreId(box.storeId);
     setSelectedBox(box);
   };
 
-  const buyBox = (box: Box) => {
-    setSelectedBox(null);
-    setCheckoutBox(box);
-    setQuantity(1);
+  const changeCartQuantity = (box: Box, nextQuantity: number) => {
+    if (nextQuantity > 0 && cartStoreId && cartStoreId !== box.storeId) {
+      if (!window.confirm(t('replaceCartConfirm'))) return;
+      clearCart();
+    }
+    const quantity = Math.min(Math.max(0, nextQuantity), availableQuantity(box, purchasedBoxQuantities));
+    setCartItemQuantity(box.id, box.storeId, quantity);
+    haptic(quantity > 0 ? 'tap' : 'success');
   };
 
-  const pay = () => {
-    if (!checkoutBox) return;
-    const order: Order = {
-      id: createOrderId(orders.map((order) => order.id)),
-      boxId: checkoutBox.id,
-      quantity,
-      total: checkoutBox.salePrice * quantity,
-      pickupCode: String(Math.floor(1000 + Math.random() * 9000)),
-      createdAt: new Date().toISOString(),
-      status: 'paid',
-    };
-    addOrder(order);
-    setCheckoutBox(null);
-    setSuccessOrder(order);
+  const payCart = () => {
+    const existingIds = orders.map((order) => order.id);
+    const pickupCodes = new Set<string>();
+    const createdAt = new Date().toISOString();
+    const newOrders = cartItems.flatMap((item) => {
+      const box = boxes.find((candidate) => candidate.id === item.boxId);
+      if (!box) return [];
+      const quantity = Math.min(item.quantity, availableQuantity(box, purchasedBoxQuantities));
+      if (quantity < 1) return [];
+      const id = createOrderId(existingIds);
+      existingIds.push(id);
+      let pickupCode = '';
+      do pickupCode = String(Math.floor(1000 + Math.random() * 9000)); while (pickupCodes.has(pickupCode));
+      pickupCodes.add(pickupCode);
+      return [{
+        id, boxId: box.id, quantity, total: box.salePrice * quantity,
+        pickupCode, createdAt, status: 'paid' as const,
+      }];
+    });
+    if (newOrders.length === 0) return;
+    completePurchase(newOrders);
+    setCartOpen(false);
+    setSelectedBox(null);
+    setSelectedStoreId(null);
+    setSuccessOrders(newOrders);
     haptic('success');
   };
 
@@ -183,12 +213,12 @@ export default function AlganApp() {
           {tab === 'home' && (
             <HomeTab
               t={t} profile={profile} openProfile={() => { setTab('profile'); haptic('tap'); }}
-              favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openBox={openBox}
+              favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openStore={openStore}
             />
           )}
-          {tab === 'map' && <MapTab openBox={openBox} />}
+          {tab === 'map' && <MapTab openStore={openStore} />}
           {tab === 'favorites' && (
-            <FavoritesTab t={t} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openBox={openBox} />
+            <FavoritesTab t={t} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openStore={openStore} />
           )}
           {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} openBox={openBox} />}
           {tab === 'profile' && (
@@ -201,16 +231,25 @@ export default function AlganApp() {
         <BottomNav tab={tab} setTab={setTab} t={t} />
       </div>
 
+      {selectedStoreId && (
+        <StoreDetails store={storeById(selectedStoreId)} locale={locale} t={t}
+          isFavorite={favoriteStoreIds.includes(selectedStoreId)} toggleFavorite={() => toggleFavorite(selectedStoreId)}
+          cartItems={cartItems} purchasedBoxQuantities={purchasedBoxQuantities}
+          onChangeQuantity={changeCartQuantity} onOpenBox={openBox} onOpenCart={() => setCartOpen(true)}
+          onClose={() => { setSelectedBox(null); setSelectedStoreId(null); }} />
+      )}
       {selectedBox && (
-        <BoxDetails box={selectedBox} locale={locale} t={t} isFavorite={favoriteStoreIds.includes(selectedBox.storeId)}
-          toggleFavorite={() => toggleFavorite(selectedBox.storeId)} onClose={() => setSelectedBox(null)} onBuy={() => buyBox(selectedBox)} />
+        <BoxDetails box={selectedBox} locale={locale} t={t}
+          cartQuantity={cartItems.find((item) => item.boxId === selectedBox.id)?.quantity ?? 0}
+          available={availableQuantity(selectedBox, purchasedBoxQuantities)}
+          onChangeQuantity={(quantity) => changeCartQuantity(selectedBox, quantity)} onClose={() => setSelectedBox(null)} />
       )}
-      {checkoutBox && (
-        <Checkout box={checkoutBox} quantity={quantity} setQuantity={setQuantity} locale={locale} t={t}
-          onClose={() => setCheckoutBox(null)} onPay={pay} />
+      {cartOpen && (
+        <CartSheet items={cartItems} purchasedBoxQuantities={purchasedBoxQuantities} locale={locale} t={t}
+          onChangeQuantity={changeCartQuantity} onClose={() => setCartOpen(false)} onPay={payCart} />
       )}
-      {successOrder && (
-        <Success order={successOrder} t={t} onDone={() => { setSuccessOrder(null); setTab('orders'); }} />
+      {successOrders && (
+        <Success orders={successOrders} t={t} onDone={() => { setSuccessOrders(null); setTab('orders'); }} />
       )}
       {editingPhone && (
         <PhoneEditor currentPhone={profile.phone} t={t} onClose={() => setEditingPhone(false)} onSave={(value) => {
@@ -321,9 +360,9 @@ function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; set
   );
 }
 
-function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, openBox }: {
+function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, openStore }: {
   t: Translator; profile: UserProfile; openProfile: () => void; favoriteStoreIds: string[];
-  toggleFavorite: (id: string) => void; openBox: (box: Box) => void;
+  toggleFavorite: (id: string) => void; openStore: (storeId: string) => void;
 }) {
   return (
     <>
@@ -340,7 +379,7 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
         <div className="space-y-4 pb-6">
           {stores.map((store) => {
             const box = boxes.find((item) => item.storeId === store.id);
-            return box ? <StoreCard key={store.id} box={box} t={t} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openBox(box)} /> : null;
+            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} t={t} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
           })}
         </div>
       </section>
@@ -348,12 +387,11 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
   );
 }
 
-function StoreCard({ box, t, favorite, toggleFavorite, onOpen }: { box: Box; t: Translator; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
-  const store = storeById(box.storeId);
+function StoreCard({ store, fallbackImage, t, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; t: Translator; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
   return (
     <article className="overflow-hidden rounded-card border border-border bg-panel shadow-card">
       <button type="button" onClick={onOpen} className="relative block h-44 w-full overflow-hidden text-left">
-        <img src={box.image} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
+        <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
         <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-panel bg-panel shadow-card">
           <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
         </span>
@@ -379,11 +417,10 @@ function SurpriseBadge({ className = '' }: { className?: string }) {
   );
 }
 
-function MapTab({ openBox }: { openBox: (box: Box) => void }) {
+function MapTab({ openStore }: { openStore: (storeId: string) => void }) {
   const selectStore = useCallback((id: string) => {
-    const box = boxes.find((item) => item.storeId === id);
-    if (box) openBox(box);
-  }, [openBox]);
+    openStore(id);
+  }, [openStore]);
   return (
     <div className="relative h-full min-h-0">
       <LocationMap lat={SHYMKENT.lat} lng={SHYMKENT.lng} stores={stores} onSelectStore={selectStore} className="absolute inset-0" />
@@ -391,7 +428,7 @@ function MapTab({ openBox }: { openBox: (box: Box) => void }) {
   );
 }
 
-function FavoritesTab({ t, favoriteStoreIds, toggleFavorite, openBox }: { t: Translator; favoriteStoreIds: string[]; toggleFavorite: (id: string) => void; openBox: (box: Box) => void }) {
+function FavoritesTab({ t, favoriteStoreIds, toggleFavorite, openStore }: { t: Translator; favoriteStoreIds: string[]; toggleFavorite: (id: string) => void; openStore: (storeId: string) => void }) {
   const favoriteStores = stores.filter((store) => favoriteStoreIds.includes(store.id));
   return (
     <section className="px-5 pb-7 pt-[max(1.5rem,env(safe-area-inset-top))]">
@@ -402,7 +439,7 @@ function FavoritesTab({ t, favoriteStoreIds, toggleFavorite, openBox }: { t: Tra
         <div className="mt-6 space-y-4">
           {favoriteStores.map((store) => {
             const box = boxes.find((item) => item.storeId === store.id);
-            return box ? <StoreCard key={store.id} box={box} t={t} favorite toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openBox(box)} /> : null;
+            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} t={t} favorite toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
           })}
         </div>
       )}
@@ -589,15 +626,25 @@ function Overlay({ children, onClose, full = false }: { children: React.ReactNod
   );
 }
 
-function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy }: {
-  box: Box; locale: Locale; t: Translator; isFavorite: boolean; toggleFavorite: () => void; onClose: () => void; onBuy: () => void;
+function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems, purchasedBoxQuantities, onChangeQuantity, onOpenBox, onOpenCart, onClose }: {
+  store: Store; locale: Locale; t: Translator; isFavorite: boolean; toggleFavorite: () => void;
+  cartItems: CartItem[]; purchasedBoxQuantities: Record<string, number>;
+  onChangeQuantity: (box: Box, quantity: number) => void; onOpenBox: (box: Box) => void;
+  onOpenCart: () => void; onClose: () => void;
 }) {
-  const store = storeById(box.storeId);
-  const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
+  const storeBoxes = boxes.filter((box) => box.storeId === store.id);
+  const fallbackImage = storeBoxes[0]?.image ?? '/images/bakery.jpg';
+  const cartLines = cartItems.flatMap((item) => {
+    const box = storeBoxes.find((candidate) => candidate.id === item.boxId);
+    return box ? [{ box, quantity: item.quantity }] : [];
+  });
+  const cartQuantity = cartLines.reduce((sum, line) => sum + line.quantity, 0);
+  const cartTotal = cartLines.reduce((sum, line) => sum + line.box.salePrice * line.quantity, 0);
   const [routePickerOpen, setRoutePickerOpen] = useState(false);
+
   return (
     <section className="absolute inset-0 z-[1000] flex h-full min-h-0 flex-col overflow-hidden bg-surface" role="dialog" aria-modal="true" aria-label={store.name}>
-      <header data-testid="box-details-header" className="shrink-0 bg-brand px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
+      <header data-testid="store-details-header" className="shrink-0 bg-brand px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
         <div className="flex min-h-11 items-center gap-3">
           <IconButton onClick={onClose} label={t('back')} tone="dark"><ChevronRight className="rotate-180" size={20} /></IconButton>
           <p className="min-w-0 flex-1 truncate text-center text-sm font-black">{store.name}</p>
@@ -605,19 +652,121 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
         </div>
       </header>
 
-      <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <div data-testid="box-details-cover" className="relative h-[260px] bg-canvas">
-          <img src={box.image} alt="" className="h-full w-full object-cover object-center" />
+      <div data-testid="store-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div data-testid="store-details-cover" className="relative h-[240px] bg-canvas">
+          <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover object-center" />
           <span className="absolute -bottom-8 left-5 grid h-17 w-17 place-items-center overflow-hidden rounded-full border-4 border-surface bg-panel shadow-card">
             <img src={store.logo} alt={`${store.name} logo`} className="h-13 w-13 object-contain" />
           </span>
         </div>
         <div className="px-6 pb-6 pt-11">
           <h1 className="text-[29px] font-black tracking-[-0.045em]">{store.name}</h1>
+          <SurfaceCard className="mt-5 p-4">
+            <div className="flex items-start gap-3">
+              <IconBadge><MapPin size={19} /></IconBadge>
+              <div className="min-w-0"><p className="text-xs font-bold text-ink-muted">{t('addressLabel')}</p><p className="mt-1 text-sm font-black leading-5">{store.address}</p></div>
+            </div>
+            <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">
+              <Route size={18} />{t('buildRoute')}
+            </SecondaryButton>
+          </SurfaceCard>
+
+          <h2 className="mt-7 text-xl font-black tracking-[-0.035em]">{t('availableBoxes')}</h2>
+          <div className="mt-4 space-y-3">
+            {storeBoxes.map((box) => (
+              <BoxOfferCard key={box.id} box={box} locale={locale} t={t}
+                available={availableQuantity(box, purchasedBoxQuantities)}
+                cartQuantity={cartItems.find((item) => item.boxId === box.id)?.quantity ?? 0}
+                onChangeQuantity={(quantity) => onChangeQuantity(box, quantity)} onOpen={() => onOpenBox(box)} />
+            ))}
+          </div>
+        </div>
+      </div>
+      {cartQuantity > 0 && (
+        <footer className="shrink-0 border-t border-border bg-surface/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
+          <PrimaryButton onClick={onOpenCart}><ShoppingBag size={19} />{t('cart')} · {cartQuantity}<span className="ml-auto">{formatPrice(cartTotal, locale)}</span></PrimaryButton>
+        </footer>
+      )}
+      {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
+    </section>
+  );
+}
+
+function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantity, onOpen }: {
+  box: Box; locale: Locale; t: Translator; available: number; cartQuantity: number;
+  onChangeQuantity: (quantity: number) => void; onOpen: () => void;
+}) {
+  const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
+  return (
+    <article className={`overflow-hidden rounded-card border bg-panel shadow-card ${available > 0 ? 'border-border' : 'border-danger/25'}`}>
+      <button type="button" onClick={onOpen} className="flex w-full gap-3 p-3 text-left" aria-label={`${t('details')} ${box.name}`}>
+        <img src={box.image} alt="" className="h-24 w-24 shrink-0 rounded-2xl object-cover" />
+        <span className="min-w-0 flex-1 py-0.5">
+          <span className="flex items-start justify-between gap-2">
+            <span className="line-clamp-2 text-base font-black leading-5">{box.name}</span>
+            {box.type === 'SURPRISE' && <SurpriseBadge className="shrink-0 px-2 py-1 text-[8px]" />}
+          </span>
+          <span className={`mt-2 flex items-center gap-1.5 text-[11px] font-black ${available > 0 ? 'text-accent-strong' : 'text-danger'}`}><Package size={14} />{formatBoxesLeft(available, locale)}</span>
+          <span className="mt-2 flex flex-wrap items-center gap-2">
+            <b className="text-base text-brand">{formatPrice(box.salePrice, locale)}</b>
+            <span className="text-[11px] text-ink-muted line-through">{formatPrice(box.originalPrice, locale)}</span>
+            <span className="rounded-full bg-accent px-2 py-1 text-[10px] font-black text-white">−{discount}%</span>
+          </span>
+        </span>
+      </button>
+      <div className="border-t border-border px-3 py-3">
+        <CartQuantityControl boxName={box.name} quantity={cartQuantity} max={available} locale={locale} t={t} onChange={onChangeQuantity} />
+      </div>
+    </article>
+  );
+}
+
+function CartQuantityControl({ boxName, quantity, max, locale, t, onChange }: {
+  boxName: string; quantity: number; max: number; locale: Locale; t: Translator; onChange: (quantity: number) => void;
+}) {
+  if (quantity < 1) {
+    return (
+      <button type="button" disabled={max < 1} onClick={() => onChange(1)} aria-label={`${t('addToCart')} ${boxName}`}
+        className="min-h-11 w-full rounded-control bg-brand px-4 text-sm font-black text-white transition disabled:bg-surface-muted disabled:text-ink-subtle">
+        {max > 0 ? t('addToCart') : formatBoxesLeft(0, locale)}
+      </button>
+    );
+  }
+  return (
+    <div className="flex min-h-11 items-center justify-between rounded-control bg-brand-soft px-2">
+      <IconButton onClick={() => onChange(quantity - 1)} label={`${t('quantity')} −`}><Minus size={18} /></IconButton>
+      <span className="text-base font-black text-brand">{quantity}</span>
+      <IconButton onClick={() => onChange(quantity + 1)} label={`${t('quantity')} +`} tone="brand" disabled={quantity >= max}><Plus size={18} /></IconButton>
+    </div>
+  );
+}
+
+function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity, onClose }: {
+  box: Box; locale: Locale; t: Translator; cartQuantity: number; available: number;
+  onChangeQuantity: (quantity: number) => void; onClose: () => void;
+}) {
+  const store = storeById(box.storeId);
+  const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
+  return (
+    <section className="absolute inset-0 z-[1100] flex h-full min-h-0 flex-col overflow-hidden bg-surface" role="dialog" aria-modal="true" aria-label={box.name}>
+      <header data-testid="box-details-header" className="shrink-0 bg-brand px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
+        <div className="flex min-h-11 items-center gap-3">
+          <IconButton onClick={onClose} label={t('back')} tone="dark"><ChevronRight className="rotate-180" size={20} /></IconButton>
+          <p className="min-w-0 flex-1 truncate text-center text-sm font-black">{store.name}</p>
+          <span className="h-11 w-11 shrink-0" />
+        </div>
+      </header>
+
+      <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div data-testid="box-details-cover" className="h-[230px] bg-canvas">
+          <img src={box.image} alt="" className="h-full w-full object-cover object-center" />
+        </div>
+        <div className="px-6 pb-6 pt-6">
+          <h1 className="text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
           {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}
           <div className="mt-2">
-            <span data-testid="box-stock" className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${box.quantity > 0 ? 'bg-accent-soft text-accent-strong' : 'bg-danger-soft text-danger'}`}>
-              <Package size={15} />{formatBoxesLeft(box.quantity, locale)}
+            <span data-testid="box-stock" className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${available > 0 ? 'bg-accent-soft text-accent-strong' : 'bg-danger-soft text-danger'}`}>
+              <Package size={15} />{formatBoxesLeft(available, locale)}
             </span>
           </div>
           <div className="mt-4 grid grid-cols-[1.08fr_.92fr] gap-3">
@@ -657,21 +806,11 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
               </div>
             </div>
           </div>
-          <SurfaceCard className="mt-5 p-4">
-            <div className="flex items-start gap-3">
-              <IconBadge><MapPin size={19} /></IconBadge>
-              <div className="min-w-0"><p className="text-xs font-bold text-ink-muted">{t('addressLabel')}</p><p className="mt-1 text-sm font-black leading-5">{store.address}</p></div>
-            </div>
-            <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">
-              <Route size={18} />{t('buildRoute')}
-            </SecondaryButton>
-          </SurfaceCard>
         </div>
       </div>
       <footer className="shrink-0 border-t border-border bg-surface/96 px-5 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
-        <PrimaryButton onClick={onBuy} disabled={box.quantity < 1}>{t('buy')}<ShoppingBag size={19} /></PrimaryButton>
+        <CartQuantityControl boxName={box.name} quantity={cartQuantity} max={available} locale={locale} t={t} onChange={onChangeQuantity} />
       </footer>
-      {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
     </section>
   );
 }
@@ -707,48 +846,74 @@ function RoutePicker({ lat, lng, t, onClose }: {
   );
 }
 
-function Checkout({ box, quantity, setQuantity, locale, t, onClose, onPay }: {
-  box: Box; quantity: number; setQuantity: (value: number) => void; locale: Locale; t: Translator; onClose: () => void; onPay: () => void;
+function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity, onClose, onPay }: {
+  items: CartItem[]; purchasedBoxQuantities: Record<string, number>; locale: Locale; t: Translator;
+  onChangeQuantity: (box: Box, quantity: number) => void; onClose: () => void; onPay: () => void;
 }) {
+  const lines = items.flatMap((item) => {
+    const box = boxes.find((candidate) => candidate.id === item.boxId);
+    return box ? [{ box, quantity: item.quantity }] : [];
+  });
+  const total = lines.reduce((sum, line) => sum + line.box.salePrice * line.quantity, 0);
   return (
     <Overlay onClose={onClose}>
       <div className="modal-body">
         <SheetHandle />
-        <div className="mt-5"><ModalHeader title={t('demoPayment')} onClose={onClose} closeLabel={t('close')} /></div>
-        <div className="mt-5 flex gap-4 rounded-control bg-surface-soft p-3">
-          <img src={box.image} alt="" className="h-20 w-20 rounded-xl object-cover" />
-          <div className="min-w-0 flex-1 py-1"><p className="truncate text-base font-black">{box.name}</p><p className="mt-1 text-xs text-ink-muted">{storeById(box.storeId).name}</p><p className="mt-2 text-sm font-black text-brand">{formatPrice(box.salePrice, locale)}</p></div>
-        </div>
-        <div className="mt-5 flex items-center justify-between">
-          <span className="text-sm font-black">{t('quantity')}</span>
-          <div className="flex items-center gap-3">
-            <IconButton onClick={() => setQuantity(Math.max(1, quantity - 1))} label={`${t('quantity')} −`} disabled={quantity <= 1}><Minus size={17} /></IconButton>
-            <span className="w-5 text-center text-lg font-black">{quantity}</span>
-            <IconButton onClick={() => setQuantity(Math.min(box.quantity, quantity + 1))} label={`${t('quantity')} +`} tone="brand" disabled={quantity >= box.quantity}><Plus size={17} /></IconButton>
+        <div className="mt-5"><ModalHeader title={t('cart')} onClose={onClose} closeLabel={t('close')} /></div>
+        {lines.length === 0 ? (
+          <EmptyState icon={<ShoppingBag size={32} />} title={t('cartEmpty')} description="" />
+        ) : (
+          <div className="mt-5 max-h-[48vh] space-y-3 overflow-y-auto pr-1">
+            {lines.map(({ box, quantity }) => (
+              <div key={box.id} className="rounded-control border border-border bg-panel p-3">
+                <div className="flex gap-3">
+                  <img src={box.image} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-black">{box.name}</p>
+                    <p className="mt-1 text-xs font-bold text-ink-muted">{formatPrice(box.salePrice, locale)} × {quantity}</p>
+                    <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity, locale)}</p>
+                  </div>
+                </div>
+                <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
+                  <CartQuantityControl boxName={box.name} quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} locale={locale} t={t} onChange={(next) => onChangeQuantity(box, next)} />
+                  <button type="button" onClick={() => onChangeQuantity(box, 0)} className="px-2 text-xs font-black text-danger">{t('removeFromCart')}</button>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
         <div className="my-5 h-px bg-border" />
-        <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black">{formatPrice(box.salePrice * quantity, locale)}</span></div>
-        <p className="mt-4 flex gap-2 rounded-control bg-warning-surface p-3 text-xs leading-5 text-warning-ink"><Info size={17} className="mt-0.5 shrink-0" />{t('paymentNote')}</p>
-        <PrimaryButton onClick={onPay} className="mt-5">{t('pay')}<ChevronRight size={19} /></PrimaryButton>
+        <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black">{formatPrice(total, locale)}</span></div>
+        <p className="mt-4 flex gap-2 rounded-control bg-warning-surface p-3 text-xs leading-5 text-warning-ink"><Info size={17} className="mt-0.5 shrink-0" />{t('cartPaymentNote')}</p>
+        <PrimaryButton onClick={onPay} disabled={lines.length === 0} className="mt-5">{t('checkoutCart')}<ChevronRight size={19} /></PrimaryButton>
       </div>
     </Overlay>
   );
 }
 
-function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: () => void }) {
+function Success({ orders, t, onDone }: { orders: Order[]; t: Translator; onDone: () => void }) {
   return (
     <Overlay onClose={onDone} full>
-      <div className="flex min-h-dvh flex-col items-center justify-center px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-center sm:min-h-[780px]">
+      <div className="flex min-h-dvh flex-col items-center justify-center px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]">
         <div className="relative grid h-28 w-28 place-items-center rounded-full bg-highlight text-brand">
           <Check size={52} strokeWidth={3} />
           <Sparkles className="absolute -right-3 -top-2 text-accent" size={28} />
         </div>
-        <h1 className="mt-8 text-[34px] font-black tracking-[-0.05em]">{t('success')}</h1>
+        <h1 className="mt-6 text-[32px] font-black tracking-[-0.05em]">{t('ordersCreated')}</h1>
         <p className="mt-3 max-w-[300px] text-sm leading-6 text-ink-secondary">{t('successText')}</p>
-        <div className="mt-8 w-full rounded-card bg-brand p-6 text-white">
-          <p className="text-xs font-bold text-white/60">{t('pickupCode')}</p>
-          <p className="mt-2 text-5xl font-black tracking-[0.16em]">{order.pickupCode}</p>
+        <div className="mt-6 max-h-[42vh] w-full space-y-3 overflow-y-auto">
+          {orders.map((order) => {
+            const box = boxes.find((candidate) => candidate.id === order.boxId);
+            return (
+              <div key={order.id} className="rounded-card bg-brand p-4 text-left text-white">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0"><p className="truncate text-sm font-black">{box?.name}</p><p className="mt-1 text-[11px] text-white/60">{t('orderId')}: {formatOrderId(order.id)}</p></div>
+                  <p className="shrink-0 text-xs font-bold text-white/70">× {order.quantity}</p>
+                </div>
+                <div className="mt-3 flex items-end justify-between border-t border-white/15 pt-3"><span className="text-xs font-bold text-white/60">{t('pickupCode')}</span><b className="text-2xl tracking-[0.12em]">{order.pickupCode}</b></div>
+              </div>
+            );
+          })}
         </div>
         <PrimaryButton onClick={onDone} className="mt-8">{t('toOrders')}<ChevronRight size={19} /></PrimaryButton>
       </div>
