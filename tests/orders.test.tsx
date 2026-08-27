@@ -63,10 +63,15 @@ describe('orders tab', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
     fireEvent.click(screen.getByText('Номер заказа: 12345678').closest('button')!);
 
-    expect(screen.getByTitle('QR-код')).toBeInTheDocument();
-    expect(screen.getByText('123-456')).toBeInTheDocument();
-    expect(screen.getAllByText('Surprise Tatti-box').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Tatti-box').length).toBeGreaterThan(0);
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByTitle('QR-код')).toBeInTheDocument();
+    expect(within(dialog).getByText('123-456')).toBeInTheDocument();
+    expect(within(dialog).queryByText('Tatti Bakery')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('Состав заказа')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('Итого')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/Забрать:/)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('Tatti-box')).not.toBeInTheDocument();
   });
 
   it('does not show the orders block in profile', () => {
