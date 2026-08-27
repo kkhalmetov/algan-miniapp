@@ -188,7 +188,7 @@ export default function AlganApp() {
               toggleFavorite={toggleFavorite} openBox={openBox}
             />
           )}
-          {tab === 'map' && <MapTab locale={locale} openBox={openBox} />}
+          {tab === 'map' && <MapTab openBox={openBox} />}
           {tab === 'favorites' && (
             <FavoritesTab t={t} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openBox={openBox} />
           )}
@@ -390,33 +390,14 @@ function SurpriseBadge({ className = '' }: { className?: string }) {
   );
 }
 
-function MapTab({ locale, openBox }: { locale: Locale; openBox: (box: Box) => void }) {
-  const [storeId, setStoreId] = useState<string | null>(null);
-  const selectedBoxes = storeId ? boxes.filter((box) => box.storeId === storeId) : [];
-  const selectStore = useCallback((id: string) => setStoreId(id), []);
+function MapTab({ openBox }: { openBox: (box: Box) => void }) {
+  const selectStore = useCallback((id: string) => {
+    const box = boxes.find((item) => item.storeId === id);
+    if (box) openBox(box);
+  }, [openBox]);
   return (
     <div className="relative h-full min-h-0">
       <LocationMap lat={SHYMKENT.lat} lng={SHYMKENT.lng} stores={stores} onSelectStore={selectStore} className="absolute inset-0" />
-      {selectedBoxes.length > 0 && (
-        <div data-testid="map-box-options" className="hide-scrollbar absolute bottom-5 left-0 right-0 z-[600] flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">
-          {selectedBoxes.map((box) => (
-            <button key={box.id} type="button" onClick={() => openBox(box)} className="flex w-[calc(100%_-_2rem)] shrink-0 snap-center gap-3 rounded-card bg-panel p-3 text-left shadow-floating">
-              <span className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl">
-                <img src={box.image} alt="" className="h-full w-full object-cover" />
-              </span>
-              <span className="min-w-0 flex-1 py-1">
-                <span className="flex items-start justify-between gap-2">
-                  <span className="block truncate text-xs font-bold text-ink-muted">{storeById(box.storeId).name}</span>
-                  {box.type === 'SURPRISE' && <SurpriseBadge className="shrink-0 px-2 py-1 text-[8px]" />}
-                </span>
-                <span className="mt-1 block truncate text-base font-black">{box.name}</span>
-                <span className="mt-2 block text-sm font-black text-brand">{formatPrice(box.salePrice, locale)}</span>
-              </span>
-              <ChevronRight className="mt-7 shrink-0 text-ink-muted" size={19} />
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

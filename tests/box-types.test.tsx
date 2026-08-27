@@ -44,26 +44,15 @@ describe('box types', () => {
     expect(boxes.filter((box) => box.type === 'DEFINED').every((box) => Boolean(box.contents?.length))).toBe(true);
   });
 
-  it('shows every box for a selected store on the map and opens the selected one', () => {
+  it('opens venue details directly from a map marker', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: 'Карта' }));
     fireEvent.click(screen.getByRole('button', { name: 'Tatti Bakery marker' }));
 
-    const options = screen.getByTestId('map-box-options');
-    expect(within(options).getByRole('button', { name: /Surprise Tatti-box/ })).toBeInTheDocument();
-    const definedBox = within(options).getByRole('button', { name: /^Tatti BakeryTatti-box/ });
-    expect(within(definedBox).queryByText('SURPRISE')).not.toBeInTheDocument();
-    fireEvent.click(definedBox);
-
     const dialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
-    expect(within(dialog).queryByText('Tatti-box')).not.toBeInTheDocument();
-    expect(within(dialog).queryByText('SURPRISE')).not.toBeInTheDocument();
-    const contents = within(dialog).getByTestId('box-contents');
-    expect(contents).toHaveTextContent('Круассан');
-    expect(contents).toHaveTextContent('× 2');
-    expect(contents).toHaveTextContent('Булочка с корицей');
-    expect(contents).toHaveTextContent('Багет');
+    expect(within(dialog).getByRole('heading', { name: 'Tatti Bakery' })).toBeInTheDocument();
+    expect(screen.queryByTestId('map-box-options')).not.toBeInTheDocument();
   });
 
   it('uses the localized surprise explanation in Kazakh', () => {

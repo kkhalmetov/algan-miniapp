@@ -172,8 +172,8 @@ button:disabled { cursor: not-allowed; }
 
 .algan-store-marker span {
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   place-items: center;
   overflow: hidden;
   border: 3px solid var(--color-brand);
@@ -187,8 +187,8 @@ button:disabled { cursor: not-allowed; }
 }
 
 .algan-store-marker img {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
