@@ -15,6 +15,7 @@ describe('Telegram profile adapter', () => {
             id: 123456,
             first_name: 'Kimal',
             last_name: 'A',
+            username: 'kkhalmetov',
             language_code: 'kk-KZ',
             photo_url: 'https://t.me/i/userpic/320/avatar.jpg',
           },
@@ -28,6 +29,7 @@ describe('Telegram profile adapter', () => {
       telegramId: 123456,
       firstName: 'Kimal',
       lastName: 'A',
+      username: 'kkhalmetov',
       photoUrl: 'https://t.me/i/userpic/320/avatar.jpg',
       locale: 'kk',
       isTelegram: true,
@@ -35,7 +37,7 @@ describe('Telegram profile adapter', () => {
   });
 
   it('returns a browser fallback when Telegram data is unavailable', () => {
-    expect(telegramProfile()).toEqual({ telegramId: undefined, firstName: '', lastName: '', photoUrl: '', locale: 'ru', isTelegram: false });
+    expect(telegramProfile()).toEqual({ telegramId: undefined, firstName: '', lastName: '', username: '', photoUrl: '', locale: 'ru', isTelegram: false });
   });
 });
 

@@ -612,12 +612,13 @@ function ProfileTab({ t, locale, setLocale, profile, openHelp, openDocuments, re
   t: Translator; locale: Locale; setLocale: (locale: Locale) => void; profile: UserProfile;
   openHelp: () => void; openDocuments: () => void; resetDemo: () => void; onEditPhone: () => void;
 }) {
+  const telegramUsername = telegramProfile().username.trim().replace(/^@/, '');
   return (
     <section className="pb-8">
       <header className="bg-brand px-6 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
         <div className="mt-2 flex items-center gap-4">
           <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} />
-          <div><h1 className="text-2xl font-black">{profile.firstName} {profile.lastName}</h1><p className="mt-1 text-sm text-white/65">{profile.phone ? formatKazakhstanPhoneInput(profile.phone) : 'Telegram Mini App'}</p></div>
+          <div><h1 className="text-2xl font-black">{profile.firstName} {profile.lastName}</h1><p className="mt-1 text-sm text-white/65">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
         </div>
       </header>
 

@@ -29,6 +29,22 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Профиль' }));
   };
 
+  it('shows the Telegram username below the profile name', () => {
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed-data',
+        initDataUnsafe: { user: { id: 123456, first_name: 'Kimal', username: 'kkhalmetov' } },
+        ready: () => undefined,
+        expand: () => undefined,
+      },
+    };
+    openProfile();
+
+    const heading = screen.getByRole('heading', { name: 'Kimal' });
+    expect(heading.parentElement).toHaveTextContent('@kkhalmetov');
+    expect(heading.parentElement).not.toHaveTextContent('+7 705 976 80 00');
+  });
+
   it('groups all legal documents under one profile action', () => {
     openProfile();
 
