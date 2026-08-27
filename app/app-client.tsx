@@ -376,11 +376,6 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
       <button onClick={onOpen} className="relative block h-44 w-full overflow-hidden text-left">
         <img src={box.image} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
         <span className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1.5 text-[11px] font-black text-white">−{discount}%</span>
-        {box.isHalal && (
-          <span className="absolute right-3 top-3 grid h-10 w-10 place-items-center drop-shadow-md">
-            <img src="/images/halal-logo.svg" alt="Halal" className="h-full w-full object-contain" />
-          </span>
-        )}
         <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-panel bg-panel shadow-card">
           <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
         </span>
@@ -642,11 +637,6 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
       <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <div data-testid="box-details-cover" className="relative h-[260px] bg-canvas">
           <img src={box.image} alt="" className="h-full w-full object-cover object-center" />
-          {box.isHalal && (
-            <span className="absolute right-4 top-4 grid h-12 w-12 place-items-center drop-shadow-md">
-              <img src="/images/halal-logo.svg" alt="Halal" className="h-full w-full object-contain" />
-            </span>
-          )}
           <span className="absolute -bottom-8 left-5 grid h-17 w-17 place-items-center overflow-hidden rounded-full border-4 border-surface bg-panel shadow-card">
             <img src={store.logo} alt={`${store.name} logo`} className="h-13 w-13 object-contain" />
           </span>
