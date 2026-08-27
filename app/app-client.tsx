@@ -861,7 +861,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <Overlay onClose={onClose} ariaLabel={box.name}>
-      <div data-testid="box-details-sheet" className="flex h-[58dvh] min-h-0 flex-col sm:h-[460px]">
+      <div data-testid="box-details-sheet" className="flex h-[72dvh] min-h-0 flex-col sm:h-[560px]">
         <div className="shrink-0 px-5 pt-4">
           <SheetHandle />
           <div className="mt-4"><ModalHeader title={store.name} onClose={onClose} closeLabel={t('close')} /></div>
