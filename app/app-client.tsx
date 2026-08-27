@@ -873,13 +873,10 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
           <div className="mt-5 max-h-[48vh] space-y-3 overflow-y-auto pr-1">
             {lines.map(({ box, quantity }) => (
               <div key={box.id} className="rounded-control border border-border bg-panel p-3">
-                <div className="flex gap-3">
-                  <img src={box.image} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-black">{box.name}</p>
-                    <p className="mt-1 text-xs font-bold text-ink-muted">{formatPrice(box.salePrice, locale)} × {quantity}</p>
-                    <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity, locale)}</p>
-                  </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-black">{box.name}</p>
+                  <p className="mt-1 text-xs font-bold text-ink-muted">{formatPrice(box.salePrice, locale)} × {quantity}</p>
+                  <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity, locale)}</p>
                 </div>
                 <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
                   <CartQuantityControl boxName={box.name} quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} locale={locale} t={t} onChange={(next) => onChangeQuantity(box, next)} />
