@@ -282,7 +282,7 @@ function Onboarding(props: OnboardingProps) {
         </div>
       </div>
 
-      <form className="flex flex-1 flex-col px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-7" onSubmit={(event) => { event.preventDefault(); onContinue(); }}>
+      <form className="relative z-10 -mt-4 flex flex-1 flex-col rounded-t-sheet bg-surface px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-7" onSubmit={(event) => { event.preventDefault(); onContinue(); }}>
         <p className="text-sm font-bold text-accent">{t('intro')}</p>
         <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">{t('askName')}</h2>
         <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('nameHelp')}</p>
@@ -336,7 +336,7 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
         </div>
       </header>
 
-      <section className="bg-surface px-5 pt-6">
+      <section className="relative z-10 -mt-4 rounded-t-sheet bg-surface px-5 pt-6">
         <div className="space-y-4 pb-6">
           {stores.map((store) => {
             const box = boxes.find((item) => item.storeId === store.id);
