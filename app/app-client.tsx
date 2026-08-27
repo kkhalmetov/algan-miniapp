@@ -183,14 +183,14 @@ export default function AlganApp() {
         <main className={`min-h-0 flex-1 overflow-x-hidden overscroll-contain ${tab === 'map' ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
           {tab === 'home' && (
             <HomeTab
-              t={t} locale={locale} profile={profile} openProfile={() => { setTab('profile'); haptic('tap'); }}
+              t={t} profile={profile} openProfile={() => { setTab('profile'); haptic('tap'); }}
               favoriteStoreIds={favoriteStoreIds} category={category} setCategory={setCategory}
               toggleFavorite={toggleFavorite} openBox={openBox}
             />
           )}
           {tab === 'map' && <MapTab locale={locale} openBox={openBox} />}
           {tab === 'favorites' && (
-            <FavoritesTab t={t} locale={locale} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openBox={openBox} />
+            <FavoritesTab t={t} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openBox={openBox} />
           )}
           {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} openBox={openBox} />}
           {tab === 'profile' && (
@@ -323,12 +323,12 @@ function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; set
   );
 }
 
-function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, category, setCategory, toggleFavorite, openBox }: {
-  t: Translator; locale: Locale; profile: UserProfile; openProfile: () => void; favoriteStoreIds: string[];
+function HomeTab({ t, profile, openProfile, favoriteStoreIds, category, setCategory, toggleFavorite, openBox }: {
+  t: Translator; profile: UserProfile; openProfile: () => void; favoriteStoreIds: string[];
   category: 'all' | 'bakery' | 'cafe' | 'market'; setCategory: (value: 'all' | 'bakery' | 'cafe' | 'market') => void;
   toggleFavorite: (id: string) => void; openBox: (box: Box) => void;
 }) {
-  const filtered = category === 'all' ? boxes : boxes.filter((box) => storeById(box.storeId).type === category);
+  const filteredStores = category === 'all' ? stores : stores.filter((store) => store.type === category);
   return (
     <>
       <header className="bg-brand px-6 pb-8 pt-[max(1.4rem,env(safe-area-inset-top))] text-white">
@@ -349,22 +349,22 @@ function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, category, 
 
         <h2 className="mt-7 text-xl font-black tracking-[-0.035em]">{t('nearby')}</h2>
         <div className="mt-4 space-y-4 pb-6">
-          {filtered.map((box) => <BoxCard key={box.id} box={box} locale={locale} t={t} favorite={favoriteStoreIds.includes(box.storeId)} toggleFavorite={() => toggleFavorite(box.storeId)} onOpen={() => openBox(box)} />)}
+          {filteredStores.map((store) => {
+            const box = boxes.find((item) => item.storeId === store.id);
+            return box ? <StoreCard key={store.id} box={box} t={t} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openBox(box)} /> : null;
+          })}
         </div>
       </section>
     </>
   );
 }
 
-function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Box; locale: Locale; t: Translator; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
+function StoreCard({ box, t, favorite, toggleFavorite, onOpen }: { box: Box; t: Translator; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
   const store = storeById(box.storeId);
-  const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <article className="overflow-hidden rounded-card border border-border bg-panel shadow-card">
       <button type="button" onClick={onOpen} className="relative block h-44 w-full overflow-hidden text-left">
         <img src={box.image} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
-        <span className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1.5 text-[11px] font-black text-white">−{discount}%</span>
-        {box.type === 'SURPRISE' && <SurpriseBadge className="absolute right-3 top-3" />}
         <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-panel bg-panel shadow-card">
           <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
         </span>
@@ -372,14 +372,10 @@ function BoxCard({ box, locale, t, favorite, toggleFavorite, onOpen }: { box: Bo
       <div className="p-4">
         <div className="flex items-start gap-3">
           <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left">
-            <p className="text-xs font-bold text-ink-muted">{store.name}</p>
-            <h3 className="mt-1 truncate text-lg font-black tracking-[-0.03em]">{box.name}</h3>
+            <h3 className="truncate text-lg font-black tracking-[-0.03em]">{store.name}</h3>
+            <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-ink-muted"><MapPin size={14} />{store.address}</p>
           </button>
           <IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={favorite} tone={favorite ? 'accent' : 'muted'}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></IconButton>
-        </div>
-        <div className="mt-4 flex items-end justify-between gap-3">
-          <div><p className="text-xs text-ink-muted line-through">{formatPrice(box.originalPrice, locale)}</p><p className="text-lg font-black text-brand">{formatPrice(box.salePrice, locale)}</p></div>
-          <div className="text-right"><p className={`text-[11px] font-bold ${box.quantity > 0 ? 'text-accent' : 'text-danger'}`}>{box.quantity > 0 ? `${box.quantity} ${t('left')}` : formatBoxesLeft(0, locale)}</p><p className="mt-1 text-xs font-semibold text-ink-secondary">{box.pickupFrom}–{box.pickupTo}</p></div>
         </div>
       </div>
     </article>
@@ -425,16 +421,19 @@ function MapTab({ locale, openBox }: { locale: Locale; openBox: (box: Box) => vo
   );
 }
 
-function FavoritesTab({ t, locale, favoriteStoreIds, toggleFavorite, openBox }: { t: Translator; locale: Locale; favoriteStoreIds: string[]; toggleFavorite: (id: string) => void; openBox: (box: Box) => void }) {
-  const favoriteBoxes = boxes.filter((box) => favoriteStoreIds.includes(box.storeId));
+function FavoritesTab({ t, favoriteStoreIds, toggleFavorite, openBox }: { t: Translator; favoriteStoreIds: string[]; toggleFavorite: (id: string) => void; openBox: (box: Box) => void }) {
+  const favoriteStores = stores.filter((store) => favoriteStoreIds.includes(store.id));
   return (
     <section className="px-5 pb-7 pt-[max(1.5rem,env(safe-area-inset-top))]">
       <h1 className="mt-2 text-[30px] font-black tracking-[-0.045em]">{t('favorites')}</h1>
-      {favoriteBoxes.length === 0 ? (
+      {favoriteStores.length === 0 ? (
         <EmptyState icon={<Heart size={34} />} title={t('noFavorites')} description={t('noFavoritesText')} tone="accent" />
       ) : (
         <div className="mt-6 space-y-4">
-          {favoriteBoxes.map((box) => <BoxCard key={box.id} box={box} locale={locale} t={t} favorite toggleFavorite={() => toggleFavorite(box.storeId)} onOpen={() => openBox(box)} />)}
+          {favoriteStores.map((store) => {
+            const box = boxes.find((item) => item.storeId === store.id);
+            return box ? <StoreCard key={store.id} box={box} t={t} favorite toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openBox(box)} /> : null;
+          })}
         </div>
       )}
     </section>
@@ -627,7 +626,7 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   const [routePickerOpen, setRoutePickerOpen] = useState(false);
   return (
-    <section className="absolute inset-0 z-[1000] flex h-full min-h-0 flex-col overflow-hidden bg-surface" role="dialog" aria-modal="true" aria-label={box.name}>
+    <section className="absolute inset-0 z-[1000] flex h-full min-h-0 flex-col overflow-hidden bg-surface" role="dialog" aria-modal="true" aria-label={store.name}>
       <header data-testid="box-details-header" className="shrink-0 bg-brand px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
         <div className="flex min-h-11 items-center gap-3">
           <IconButton onClick={onClose} label={t('back')} tone="dark"><ChevronRight className="rotate-180" size={20} /></IconButton>
@@ -644,8 +643,7 @@ function BoxDetails({ box, locale, t, isFavorite, toggleFavorite, onClose, onBuy
           </span>
         </div>
         <div className="px-6 pb-6 pt-11">
-          <p className="text-sm font-bold text-ink-secondary">{store.name}</p>
-          <h1 className="mt-2 text-[29px] font-black tracking-[-0.045em]">{box.name}</h1>
+          <h1 className="text-[29px] font-black tracking-[-0.045em]">{store.name}</h1>
           {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}
           <div className="mt-2">
             <span data-testid="box-stock" className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black ${box.quantity > 0 ? 'bg-accent-soft text-accent-strong' : 'bg-danger-soft text-danger'}`}>

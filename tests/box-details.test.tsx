@@ -25,26 +25,35 @@ describe('store details presentation', () => {
     vi.useRealTimers();
   });
 
-  const openFirstBox = () => {
+  const openFirstStore = () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
-    fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery Surprise Tatti-box/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery пр\. Тауке хана, 47/ }));
   };
 
-  it('shows a store logo on every home card', () => {
+  it('shows one clean venue card per store', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
+    expect(screen.getAllByRole('article')).toHaveLength(stores.length);
     stores.forEach((store) => {
-      expect(screen.getAllByAltText(`${store.name} logo`)[0]).toHaveAttribute('src', store.logo);
+      expect(screen.getByAltText(`${store.name} logo`)).toHaveAttribute('src', store.logo);
     });
+    expect(screen.getAllByText('Tatti Bakery')).toHaveLength(1);
+    expect(screen.queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
+    expect(screen.queryByText('Tatti-box')).not.toBeInTheDocument();
+    expect(screen.queryByText('2 490 ₸')).not.toBeInTheDocument();
+    expect(screen.queryByText('Осталось 4 бокса')).not.toBeInTheDocument();
+    expect(screen.queryByText('19:30–20:30')).not.toBeInTheDocument();
+    expect(screen.queryByText('SURPRISE')).not.toBeInTheDocument();
+    expect(screen.queryByText('−60%')).not.toBeInTheDocument();
     expect(screen.queryByAltText('Halal')).not.toBeInTheDocument();
   });
 
   it('keeps navigation controls outside the scrolling cover and content', () => {
-    openFirstBox();
+    openFirstStore();
 
-    const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
+    const dialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
     const header = within(dialog).getByTestId('box-details-header');
     const scroll = within(dialog).getByTestId('box-details-scroll');
     const cover = within(dialog).getByTestId('box-details-cover');
@@ -56,6 +65,7 @@ describe('store details presentation', () => {
     expect(within(scroll).getByText('SURPRISE')).toBeInTheDocument();
     expect(within(cover).queryByText('SURPRISE')).not.toBeInTheDocument();
     expect(within(scroll).getByText('Точный состав этого бокса заранее неизвестен — содержимое станет сюрпризом.')).toBeInTheDocument();
+    expect(within(scroll).queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
     expect(within(scroll).getByTestId('box-stock')).toHaveTextContent('Осталось 4 бокса');
     expect(screen.queryByText(/4\.9/)).not.toBeInTheDocument();
     expect(within(within(scroll).getByTestId('box-price-card')).getByText('−60%')).toBeInTheDocument();
@@ -70,36 +80,19 @@ describe('store details presentation', () => {
   });
 
   it('toggles favorite and closes from the persistent header', () => {
-    openFirstBox();
+    openFirstStore();
 
-    const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
+    const dialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
     const favorite = within(dialog).getByRole('button', { name: 'Избранное' });
     fireEvent.click(favorite);
     expect(favorite).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(within(dialog).getByRole('button', { name: 'Назад' }));
-    expect(screen.queryByRole('dialog', { name: 'Surprise Tatti-box' })).not.toBeInTheDocument();
-  });
-
-  it('shows the exact composition for a defined Tatti-box', () => {
-    render(<AlganApp />);
-    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
-    const cardButton = screen.getByRole('button', { name: /Tatti Bakery Tatti-box/ });
-    expect(within(cardButton).queryByText('SURPRISE')).not.toBeInTheDocument();
-    fireEvent.click(cardButton);
-
-    const dialog = screen.getByRole('dialog', { name: 'Tatti-box' });
-    expect(within(dialog).queryByText('SURPRISE')).not.toBeInTheDocument();
-    const contents = within(dialog).getByTestId('box-contents');
-    expect(contents).toHaveTextContent('Круассан');
-    expect(contents).toHaveTextContent('× 2');
-    expect(contents).toHaveTextContent('Булочка с корицей');
-    expect(contents).toHaveTextContent('Багет');
-    expect(within(dialog).queryByText(/состав этого бокса заранее неизвестен/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Tatti Bakery' })).not.toBeInTheDocument();
   });
 
   it('opens a map picker from the redesigned address card', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null);
-    openFirstBox();
+    openFirstStore();
 
     fireEvent.click(screen.getByRole('button', { name: 'Построить маршрут' }));
     const picker = screen.getByRole('dialog', { name: 'Выберите карту' });
@@ -116,9 +109,9 @@ describe('store details presentation', () => {
   it('shows a safe allergen fallback when catalog data is missing', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
-    fireEvent.click(screen.getByRole('button', { name: /Dastarhan Market Зелёный бокс/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Dastarhan Market ул\. Желтоксан, 19/ }));
 
-    const dialog = screen.getByRole('dialog', { name: 'Зелёный бокс' });
+    const dialog = screen.getByRole('dialog', { name: 'Dastarhan Market' });
     expect(within(dialog).getByText('Аллергены')).toBeInTheDocument();
     expect(within(dialog).getByText('Информация об аллергенах не указана. Уточните её у заведения.')).toBeInTheDocument();
   });
@@ -129,10 +122,10 @@ describe('store details presentation', () => {
 
     const soldOutCard = screen.getByText('Qamyr Bakery').closest('article');
     expect(soldOutCard).not.toBeNull();
-    expect(within(soldOutCard!).getByText('Боксы закончились')).toBeInTheDocument();
-    fireEvent.click(within(soldOutCard!).getByRole('button', { name: /Qamyr Bakery Вечерний бокс/ }));
+    expect(within(soldOutCard!).queryByText('Боксы закончились')).not.toBeInTheDocument();
+    fireEvent.click(within(soldOutCard!).getByRole('button', { name: /Qamyr Bakery ул\. Рыскулова, 18/ }));
 
-    const dialog = screen.getByRole('dialog', { name: 'Вечерний бокс' });
+    const dialog = screen.getByRole('dialog', { name: 'Qamyr Bakery' });
     expect(within(dialog).getByTestId('box-stock')).toHaveTextContent('Боксы закончились');
     expect(within(dialog).getByRole('button', { name: 'Купить бокс' })).toBeDisabled();
   });

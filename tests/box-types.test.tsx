@@ -56,16 +56,23 @@ describe('box types', () => {
     expect(within(definedBox).queryByText('SURPRISE')).not.toBeInTheDocument();
     fireEvent.click(definedBox);
 
-    expect(screen.getByRole('dialog', { name: 'Tatti-box' })).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
+    expect(within(dialog).queryByText('Tatti-box')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('SURPRISE')).not.toBeInTheDocument();
+    const contents = within(dialog).getByTestId('box-contents');
+    expect(contents).toHaveTextContent('Круассан');
+    expect(contents).toHaveTextContent('× 2');
+    expect(contents).toHaveTextContent('Булочка с корицей');
+    expect(contents).toHaveTextContent('Багет');
   });
 
   it('uses the localized surprise explanation in Kazakh', () => {
     useAppStore.setState({ locale: 'kk' });
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
-    fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery Surprise Tatti-box/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery пр\. Тауке хана, 47/ }));
 
-    const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
+    const dialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
     expect(within(dialog).getByText('Бұл бокстың нақты құрамы алдын ала белгісіз — ішіндегісі тосынсый болады.')).toBeInTheDocument();
     expect(within(dialog).getByText('SURPRISE')).toBeInTheDocument();
   });
