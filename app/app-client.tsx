@@ -494,29 +494,32 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
               day: 'numeric', month: 'long', year: 'numeric',
             }).format(new Date(order.createdAt));
             const pickupWindow = orderPickupWindow(order);
+            const summary = (
+              <>
+                <span className="flex gap-3">
+                  {store && <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-surface"><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></span>}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-bold text-ink-muted">{store?.name}</span>
+                    <span className="mt-1 block truncate text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</span>
+                    <span className="mt-2 block space-y-1">{order.items.map((item) => {
+                      const box = boxes.find((candidate) => candidate.id === item.boxId);
+                      return <span key={item.boxId} className="flex items-center justify-between gap-3 text-xs"><span className="truncate font-bold">{box?.name}</span><span className="shrink-0 text-ink-muted">× {item.quantity}</span></span>;
+                    })}</span>
+                  </span>
+                </span>
+                <span className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
+                  {view === 'active' ? (
+                    <><span className="font-bold text-ink-secondary">{t('pickup')}: {pickupWindow}</span><span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total, locale)}</span></>
+                  ) : (
+                    <><span className="font-bold text-ink-muted">{orderDate}</span><ChevronRight size={17} className="text-ink-subtle" /></>
+                  )}
+                </span>
+                {view === 'past' && <span className="mt-3 block text-right text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>}
+              </>
+            );
             return (
               <article key={order.id} className="overflow-hidden rounded-card border border-border bg-panel shadow-card">
-                <button type="button" onClick={() => setSelectedOrder(order)} className="w-full p-4 text-left">
-                  <span className="flex gap-3">
-                    {store && <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-surface"><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></span>}
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-xs font-bold text-ink-muted">{store?.name}</span>
-                      <span className="mt-1 block truncate text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</span>
-                      <span className="mt-2 block space-y-1">{order.items.map((item) => {
-                        const box = boxes.find((candidate) => candidate.id === item.boxId);
-                        return <span key={item.boxId} className="flex items-center justify-between gap-3 text-xs"><span className="truncate font-bold">{box?.name}</span><span className="shrink-0 text-ink-muted">× {item.quantity}</span></span>;
-                      })}</span>
-                    </span>
-                  </span>
-                  <span className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
-                    {view === 'active' ? (
-                      <><span className="font-bold text-ink-secondary">{t('pickup')}: {pickupWindow}</span><span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total, locale)}</span></>
-                    ) : (
-                      <><span className="font-bold text-ink-muted">{orderDate}</span><ChevronRight size={17} className="text-ink-subtle" /></>
-                    )}
-                  </span>
-                  {view === 'past' && <span className="mt-3 block text-right text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>}
-                </button>
+                {view === 'active' ? <div className="w-full p-4 text-left">{summary}</div> : <button type="button" onClick={() => setSelectedOrder(order)} className="w-full p-4 text-left">{summary}</button>}
                 {view === 'active' && (
                   <button type="button" onClick={() => { setSelectedOrder(order); haptic('tap'); }} className="flex min-h-12 w-full items-center justify-center gap-2 border-t border-border px-4 text-sm font-black text-brand">
                     <QrCode size={18} />{t('showQr')}
