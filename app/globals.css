@@ -68,6 +68,21 @@
   --radius-sheet: 1.875rem;
   --radius-shell: 2.25rem;
 
+  --spacing-page: 1.25rem;
+  --spacing-page-wide: 1.5rem;
+
+  --text-display: 2.125rem;
+  --text-display--line-height: 1.04;
+  --text-display--font-weight: 900;
+  --text-display--letter-spacing: -.05em;
+  --text-page-title: 1.875rem;
+  --text-page-title--line-height: 1.08;
+  --text-page-title--font-weight: 900;
+  --text-page-title--letter-spacing: -.045em;
+  --text-section-title: 1.125rem;
+  --text-section-title--line-height: 1.35;
+  --text-section-title--font-weight: 900;
+
   --shadow-card: 0 9px 30px rgba(30, 72, 58, .07);
   --shadow-floating: 0 18px 50px rgba(23, 60, 49, .22);
   --shadow-shell: 0 26px 90px rgba(24, 61, 49, .18);
@@ -183,7 +198,7 @@ button:disabled { cursor: not-allowed; }
 }
 
 .modal-body {
-  padding: 1.25rem 1.5rem max(1.5rem, env(safe-area-inset-bottom));
+  padding: 1.25rem var(--spacing-page-wide) max(1.5rem, env(safe-area-inset-bottom));
 }
 
 .algan-store-marker img {

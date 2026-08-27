@@ -1,6 +1,9 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DangerButton, EmptyState, IconButton, ModalHeader, PrimaryButton, SecondaryButton, SegmentedControl, TextField } from '../components/ui-kit';
+import {
+  BrandHeader, CardActionButton, DangerButton, DialogLayer, EmptyState, IconButton, ModalHeader, PageSection,
+  PrimaryButton, SecondaryButton, SegmentedControl, StatusBadge, StickyActionFooter, TextField,
+} from '../components/ui-kit';
 
 describe('Algan UI kit', () => {
   afterEach(cleanup);
@@ -58,5 +61,30 @@ describe('Algan UI kit', () => {
     fireEvent.change(screen.getByLabelText(/Телефон/), { target: { value: '+7705' } });
     expect(onValueChange).toHaveBeenCalledWith('+7705');
     expect(screen.getByText('Здесь пока ничего нет')).toBeInTheDocument();
+  });
+
+  it('shares screen hierarchy and status presentation', () => {
+    render(<>
+      <BrandHeader>Профиль</BrandHeader>
+      <PageSection title="Заказы"><StatusBadge tone="danger">Боксы закончились</StatusBadge></PageSection>
+    </>);
+
+    expect(screen.getByRole('banner')).toHaveClass('bg-brand');
+    expect(screen.getByRole('heading', { name: 'Заказы' })).toHaveClass('text-page-title');
+    expect(screen.getByText('Боксы закончились')).toHaveClass('bg-danger-soft', 'text-danger');
+  });
+
+  it('shares attached actions and modal layers', () => {
+    const onClose = vi.fn();
+    render(
+      <DialogLayer onClose={onClose} closeLabel="Закрыть" ariaLabel="Корзина">
+        <StickyActionFooter><CardActionButton>Получить заказ</CardActionButton></StickyActionFooter>
+      </DialogLayer>,
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Корзина' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Получить заказ' })).toHaveClass('border-t');
+    fireEvent.click(screen.getByRole('button', { name: 'Закрыть (Корзина)' }));
+    expect(onClose).toHaveBeenCalledOnce();
   });
 });

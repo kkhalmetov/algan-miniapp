@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
+import { BRAND_COLOR } from '@/lib/design-tokens';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#1f5c49',
+  themeColor: BRAND_COLOR,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

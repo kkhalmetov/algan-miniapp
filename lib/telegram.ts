@@ -1,3 +1,5 @@
+import { APP_SURFACE_COLOR, BRAND_COLOR } from './design-tokens';
+
 type TelegramUser = { id?: number; first_name?: string; last_name?: string; username?: string; language_code?: string; photo_url?: string };
 
 type TelegramWebApp = {
@@ -26,8 +28,8 @@ export function prepareTelegram() {
   const webApp = telegram();
   webApp?.ready();
   webApp?.expand();
-  webApp?.setHeaderColor?.('#1f5c49');
-  webApp?.setBackgroundColor?.('#f5f0e6');
+  webApp?.setHeaderColor?.(BRAND_COLOR);
+  webApp?.setBackgroundColor?.(APP_SURFACE_COLOR);
   return webApp;
 }
 
