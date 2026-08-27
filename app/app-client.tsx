@@ -857,14 +857,13 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
   box: Box; locale: Locale; t: Translator; cartQuantity: number; available: number;
   onChangeQuantity: (quantity: number) => void; onClose: () => void;
 }) {
-  const store = storeById(box.storeId);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <Overlay onClose={onClose} ariaLabel={box.name}>
-      <div data-testid="box-details-sheet" className="flex h-[72dvh] min-h-0 flex-col sm:h-[560px]">
+      <div data-testid="box-details-sheet" className="flex h-[80dvh] min-h-0 flex-col sm:h-[624px]">
         <div className="shrink-0 px-5 pt-4">
           <SheetHandle />
-          <div className="mt-4"><ModalHeader title={store.name} onClose={onClose} closeLabel={t('close')} /></div>
+          <div className="mt-2 flex justify-end"><IconButton onClick={onClose} label={t('close')}><X size={18} /></IconButton></div>
         </div>
 
         <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
