@@ -104,6 +104,7 @@ describe('orders tab', () => {
 
     expect(screen.getByText('Bal Dessert')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 48273106')).toBeInTheDocument();
+    expect(screen.getByText('Номер заказа: 48273106').closest('button')).toBeNull();
     expect(screen.getByText('Сладкий вечер')).toBeInTheDocument();
     expect(screen.getByText((content) => content.replace(/\s/g, '') === '3190₸')).toBeInTheDocument();
   });

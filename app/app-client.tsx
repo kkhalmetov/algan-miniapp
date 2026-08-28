@@ -571,7 +571,7 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
                   {view === 'active' ? (
                     <><span className="font-bold text-ink-secondary">{t('pickupTime')}: {pickupWindow}</span><span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total, locale)}</span></>
                   ) : (
-                    <><span className="font-bold text-ink-muted">{orderDate}</span><ChevronRight size={17} className="text-ink-subtle" /></>
+                    <span className="font-bold text-ink-muted">{orderDate}</span>
                   )}
                 </span>
                 {view === 'past' && <span className="mt-3 block text-right text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>}
@@ -579,7 +579,7 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
             );
             return (
               <SurfaceCard key={order.id} className="overflow-hidden">
-                {view === 'active' ? <div className="w-full p-4 text-left">{summary}</div> : <button type="button" onClick={() => setSelectedOrder(order)} className="w-full p-4 text-left">{summary}</button>}
+                <div className="w-full p-4 text-left">{summary}</div>
                 {view === 'active' && (
                   <CardActionButton onClick={() => { setSelectedOrder(order); haptic('tap'); }}>
                     <QrCode size={18} />{t('showQr')}
