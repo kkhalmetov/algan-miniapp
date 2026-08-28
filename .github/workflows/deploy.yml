@@ -46,7 +46,29 @@ jobs:
           VPS_HOST: ${{ vars.VPS_HOST }}
           VPS_USER: ${{ vars.VPS_USER }}
         run: |
-          rsync -az --delete -e "ssh -i ~/.ssh/algan_deploy" \
-            dist/client/ "$VPS_USER@$VPS_HOST:/var/www/algan-miniapp/releases/$GITHUB_SHA/"
-          ssh -i ~/.ssh/algan_deploy "$VPS_USER@$VPS_HOST" \
+          SSH_ARGS=(
+            -i ~/.ssh/algan_deploy
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o ConnectTimeout=15
+            -o ServerAliveInterval=15
+            -o ServerAliveCountMax=2
+          )
+
+          ssh "${SSH_ARGS[@]}" "$VPS_USER@$VPS_HOST" true
+
+          for attempt in 1 2 3; do
+            if rsync -az --delete -e "ssh ${SSH_ARGS[*]}" \
+              dist/client/ "$VPS_USER@$VPS_HOST:/var/www/algan-miniapp/releases/$GITHUB_SHA/"; then
+              break
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+
+            sleep "$((attempt * 5))"
+          done
+
+          ssh "${SSH_ARGS[@]}" "$VPS_USER@$VPS_HOST" \
             "/usr/local/bin/algan-activate '$GITHUB_SHA'"
