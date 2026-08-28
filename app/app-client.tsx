@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  AlertTriangle, Building2, Check, ChevronRight, CircleHelp, Clock3, Heart, Home, Info, Languages, Mail, Map as MapIcon,
+  AlertTriangle, Building2, Check, ChevronRight, CircleHelp, Clock3, FileCheck2, Heart, Home, Info, Languages, Mail, Map as MapIcon,
   MapPin, Package, PackageCheck, Phone, QrCode, Route, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -31,12 +31,13 @@ const SHYMKENT = { lat: 42.3155, lng: 69.5869 };
 export const MINIMUM_SPLASH_MS = 900;
 const TELEGRAM_SYNC_DELAYS_MS = [0, 250, 750, 1500, 3000] as const;
 const SUPPORT_TELEGRAM_URL = 'https://t.me/kkhalmetov';
-type LegalDocument = 'terms' | 'privacy' | 'orderRules' | 'publicOffer';
+type LegalDocument = 'terms' | 'personalDataConsent' | 'privacy' | 'orderRules' | 'publicOffer';
 type PendingCartReplacement =
   | { kind: 'openStore'; storeId: string }
   | { kind: 'changeQuantity'; box: Box; quantity: number };
 const LEGAL_TITLE_KEYS: Record<LegalDocument, CopyKey> = {
-  terms: 'termsTitle', privacy: 'privacyTitle', orderRules: 'orderRulesTitle', publicOffer: 'publicOfferTitle',
+  terms: 'termsTitle', personalDataConsent: 'personalDataConsentTitle', privacy: 'privacyTitle',
+  orderRules: 'orderRulesTitle', publicOffer: 'publicOfferTitle',
 };
 
 export const avatarRetryUrl = (url: string, attempt: number) =>
@@ -56,8 +57,6 @@ export default function AlganApp() {
   } = useAppStore();
   const t = useCallback((key: CopyKey) => getCopy(locale)(key), [locale]);
   const [phone, setPhone] = useState('+7');
-  const [terms, setTerms] = useState(false);
-  const [privacy, setPrivacy] = useState(false);
   const [legal, setLegal] = useState<LegalDocument | null>(null);
   const [documentsOpen, setDocumentsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -140,7 +139,7 @@ export default function AlganApp() {
 
   const finishOnboarding = () => {
     const normalizedPhone = normalizeKazakhstanPhone(phone);
-    if (!normalizedPhone || !terms || !privacy) return;
+    if (!normalizedPhone) return;
     const tgProfile = telegramProfile();
     haptic('success');
     completeOnboarding({
@@ -253,7 +252,6 @@ export default function AlganApp() {
         <Onboarding
           t={t} locale={locale} setLocale={setOnboardingLocale}
           phone={phone} setPhone={setPhone}
-          terms={terms} setTerms={setTerms} privacy={privacy} setPrivacy={setPrivacy}
           openLegal={setLegal} onContinue={finishOnboarding}
         />
         {legal && <LegalModal type={legal} t={t} onClose={() => setLegal(null)} />}
@@ -388,14 +386,12 @@ type Translator = (key: CopyKey) => string;
 interface OnboardingProps {
   t: Translator; locale: Locale; setLocale: (locale: Locale) => void;
   phone: string; setPhone: (value: string) => void;
-  terms: boolean; setTerms: (value: boolean) => void;
-  privacy: boolean; setPrivacy: (value: boolean) => void;
-  openLegal: (type: 'terms' | 'privacy') => void; onContinue: () => void;
+  openLegal: (type: LegalDocument) => void; onContinue: () => void;
 }
 
 function Onboarding(props: OnboardingProps) {
-  const { t, locale, setLocale, phone, setPhone, terms, setTerms, privacy, setPrivacy, openLegal, onContinue } = props;
-  const canContinue = Boolean(normalizeKazakhstanPhone(phone) && terms && privacy);
+  const { t, locale, setLocale, phone, setPhone, openLegal, onContinue } = props;
+  const canContinue = Boolean(normalizeKazakhstanPhone(phone));
   return (
     <div className="flex min-h-dvh flex-col sm:min-h-[780px]">
       <div className="relative overflow-hidden bg-brand px-7 pb-9 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
@@ -418,27 +414,18 @@ function Onboarding(props: OnboardingProps) {
 
         <TextField label={t('phone')} required value={phone} onValueChange={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
 
-        <div className="mt-5 space-y-3 text-[13px] leading-5 text-ink-secondary">
-          <Consent checked={terms} setChecked={setTerms} text={t('terms')} onOpen={() => openLegal('terms')} />
-          <Consent checked={privacy} setChecked={setPrivacy} text={t('privacy')} onOpen={() => openLegal('privacy')} />
-        </div>
-
         <PrimaryButton type="submit" disabled={!canContinue} className="mt-7">{t('continue')}<ChevronRight size={19} /></PrimaryButton>
+        <p className="mt-4 text-center text-xs leading-5 text-ink-muted">
+          {t('onboardingLegalPrefix')}
+          <TextLinkButton onClick={() => openLegal('terms')}>{t('onboardingTermsLink')}</TextLinkButton>
+          {t('onboardingLegalAfterTerms')}
+          <TextLinkButton onClick={() => openLegal('personalDataConsent')}>{t('onboardingConsentLink')}</TextLinkButton>
+          {t('onboardingLegalAfterConsent')}
+          <TextLinkButton onClick={() => openLegal('privacy')}>{t('onboardingPrivacyLink')}</TextLinkButton>
+          {t('onboardingLegalSuffix')}
+        </p>
       </form>
     </div>
-  );
-}
-
-function Consent({ checked, setChecked, text, onOpen }: { checked: boolean; setChecked: (value: boolean) => void; text: string; onOpen: () => void }) {
-  const words = text.split(' ');
-  const linked = words.slice(Math.max(words.length - 2, 1)).join(' ');
-  const prefix = text.slice(0, Math.max(0, text.length - linked.length));
-  return (
-    <label className="flex cursor-pointer gap-3">
-      <input type="checkbox" checked={checked} onChange={(event) => setChecked(event.target.checked)} className="peer sr-only" />
-      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 border-border-strong bg-panel text-white transition peer-checked:border-brand peer-checked:bg-brand"><Check size={14} strokeWidth={3} /></span>
-      <span>{prefix}<TextLinkButton onClick={(event) => { event.preventDefault(); onOpen(); }}>{linked}</TextLinkButton></span>
-    </label>
   );
 }
 
@@ -1120,6 +1107,7 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
   const [selectedDocument, setSelectedDocument] = useState<LegalDocument | null>(null);
   const documents: { type: LegalDocument; icon: React.ReactNode }[] = [
     { type: 'terms', icon: <Info size={18} /> },
+    { type: 'personalDataConsent', icon: <FileCheck2 size={18} /> },
     { type: 'privacy', icon: <PackageCheck size={18} /> },
     { type: 'orderRules', icon: <ShoppingBag size={18} /> },
     { type: 'publicOffer', icon: <Check size={18} /> },

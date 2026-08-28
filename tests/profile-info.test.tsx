@@ -55,8 +55,13 @@ describe('profile information sections', () => {
 
     expect(screen.getByRole('heading', { name: 'Правовая информация' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Условия использования' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Политика конфиденциальности' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Публичная оферта' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' }));
+    expect(screen.getByRole('heading', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Назад' })[0]!);
 
     fireEvent.click(screen.getByRole('button', { name: 'Правила заказа, оплаты, самовывоза, отмены и возврата' }));
     expect(screen.getByRole('heading', { name: 'Правила заказа, оплаты, самовывоза, отмены и возврата' })).toBeInTheDocument();
