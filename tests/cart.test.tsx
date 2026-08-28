@@ -89,8 +89,8 @@ describe('multi-box cart', () => {
     expect(within(offer).getByText(/Документ готовится/)).toBeInTheDocument();
     fireEvent.click(within(offer).getByRole('button', { name: 'Закрыть' }));
 
-    fireEvent.click(screen.getByRole('button', { name: 'правилами заказа, получения, отмены и возврата' }));
-    const rules = screen.getByRole('dialog', { name: 'Правила заказа, получения, отмены и возврата' });
+    fireEvent.click(screen.getByRole('button', { name: 'правилами заказа, оплаты, получения, отмены и возврата' }));
+    const rules = screen.getByRole('dialog', { name: 'Правила заказа, оплаты, получения, отмены и возврата' });
     expect(within(rules).getByText(/Документ готовится/)).toBeInTheDocument();
   });
 
