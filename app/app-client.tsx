@@ -1038,7 +1038,6 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
         )}
         <div className="my-5 h-px bg-border" />
         <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black">{formatPrice(total, locale)}</span></div>
-        <p className="mt-4 flex gap-2 rounded-control bg-warning-surface p-3 text-xs leading-5 text-warning-ink"><Info size={17} className="mt-0.5 shrink-0" />{t('cartPaymentNote')}</p>
         <PrimaryButton onClick={onPay} disabled={lines.length === 0} className="mt-5">{t('checkoutCart')}<ChevronRight size={19} /></PrimaryButton>
         <p className="mt-3 text-center text-xs leading-5 text-ink-muted">
           {t('checkoutOfferPrefix')}{' '}
