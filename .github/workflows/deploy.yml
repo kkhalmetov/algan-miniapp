@@ -53,10 +53,10 @@ jobs:
             -p "$VPS_PORT"
             -o BatchMode=yes
             -o IdentitiesOnly=yes
+            -o KexAlgorithms=curve25519-sha256
             -o ConnectTimeout=15
             -o ServerAliveInterval=15
             -o ServerAliveCountMax=2
-            -v
           )
 
           ssh "${SSH_ARGS[@]}" "$VPS_USER@$VPS_HOST" true
