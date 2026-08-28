@@ -133,14 +133,14 @@ describe('multi-box cart', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
     fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
 
-    expect(screen.getByText(/Оформляя заказ, вы подтверждаете свое согласие с условиями/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'публичной оферты' }));
+    expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Нажимая «Оформить заказ», вы автоматически принимаете публичную оферту и правила заказа, оплаты, самовывоза, отмены и возврата')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'публичную оферту' }));
 
     const offer = screen.getByRole('dialog', { name: 'Публичная оферта' });
     expect(within(offer).getByText(/Документ готовится/)).toBeInTheDocument();
     fireEvent.click(within(offer).getByRole('button', { name: 'Закрыть' }));
 
-    fireEvent.click(screen.getByRole('button', { name: 'правилами заказа, оплаты, самовывоза, отмены и возврата' }));
+    fireEvent.click(screen.getByRole('button', { name: 'правила заказа, оплаты, самовывоза, отмены и возврата' }));
     const rules = screen.getByRole('dialog', { name: 'Правила заказа, оплаты, самовывоза, отмены и возврата' });
     expect(within(rules).getByText(/Документ готовится/)).toBeInTheDocument();
   });

@@ -32,6 +32,7 @@ export const MINIMUM_SPLASH_MS = 900;
 const TELEGRAM_SYNC_DELAYS_MS = [0, 250, 750, 1500, 3000] as const;
 const SUPPORT_TELEGRAM_URL = 'https://t.me/kkhalmetov';
 type LegalDocument = 'terms' | 'personalDataConsent' | 'privacy' | 'orderRules' | 'publicOffer';
+type LegalInformationView = LegalDocument | 'contacts';
 type PendingCartReplacement =
   | { kind: 'openStore'; storeId: string }
   | { kind: 'changeQuantity'; box: Box; quantity: number };
@@ -1104,7 +1105,7 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
 }
 
 function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) {
-  const [selectedDocument, setSelectedDocument] = useState<LegalDocument | null>(null);
+  const [selectedView, setSelectedView] = useState<LegalInformationView | null>(null);
   const documents: { type: LegalDocument; icon: React.ReactNode }[] = [
     { type: 'terms', icon: <Info size={18} /> },
     { type: 'personalDataConsent', icon: <FileCheck2 size={18} /> },
@@ -1112,27 +1113,36 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
     { type: 'orderRules', icon: <ShoppingBag size={18} /> },
     { type: 'publicOffer', icon: <Check size={18} /> },
   ];
+  const title = selectedView === 'contacts'
+    ? t('contacts')
+    : selectedView ? t(LEGAL_TITLE_KEYS[selectedView]) : t('legal');
 
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('legal')}>
-      <ModalBody>
+      <ModalBody className="max-h-[82dvh] overflow-y-auto">
         <ModalHeader
-          title={selectedDocument ? t(LEGAL_TITLE_KEYS[selectedDocument]) : t('legal')}
-          onBack={selectedDocument ? () => setSelectedDocument(null) : undefined}
+          title={title}
+          onBack={selectedView ? () => setSelectedView(null) : undefined}
           backLabel={t('back')}
           onClose={onClose}
           closeLabel={t('close')}
         />
-        {selectedDocument ? (
+        {selectedView === 'contacts' ? (
+          <>
+            <CompanyContacts t={t} />
+            <PrimaryButton onClick={() => setSelectedView(null)} className="mt-5">{t('back')}</PrimaryButton>
+          </>
+        ) : selectedView ? (
           <>
             <LegalDocumentNotice t={t} />
-            <PrimaryButton onClick={() => setSelectedDocument(null)} className="mt-5">{t('back')}</PrimaryButton>
+            <PrimaryButton onClick={() => setSelectedView(null)} className="mt-5">{t('back')}</PrimaryButton>
           </>
         ) : (
           <div className="mt-5 space-y-2">
             {documents.map((document) => (
-              <ProfileRow key={document.type} icon={document.icon} label={t(LEGAL_TITLE_KEYS[document.type])} onClick={() => setSelectedDocument(document.type)} />
+              <ProfileRow key={document.type} icon={document.icon} label={t(LEGAL_TITLE_KEYS[document.type])} onClick={() => setSelectedView(document.type)} />
             ))}
+            <ProfileRow icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setSelectedView('contacts')} />
           </div>
         )}
       </ModalBody>
@@ -1140,8 +1150,22 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
   );
 }
 
+function CompanyContacts({ t }: { t: Translator }) {
+  return (
+    <div className="mt-5 rounded-card bg-surface-soft p-5 text-sm">
+      <h3 className="text-lg font-black">{t('companyName')}</h3>
+      <p className="mt-1 font-bold text-ink-secondary">{t('companyId')}</p>
+      <div className="mt-5 space-y-4">
+        <div><p className="text-xs font-black text-ink-muted">{t('contactLegalAddressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
+        <LinkRow tone="panel" href="mailto:algansupport@gmail.com" icon={<Mail size={18} />} title={t('emailLabel')} subtitle="algansupport@gmail.com" />
+        <LinkRow tone="panel" href="tel:+77059768000" icon={<Phone size={18} />} title={t('contactPhoneLabel')} subtitle="+7 705 976 80 00" />
+      </div>
+    </div>
+  );
+}
+
 function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
-  const [view, setView] = useState<'menu' | 'faq' | 'contacts'>('menu');
+  const [view, setView] = useState<'menu' | 'faq'>('menu');
   const [openQuestion, setOpenQuestion] = useState<number | null>(null);
   const faqItems: { question: CopyKey; answer: CopyKey }[] = [
     { question: 'faqBuyQuestion', answer: 'faqBuyAnswer' },
@@ -1150,7 +1174,7 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
     { question: 'faqOrdersQuestion', answer: 'faqOrdersAnswer' },
     { question: 'faqProblemQuestion', answer: 'faqProblemAnswer' },
   ];
-  const title = view === 'faq' ? t('faq') : view === 'contacts' ? t('contacts') : t('support');
+  const title = view === 'faq' ? t('faq') : t('support');
 
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('support')}>
@@ -1169,7 +1193,6 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
           <div className="mt-2 space-y-2">
             <ProfileRow icon={<CircleHelp size={18} />} label={t('faq')} onClick={() => setView('faq')} />
             <ProfileRow icon={<TelegramIcon />} label={t('contactSupport')} onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
-            <ProfileRow icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setView('contacts')} />
           </div>
         )}
 
@@ -1186,17 +1209,6 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
           </div>
         )}
 
-        {view === 'contacts' && (
-          <div className="mt-2 rounded-card bg-surface-soft p-5 text-sm">
-            <h3 className="text-lg font-black">{t('companyName')}</h3>
-            <p className="mt-1 font-bold text-ink-secondary">{t('companyId')}</p>
-            <div className="mt-5 space-y-4">
-              <div><p className="text-xs font-black text-ink-muted">{t('contactLegalAddressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
-              <LinkRow tone="panel" href="mailto:algansupport@gmail.com" icon={<Mail size={18} />} title={t('emailLabel')} subtitle="algansupport@gmail.com" />
-              <LinkRow tone="panel" href="tel:+77059768000" icon={<Phone size={18} />} title={t('contactPhoneLabel')} subtitle="+7 705 976 80 00" />
-            </div>
-          </div>
-        )}
       </ModalBody>
     </DialogLayer>
   );

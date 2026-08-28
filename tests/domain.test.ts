@@ -36,8 +36,8 @@ describe('mock customer catalog', () => {
     expect(kk('legal')).toBe('Құқықтық ақпарат');
     expect(ru('support')).toBe('Помощь и поддержка');
     expect(kk('support')).toBe('Көмек және қолдау');
-    expect(ru('contacts')).toBe('Контакты');
-    expect(kk('contacts')).toBe('Байланыс деректері');
+    expect(ru('contacts')).toBe('Реквизиты и контакты');
+    expect(kk('contacts')).toBe('Деректемелер және байланыс');
     expect(ru('nearby')).toBe('Доступные заведения');
     expect(kk('nearby')).toBe('Қолжетімді мекемелер');
     expect(ru('buildRoute')).toBe('Построить маршрут');
@@ -47,7 +47,7 @@ describe('mock customer catalog', () => {
     expect(ru('containsAllergens')).toBe('Содержит аллергены');
     expect(kk('containsAllergens')).toBe('Құрамында аллергендер бар');
     expect(ru('orderRulesTitle')).toBe('Правила заказа, оплаты, самовывоза, отмены и возврата');
-    expect(kk('orderRulesTitle')).toBe('Тапсырыс беру, төлеу, алу, бас тарту және қайтару ережелері');
+    expect(kk('orderRulesTitle')).toBe('Тапсырыс беру, төлеу, өзіңіз алып кету, бас тарту және қайтару ережелері');
     expect(ru('personalDataConsentTitle')).toBe('Согласие на сбор и обработку персональных данных');
     expect(kk('personalDataConsentTitle')).toBe('Дербес деректерді жинауға және өңдеуге келісім');
     expect(ru('paymentFailedTitle')).toBe('Оплата не прошла');

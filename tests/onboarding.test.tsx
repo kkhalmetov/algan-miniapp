@@ -32,7 +32,7 @@ describe('onboarding legal consent', () => {
     openOnboarding();
 
     expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
-    expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Нажимая «Продолжить», вы автоматически принимаете условия использования, даёте согласие на сбор и обработку персональных данных и подтверждаете ознакомление с политикой конфиденциальности.')).toBeInTheDocument();
+    expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Нажимая «Продолжить», вы автоматически принимаете условия использования, даете согласие на сбор и обработку персональных данных и подтверждаете ознакомление с политикой конфиденциальности')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'условия использования' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'политикой конфиденциальности' })).toBeInTheDocument();

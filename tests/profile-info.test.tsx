@@ -58,6 +58,17 @@ describe('profile information sections', () => {
     expect(screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Политика конфиденциальности' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Публичная оферта' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Реквизиты и контакты' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Реквизиты и контакты' }));
+    expect(screen.getByRole('heading', { name: 'Реквизиты и контакты' })).toBeInTheDocument();
+    expect(screen.getByText('ИП «ALGAN»')).toBeInTheDocument();
+    expect(screen.getByText('ИИН: 030705500040')).toBeInTheDocument();
+    expect(screen.getByText('Юридический адрес')).toBeInTheDocument();
+    expect(screen.getByText(/Аль-Фарабийский район/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /algansupport@gmail.com/ })).toHaveAttribute('href', 'mailto:algansupport@gmail.com');
+    expect(screen.getByRole('link', { name: /\+7 705 976 80 00/ })).toHaveAttribute('href', 'tel:+77059768000');
+    fireEvent.click(screen.getAllByRole('button', { name: 'Назад' })[0]!);
 
     fireEvent.click(screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' }));
     expect(screen.getByRole('heading', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
@@ -71,7 +82,7 @@ describe('profile information sections', () => {
     expect(screen.getByRole('heading', { name: 'Правовая информация' })).toBeInTheDocument();
   });
 
-  it('opens help, FAQ answers and contact details', () => {
+  it('opens help and FAQ answers without company details', () => {
     openProfile();
 
     const language = screen.getByRole('button', { name: /Язык/ });
@@ -85,7 +96,7 @@ describe('profile information sections', () => {
     expect(screen.getByRole('button', { name: 'FAQ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Связаться с поддержкой' })).toBeInTheDocument();
     expect(screen.queryByText('@kkhalmetov')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Контакты' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Реквизиты и контакты' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'FAQ' }));
     const question = screen.getByRole('button', { name: 'Как купить бокс?' });
@@ -95,16 +106,6 @@ describe('profile information sections', () => {
     expect(screen.getByText(/После оплаты заказ появится/)).toBeInTheDocument();
     fireEvent.click(question);
     expect(screen.queryByText(/После оплаты заказ появится/)).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Назад' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Контакты' }));
-    expect(screen.getByText('ИП «ALGAN»')).toBeInTheDocument();
-    expect(screen.getByText('ИИН: 030705500040')).toBeInTheDocument();
-    expect(screen.getByText('Юридический адрес')).toBeInTheDocument();
-    expect(screen.queryByText('Казахстан, г. Шымкент')).not.toBeInTheDocument();
-    expect(screen.getByText(/Аль-Фарабийский район/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /algansupport@gmail.com/ })).toHaveAttribute('href', 'mailto:algansupport@gmail.com');
-    expect(screen.getByRole('link', { name: /\+7 705 976 80 00/ })).toHaveAttribute('href', 'tel:+77059768000');
   });
 
   it('shows localized help content in Kazakh', () => {
