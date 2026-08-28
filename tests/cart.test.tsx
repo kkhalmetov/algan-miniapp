@@ -94,14 +94,14 @@ describe('multi-box cart', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: /Köfi ул\. Байтурсынова, 12/ }));
-    const confirmation = screen.getByRole('dialog', { name: 'Algan' });
+    const confirmation = screen.getByRole('dialog', { name: 'Корзина' });
     expect(within(confirmation).getByText('В корзине есть боксы другого заведения. Очистить корзину и перейти?')).toBeInTheDocument();
     fireEvent.click(within(confirmation).getByRole('button', { name: 'Отмена' }));
     expect(screen.queryByRole('dialog', { name: 'Köfi' })).not.toBeInTheDocument();
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 1 }]);
 
     fireEvent.click(screen.getByRole('button', { name: /Köfi ул\. Байтурсынова, 12/ }));
-    fireEvent.click(within(screen.getByRole('dialog', { name: 'Algan' })).getByRole('button', { name: 'Очистить корзину' }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Корзина' })).getByRole('button', { name: 'Очистить корзину' }));
     expect(screen.getByRole('dialog', { name: 'Köfi' })).toBeInTheDocument();
     expect(useAppStore.getState().cartItems).toEqual([]);
   });

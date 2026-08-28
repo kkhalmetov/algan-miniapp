@@ -307,11 +307,11 @@ function CartReplacementDialog({ t, onCancel, onConfirm }: {
   onConfirm: () => void;
 }) {
   return (
-    <div className="absolute inset-0 z-[1400] grid place-items-center bg-brand-deep/45 p-5 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="Algan">
-      <button type="button" onClick={onCancel} className="absolute inset-0" aria-label={`${t('close')} Algan`} />
+    <div className="absolute inset-0 z-[1400] grid place-items-center bg-brand-deep/45 p-5 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label={t('cart')}>
+      <button type="button" onClick={onCancel} className="absolute inset-0" aria-label={`${t('close')} ${t('cart')}`} />
       <section className="relative z-10 w-full max-w-sm rounded-card bg-surface p-5 shadow-sheet">
         <div className="flex items-start justify-between gap-4">
-          <h2 className="text-xl font-bold text-brand-deep">Algan</h2>
+          <h2 className="text-xl font-bold text-brand-deep">{t('cart')}</h2>
           <IconButton label={t('close')} onClick={onCancel}><X className="h-5 w-5" /></IconButton>
         </div>
         <p className="mt-3 text-sm leading-6 text-muted">{t('replaceCartConfirm')}</p>
