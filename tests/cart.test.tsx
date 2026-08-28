@@ -7,6 +7,7 @@ describe('multi-box cart', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     delete window.Telegram;
+    window.history.replaceState({}, '', '/');
     useAppStore.setState({
       hydrated: true,
       onboardingDone: true,
@@ -33,7 +34,7 @@ describe('multi-box cart', () => {
     fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery пр\. Тауке хана, 47/ }));
   };
 
-  it('adds different box types and creates one grouped order', () => {
+  it('adds different box types and creates one grouped order', async () => {
     openTatti();
     fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
     fireEvent.click(screen.getByRole('button', { name: 'Добавить Tatti-box' }));
@@ -48,7 +49,9 @@ describe('multi-box cart', () => {
     fireEvent.click(screen.getByRole('button', { name: /Корзина · 3/ }));
     expect(screen.getByText('Корзина')).toBeInTheDocument();
     expect(screen.getAllByText((content) => content.replace(/\s/g, '') === '7370₸').length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByRole('button', { name: /Оформить заказ/ }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Оформить заказ/ }));
+    });
 
     expect(screen.getByText('Заказ оформлен!')).toBeInTheDocument();
     expect(screen.getByText('Покажите QR-код или код получения сотруднику заведения при получении заказа.')).toBeInTheDocument();
@@ -66,6 +69,57 @@ describe('multi-box cart', () => {
     expect(screen.getByText(/^\d{3}-\d{3}$/)).toBeInTheDocument();
     expect(useAppStore.getState().purchasedBoxQuantities).toEqual({ 'bakery-surprise': 2, 'tatti-defined': 1 });
     expect(useAppStore.getState().cartItems).toEqual([]);
+  });
+
+  it('keeps the cart after a failed payment and creates the order after retry', async () => {
+    window.history.replaceState({}, '', '/?mockPayment=failed');
+    openTatti();
+    fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
+    fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Оформить заказ/ }));
+    });
+
+    const failureDialog = screen.getByRole('dialog', { name: 'Оплата не прошла' });
+    expect(within(failureDialog).getByText('Не удалось завершить оплату. Попробуйте ещё раз или вернитесь в корзину.')).toBeInTheDocument();
+    expect(useAppStore.getState().orders).toEqual([]);
+    expect(useAppStore.getState().purchasedBoxQuantities).toEqual({});
+    expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 1 }]);
+    expect(window.location.search).toBe('');
+
+    await act(async () => {
+      fireEvent.click(within(failureDialog).getByRole('button', { name: 'Повторить оплату' }));
+    });
+
+    expect(screen.getByText('Заказ оформлен!')).toBeInTheDocument();
+    expect(useAppStore.getState().orders).toHaveLength(1);
+    expect(useAppStore.getState().cartItems).toEqual([]);
+    expect(useAppStore.getState().purchasedBoxQuantities).toEqual({ 'bakery-surprise': 1 });
+  });
+
+  it('returns from a failed payment to the preserved cart', async () => {
+    window.history.replaceState({}, '', '/?mockPayment=failed');
+    openTatti();
+    fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
+    fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Оформить заказ/ }));
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Вернуться в корзину' }));
+
+    const cartDialog = screen.getByRole('dialog', { name: 'Корзина' });
+    expect(within(cartDialog).getByText('Surprise Tatti-box')).toBeInTheDocument();
+    expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 1 }]);
+
+    window.history.replaceState({}, '', '/?mockPayment=failed');
+    await act(async () => {
+      fireEvent.click(within(cartDialog).getByRole('button', { name: /Оформить заказ/ }));
+    });
+    const failureDialog = screen.getByRole('dialog', { name: 'Оплата не прошла' });
+    fireEvent.click(within(failureDialog).getByRole('button', { name: 'Закрыть' }));
+    expect(screen.getByRole('dialog', { name: 'Корзина' })).toBeInTheDocument();
   });
 
   it('does not allow selecting more boxes than are available', () => {

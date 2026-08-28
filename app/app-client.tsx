@@ -18,6 +18,7 @@ import { authenticateTelegram } from '@/lib/api';
 import { getRouteOptions, type RouteProvider } from '@/lib/maps';
 import { boxes, demoPastOrder, storeById, stores } from '@/lib/mock-data';
 import { createOrderId, createOrderQrPayload, createPickupCode, formatOrderId, formatPickupCode } from '@/lib/order-id';
+import { processPayment } from '@/lib/payment';
 import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phone';
 import { formatBoxesLeft } from '@/lib/stock';
 import { useAppStore } from '@/lib/store';
@@ -64,6 +65,9 @@ export default function AlganApp() {
   const [cartOpen, setCartOpen] = useState(false);
   const [pendingCartReplacement, setPendingCartReplacement] = useState<PendingCartReplacement | null>(null);
   const [successOrder, setSuccessOrder] = useState<Order | null>(null);
+  const [paymentFailed, setPaymentFailed] = useState(false);
+  const [paymentPending, setPaymentPending] = useState(false);
+  const paymentPendingRef = useRef(false);
   const [editingPhone, setEditingPhone] = useState(false);
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
   const onboardingLocaleInitialized = useRef(false);
@@ -193,7 +197,8 @@ export default function AlganApp() {
     applyCartQuantity(pending.box, pending.quantity);
   };
 
-  const payCart = () => {
+  const payCart = async () => {
+    if (paymentPendingRef.current) return;
     const createdAt = new Date().toISOString();
     const items = cartItems.flatMap((item) => {
       const box = boxes.find((candidate) => candidate.id === item.boxId);
@@ -212,6 +217,26 @@ export default function AlganApp() {
       createdAt,
       status: 'paid',
     };
+    paymentPendingRef.current = true;
+    setPaymentPending(true);
+    try {
+      const paymentResult = await processPayment();
+      if (paymentResult === 'failed') {
+        setCartOpen(false);
+        setPaymentFailed(true);
+        haptic('error');
+        return;
+      }
+    } catch {
+      setCartOpen(false);
+      setPaymentFailed(true);
+      haptic('error');
+      return;
+    } finally {
+      paymentPendingRef.current = false;
+      setPaymentPending(false);
+    }
+    setPaymentFailed(false);
     completePurchase(order);
     setCartOpen(false);
     setSelectedBox(null);
@@ -274,8 +299,16 @@ export default function AlganApp() {
       )}
       {cartOpen && (
         <CartSheet items={cartItems} purchasedBoxQuantities={purchasedBoxQuantities} locale={locale} t={t}
-          onChangeQuantity={changeCartQuantity} onClose={() => setCartOpen(false)} onPay={payCart}
+          onChangeQuantity={changeCartQuantity} onClose={() => setCartOpen(false)} onPay={payCart} paymentPending={paymentPending}
           onOpenOffer={() => setLegal('publicOffer')} onOpenOrderRules={() => setLegal('orderRules')} />
+      )}
+      {paymentFailed && (
+        <PaymentFailure
+          t={t}
+          paymentPending={paymentPending}
+          onRetry={() => void payCart()}
+          onBackToCart={() => { setPaymentFailed(false); setCartOpen(true); }}
+        />
       )}
       {successOrder && (
         <Success order={successOrder} t={t} onDone={() => { setSuccessOrder(null); setTab('orders'); }} />
@@ -1002,9 +1035,9 @@ function RoutePicker({ lat, lng, t, onClose }: {
   );
 }
 
-function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity, onClose, onPay, onOpenOffer, onOpenOrderRules }: {
+function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity, onClose, onPay, paymentPending, onOpenOffer, onOpenOrderRules }: {
   items: CartItem[]; purchasedBoxQuantities: Record<string, number>; locale: Locale; t: Translator;
-  onChangeQuantity: (box: Box, quantity: number) => void; onClose: () => void; onPay: () => void;
+  onChangeQuantity: (box: Box, quantity: number) => void; onClose: () => void; onPay: () => Promise<void>; paymentPending: boolean;
   onOpenOffer: () => void; onOpenOrderRules: () => void;
 }) {
   const lines = items.flatMap((item) => {
@@ -1038,7 +1071,9 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
         )}
         <div className="my-5 h-px bg-border" />
         <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black">{formatPrice(total, locale)}</span></div>
-        <PrimaryButton onClick={onPay} disabled={lines.length === 0} className="mt-5">{t('checkoutCart')}<ChevronRight size={19} /></PrimaryButton>
+        <PrimaryButton onClick={() => void onPay()} disabled={lines.length === 0 || paymentPending} className="mt-5">
+          {paymentPending ? t('paymentProcessing') : t('checkoutCart')}<ChevronRight size={19} />
+        </PrimaryButton>
         <p className="mt-3 text-center text-xs leading-5 text-ink-muted">
           {t('checkoutOfferPrefix')}{' '}
           <button type="button" onClick={onOpenOffer} className="font-extrabold text-brand underline decoration-border-strong underline-offset-2">{t('checkoutOfferLink')}</button>
@@ -1046,6 +1081,36 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
           <button type="button" onClick={onOpenOrderRules} className="font-extrabold text-brand underline decoration-border-strong underline-offset-2">{t('checkoutRulesLink')}</button>
           {t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
         </p>
+      </div>
+    </Overlay>
+  );
+}
+
+function PaymentFailure({ t, paymentPending, onRetry, onBackToCart }: {
+  t: Translator; paymentPending: boolean; onRetry: () => void; onBackToCart: () => void;
+}) {
+  return (
+    <Overlay onClose={onBackToCart} closeLabel={t('close')} ariaLabel={t('paymentFailedTitle')} full>
+      <div className="relative flex min-h-dvh flex-col justify-center overflow-y-auto px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]">
+        <IconButton
+          onClick={onBackToCart}
+          label={t('close')}
+          disabled={paymentPending}
+          className="absolute right-5 top-[max(1.25rem,env(safe-area-inset-top))]"
+        >
+          <X size={19} />
+        </IconButton>
+        <div className="mx-auto grid h-16 w-16 shrink-0 place-items-center rounded-full bg-danger-soft text-danger">
+          <AlertTriangle size={32} strokeWidth={2.5} />
+        </div>
+        <PageTitle className="mt-5">{t('paymentFailedTitle')}</PageTitle>
+        <p className="mx-auto mt-3 max-w-[320px] text-sm leading-6 text-ink-secondary">{t('paymentFailedText')}</p>
+        <div className="mt-8 space-y-3">
+          <PrimaryButton onClick={onRetry} disabled={paymentPending}>
+            {paymentPending ? t('paymentProcessing') : t('retryPayment')}
+          </PrimaryButton>
+          <SecondaryButton onClick={onBackToCart} disabled={paymentPending}>{t('backToCart')}</SecondaryButton>
+        </div>
       </div>
     </Overlay>
   );
