@@ -45,7 +45,7 @@ describe('mock customer catalog', () => {
     expect(kk('pickupTime')).toBe('Алу уақыты');
     expect(ru('containsAllergens')).toBe('Содержит аллергены');
     expect(kk('containsAllergens')).toBe('Құрамында аллергендер бар');
-    expect(ru('orderRulesTitle')).toBe('Правила заказа, оплаты, получения, отмены и возврата');
+    expect(ru('orderRulesTitle')).toBe('Правила заказа, оплаты, самовывоза, отмены и возврата');
     expect(kk('orderRulesTitle')).toBe('Тапсырыс беру, төлеу, алу, бас тарту және қайтару ережелері');
     expect(ru('paymentFailedTitle')).toBe('Оплата не прошла');
     expect(kk('paymentFailedTitle')).toBe('Төлем өтпеді');
