@@ -250,7 +250,8 @@ export default function AlganApp() {
       )}
       {cartOpen && (
         <CartSheet items={cartItems} purchasedBoxQuantities={purchasedBoxQuantities} locale={locale} t={t}
-          onChangeQuantity={changeCartQuantity} onClose={() => setCartOpen(false)} onPay={payCart} />
+          onChangeQuantity={changeCartQuantity} onClose={() => setCartOpen(false)} onPay={payCart}
+          onOpenOffer={() => setLegal('publicOffer')} />
       )}
       {successOrder && (
         <Success order={successOrder} t={t} onDone={() => { setSuccessOrder(null); setTab('orders'); }} />
@@ -945,9 +946,9 @@ function RoutePicker({ lat, lng, t, onClose }: {
   );
 }
 
-function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity, onClose, onPay }: {
+function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity, onClose, onPay, onOpenOffer }: {
   items: CartItem[]; purchasedBoxQuantities: Record<string, number>; locale: Locale; t: Translator;
-  onChangeQuantity: (box: Box, quantity: number) => void; onClose: () => void; onPay: () => void;
+  onChangeQuantity: (box: Box, quantity: number) => void; onClose: () => void; onPay: () => void; onOpenOffer: () => void;
 }) {
   const lines = items.flatMap((item) => {
     const box = boxes.find((candidate) => candidate.id === item.boxId);
@@ -982,6 +983,11 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
         <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black">{formatPrice(total, locale)}</span></div>
         <p className="mt-4 flex gap-2 rounded-control bg-warning-surface p-3 text-xs leading-5 text-warning-ink"><Info size={17} className="mt-0.5 shrink-0" />{t('cartPaymentNote')}</p>
         <PrimaryButton onClick={onPay} disabled={lines.length === 0} className="mt-5">{t('checkoutCart')}<ChevronRight size={19} /></PrimaryButton>
+        <p className="mt-3 text-center text-xs leading-5 text-ink-muted">
+          {t('checkoutOfferPrefix')}{' '}
+          <button type="button" onClick={onOpenOffer} className="font-extrabold text-brand underline decoration-border-strong underline-offset-2">{t('checkoutOfferLink')}</button>
+          {t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
+        </p>
       </div>
     </Overlay>
   );

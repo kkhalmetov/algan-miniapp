@@ -77,6 +77,18 @@ describe('multi-box cart', () => {
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'tatti-family', quantity: 1 }]);
   });
 
+  it('links the checkout consent to the public offer mock', () => {
+    openTatti();
+    fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
+    fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
+
+    expect(screen.getByText(/Оформляя заказ, вы автоматически принимаете условия/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'публичной оферты' }));
+
+    const offer = screen.getByRole('dialog', { name: 'Публичная оферта' });
+    expect(within(offer).getByText(/Документ готовится/)).toBeInTheDocument();
+  });
+
   it('asks before replacing a cart from another venue', () => {
     useAppStore.setState({ cartStoreId: 'tatti', cartItems: [{ boxId: 'bakery-surprise', quantity: 1 }] });
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
