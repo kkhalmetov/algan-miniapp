@@ -571,10 +571,9 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
                   {view === 'active' ? (
                     <><span className="font-bold text-ink-secondary">{t('pickupTime')}: {pickupWindow}</span><span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total, locale)}</span></>
                   ) : (
-                    <span className="font-bold text-ink-muted">{orderDate}</span>
+                    <><span className="font-bold text-ink-muted">{orderDate}</span><span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total, locale)}</span></>
                   )}
                 </span>
-                {view === 'past' && <span className="mt-3 block text-right text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>}
               </>
             );
             return (
