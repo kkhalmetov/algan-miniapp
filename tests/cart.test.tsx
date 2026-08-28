@@ -83,6 +83,7 @@ describe('multi-box cart', () => {
 
     const failureDialog = screen.getByRole('dialog', { name: 'Оплата не прошла' });
     expect(within(failureDialog).getByText('Не удалось завершить оплату. Попробуйте ещё раз или вернитесь в корзину.')).toBeInTheDocument();
+    expect(within(failureDialog).queryByRole('button', { name: 'Закрыть' })).not.toBeInTheDocument();
     expect(useAppStore.getState().orders).toEqual([]);
     expect(useAppStore.getState().purchasedBoxQuantities).toEqual({});
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 1 }]);
@@ -113,13 +114,6 @@ describe('multi-box cart', () => {
     expect(within(cartDialog).getByText('Surprise Tatti-box')).toBeInTheDocument();
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 1 }]);
 
-    window.history.replaceState({}, '', '/?mockPayment=failed');
-    await act(async () => {
-      fireEvent.click(within(cartDialog).getByRole('button', { name: /Оформить заказ/ }));
-    });
-    const failureDialog = screen.getByRole('dialog', { name: 'Оплата не прошла' });
-    fireEvent.click(within(failureDialog).getByRole('button', { name: 'Закрыть' }));
-    expect(screen.getByRole('dialog', { name: 'Корзина' })).toBeInTheDocument();
   });
 
   it('does not allow selecting more boxes than are available', () => {

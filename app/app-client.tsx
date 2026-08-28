@@ -1091,15 +1091,7 @@ function PaymentFailure({ t, paymentPending, onRetry, onBackToCart }: {
 }) {
   return (
     <Overlay onClose={onBackToCart} closeLabel={t('close')} ariaLabel={t('paymentFailedTitle')} full>
-      <div className="relative flex min-h-dvh flex-col justify-center overflow-y-auto px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]">
-        <IconButton
-          onClick={onBackToCart}
-          label={t('close')}
-          disabled={paymentPending}
-          className="absolute right-5 top-[max(1.25rem,env(safe-area-inset-top))]"
-        >
-          <X size={19} />
-        </IconButton>
+      <div className="flex min-h-dvh flex-col justify-center overflow-y-auto px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]">
         <div className="mx-auto grid h-16 w-16 shrink-0 place-items-center rounded-full bg-danger-soft text-danger">
           <AlertTriangle size={32} strokeWidth={2.5} />
         </div>
