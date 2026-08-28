@@ -66,6 +66,8 @@ describe('profile information sections', () => {
     expect(screen.getByText('ИИН: 030705500040')).toBeInTheDocument();
     expect(screen.getByText('Юридический адрес')).toBeInTheDocument();
     expect(screen.getByText(/Аль-Фарабийский район/)).toBeInTheDocument();
+    expect(screen.getByText('График работы')).toBeInTheDocument();
+    expect(screen.getByText('Ежедневно с 09:00 до 21:00')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /algansupport@gmail.com/ })).toHaveAttribute('href', 'mailto:algansupport@gmail.com');
     expect(screen.getByRole('link', { name: /\+7 705 976 80 00/ })).toHaveAttribute('href', 'tel:+77059768000');
     fireEvent.click(screen.getAllByRole('button', { name: 'Назад' })[0]!);

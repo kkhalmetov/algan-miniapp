@@ -38,6 +38,8 @@ describe('mock customer catalog', () => {
     expect(kk('support')).toBe('Көмек және қолдау');
     expect(ru('contacts')).toBe('Реквизиты и контакты');
     expect(kk('contacts')).toBe('Деректемелер және байланыс');
+    expect(ru('workingHours')).toBe('Ежедневно с 09:00 до 21:00');
+    expect(kk('workingHours')).toBe('Күн сайын 09:00-ден 21:00-ге дейін');
     expect(ru('nearby')).toBe('Доступные заведения');
     expect(kk('nearby')).toBe('Қолжетімді мекемелер');
     expect(ru('buildRoute')).toBe('Построить маршрут');
