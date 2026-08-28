@@ -39,6 +39,7 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/algan_deploy
           chmod 600 ~/.ssh/algan_deploy
+          ssh-keygen -y -P "" -f ~/.ssh/algan_deploy > /dev/null
           printf '%s\n' "$VPS_HOST_KEY" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
       - name: Upload release
@@ -55,6 +56,7 @@ jobs:
             -o ConnectTimeout=15
             -o ServerAliveInterval=15
             -o ServerAliveCountMax=2
+            -v
           )
 
           ssh "${SSH_ARGS[@]}" "$VPS_USER@$VPS_HOST" true
