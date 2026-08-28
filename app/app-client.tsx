@@ -16,7 +16,7 @@ import {
 } from '@/components/ui-kit';
 import { authenticateTelegram } from '@/lib/api';
 import { getRouteOptions, type RouteProvider } from '@/lib/maps';
-import { boxes, storeById, stores } from '@/lib/mock-data';
+import { boxes, demoPastOrder, storeById, stores } from '@/lib/mock-data';
 import { createOrderId, createOrderQrPayload, createPickupCode, formatOrderId, formatPickupCode } from '@/lib/order-id';
 import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phone';
 import { formatBoxesLeft } from '@/lib/stock';
@@ -519,7 +519,10 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
   const [view, setView] = useState<'active' | 'past'>('active');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [routeStore, setRouteStore] = useState<Store | null>(null);
-  const visibleOrders = orders.filter((order) => view === 'active' ? order.status === 'paid' : order.status === 'collected');
+  const ordersWithDemoHistory = orders.some((order) => order.id === demoPastOrder.id)
+    ? orders
+    : [...orders, demoPastOrder];
+  const visibleOrders = ordersWithDemoHistory.filter((order) => view === 'active' ? order.status === 'paid' : order.status === 'collected');
   const emptyTitle = view === 'active' ? t('noActiveOrders') : t('noPastOrders');
   const emptyText = view === 'active' ? t('noActiveOrdersText') : t('noPastOrdersText');
 

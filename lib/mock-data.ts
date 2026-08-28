@@ -1,4 +1,4 @@
-import type { Box, Store } from './types';
+import type { Box, Order, Store } from './types';
 
 export const stores: Store[] = [
   { id: 'tatti', name: 'Tatti Bakery', logo: '/images/store-logos/tatti.svg', coverImage: '/images/bakery.jpg', type: 'bakery', address: 'пр. Тауке хана, 47', lat: 42.3184, lng: 69.5907, rating: 4.9 },
@@ -97,5 +97,17 @@ export const boxes: Box[] = [
     image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 1.5,
   },
 ];
+
+export const demoPastOrder: Order = {
+  id: '48273106',
+  storeId: 'bal',
+  items: [
+    { boxId: 'sweet-evening', quantity: 1, unitPrice: 3190 },
+  ],
+  total: 3190,
+  pickupCode: '418205',
+  createdAt: '2026-08-24T15:30:00.000Z',
+  status: 'collected',
+};
 
 export const storeById = (id: string) => stores.find((store) => store.id === id)!;

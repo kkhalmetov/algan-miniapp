@@ -94,6 +94,20 @@ describe('orders tab', () => {
     expect(within(dialog).queryByTitle('QR-код')).not.toBeInTheDocument();
   });
 
+  it('shows a demo card when the user has no past orders yet', () => {
+    useAppStore.setState({ orders: [] });
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Прошедшие' }));
+
+    expect(screen.getByText('Bal Dessert')).toBeInTheDocument();
+    expect(screen.getByText('Номер заказа: 48273106')).toBeInTheDocument();
+    expect(screen.getByText('Сладкий вечер')).toBeInTheDocument();
+    expect(screen.getByText((content) => content.replace(/\s/g, '') === '3190₸')).toBeInTheDocument();
+  });
+
   it('does not show the orders block in profile', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
