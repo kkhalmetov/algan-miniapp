@@ -275,7 +275,7 @@ export default function AlganApp() {
       {cartOpen && (
         <CartSheet items={cartItems} purchasedBoxQuantities={purchasedBoxQuantities} locale={locale} t={t}
           onChangeQuantity={changeCartQuantity} onClose={() => setCartOpen(false)} onPay={payCart}
-          onOpenOffer={() => setLegal('publicOffer')} />
+          onOpenOffer={() => setLegal('publicOffer')} onOpenOrderRules={() => setLegal('orderRules')} />
       )}
       {successOrder && (
         <Success order={successOrder} t={t} onDone={() => { setSuccessOrder(null); setTab('orders'); }} />
@@ -1002,9 +1002,10 @@ function RoutePicker({ lat, lng, t, onClose }: {
   );
 }
 
-function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity, onClose, onPay, onOpenOffer }: {
+function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity, onClose, onPay, onOpenOffer, onOpenOrderRules }: {
   items: CartItem[]; purchasedBoxQuantities: Record<string, number>; locale: Locale; t: Translator;
-  onChangeQuantity: (box: Box, quantity: number) => void; onClose: () => void; onPay: () => void; onOpenOffer: () => void;
+  onChangeQuantity: (box: Box, quantity: number) => void; onClose: () => void; onPay: () => void;
+  onOpenOffer: () => void; onOpenOrderRules: () => void;
 }) {
   const lines = items.flatMap((item) => {
     const box = boxes.find((candidate) => candidate.id === item.boxId);
@@ -1042,6 +1043,8 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
         <p className="mt-3 text-center text-xs leading-5 text-ink-muted">
           {t('checkoutOfferPrefix')}{' '}
           <button type="button" onClick={onOpenOffer} className="font-extrabold text-brand underline decoration-border-strong underline-offset-2">{t('checkoutOfferLink')}</button>
+          {' '}{t('checkoutOfferBetween')}{' '}
+          <button type="button" onClick={onOpenOrderRules} className="font-extrabold text-brand underline decoration-border-strong underline-offset-2">{t('checkoutRulesLink')}</button>
           {t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
         </p>
       </div>

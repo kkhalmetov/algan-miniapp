@@ -77,16 +77,21 @@ describe('multi-box cart', () => {
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'tatti-family', quantity: 1 }]);
   });
 
-  it('links the checkout consent to the public offer mock', () => {
+  it('links the checkout consent to the public offer and order rules mocks', () => {
     openTatti();
     fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
     fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
 
-    expect(screen.getByText(/Оформляя заказ, вы автоматически принимаете условия/)).toBeInTheDocument();
+    expect(screen.getByText(/Оформляя заказ, вы подтверждаете свое согласие с условиями/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'публичной оферты' }));
 
     const offer = screen.getByRole('dialog', { name: 'Публичная оферта' });
     expect(within(offer).getByText(/Документ готовится/)).toBeInTheDocument();
+    fireEvent.click(within(offer).getByRole('button', { name: 'Закрыть' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'правилами заказа, получения, отмены и возврата' }));
+    const rules = screen.getByRole('dialog', { name: 'Правила заказа, получения, отмены и возврата' });
+    expect(within(rules).getByText(/Документ готовится/)).toBeInTheDocument();
   });
 
   it('asks before replacing a cart from another venue', () => {
