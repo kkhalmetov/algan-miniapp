@@ -594,7 +594,15 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
                     <span className="mt-1 block truncate text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</span>
                     <span className="mt-2 block space-y-1">{order.items.map((item) => {
                       const box = boxes.find((candidate) => candidate.id === item.boxId);
-                      return <span key={item.boxId} className="flex items-center justify-between gap-3 text-xs"><span className="truncate font-bold">{box?.name}</span><span className="shrink-0 text-ink-muted">× {item.quantity}</span></span>;
+                      return (
+                        <span key={item.boxId} className="flex items-center justify-between gap-3 text-xs">
+                          <span className="truncate font-bold">{box?.name}</span>
+                          <span className="shrink-0 text-right">
+                            <span className="font-black text-ink-secondary">{formatPrice(item.unitPrice, locale)}</span>
+                            <span className="ml-1 font-semibold text-ink-muted">× {item.quantity}</span>
+                          </span>
+                        </span>
+                      );
                     })}</span>
                   </span>
                 </span>

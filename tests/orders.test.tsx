@@ -44,6 +44,10 @@ describe('orders tab', () => {
     expect(screen.getByRole('button', { name: 'Активные' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Surprise Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Tatti-box')).toBeInTheDocument();
+    expect(within(screen.getByText('Surprise Tatti-box').parentElement!).getByText((content) => content.replace(/\s/g, '') === '2490₸')).toBeInTheDocument();
+    expect(within(screen.getByText('Surprise Tatti-box').parentElement!).getByText('× 2')).toBeInTheDocument();
+    expect(within(screen.getByText('Tatti-box').parentElement!).getByText((content) => content.replace(/\s/g, '') === '2390₸')).toBeInTheDocument();
+    expect(within(screen.getByText('Tatti-box').parentElement!).getByText('× 1')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 12345678')).toBeInTheDocument();
     const pickupTime = screen.getByText(/Время выдачи:/);
     expect(pickupTime).toBeInTheDocument();
@@ -60,6 +64,8 @@ describe('orders tab', () => {
     expect(screen.getByRole('button', { name: 'Прошедшие' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('Кофе & булочки')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 87654321')).toBeInTheDocument();
+    expect(within(screen.getByText('Кофе & булочки').parentElement!).getByText((content) => content.replace(/\s/g, '') === '1990₸')).toBeInTheDocument();
+    expect(within(screen.getByText('Кофе & булочки').parentElement!).getByText('× 2')).toBeInTheDocument();
     expect(screen.queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 12345678')).not.toBeInTheDocument();
   });
@@ -108,7 +114,8 @@ describe('orders tab', () => {
     expect(screen.getByText('Номер заказа: 48273106')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 48273106').closest('button')).toBeNull();
     expect(screen.getByText('Сладкий вечер')).toBeInTheDocument();
-    expect(screen.getByText((content) => content.replace(/\s/g, '') === '3190₸')).toBeInTheDocument();
+    expect(within(screen.getByText('Сладкий вечер').parentElement!).getByText((content) => content.replace(/\s/g, '') === '3190₸')).toBeInTheDocument();
+    expect(screen.getAllByText((content) => content.replace(/\s/g, '') === '3190₸')).toHaveLength(2);
   });
 
   it('does not show the orders block in profile', () => {
