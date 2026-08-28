@@ -22,13 +22,21 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 ## Components
 
 - The canonical React primitives live in `components/ui-kit.tsx`. Product screens compose these primitives instead of recreating their class lists.
-- `PrimaryButton`, `SecondaryButton`, `DangerButton`: one action hierarchy with shared sizing, pressed and disabled states.
+- `PrimaryButton`, `SecondaryButton`, `DangerButton`: one action hierarchy with shared 44/56 px sizes, pressed, hover and disabled states.
+- `TextLinkButton`: one inline legal/action link treatment.
+- `PillButton`: compact text-and-icon control for language and similar toolbar actions.
+- `TertiaryButton`: low-emphasis brand or destructive action with a 44 px touch target.
 - `IconButton`: 44 × 44 px touch target with muted, dark, brand and accent variants; an accessible label is mandatory.
+- `QuantityControl`: one add/stepper pattern with compact visuals and 44 px increment/decrement touch targets.
 - `TextField`: shared label, required marker, border, focus ring and placeholder treatment.
-- `ModalHeader` and `SheetHandle`: consistent navigation, close controls and sheet affordance.
-- `DialogLayer`: shared modal backdrop, dismissal target, elevation and full-screen/sheet modes.
+- `ModalBody`, `ModalHeader` and `SheetHandle`: consistent safe-area spacing, navigation, close controls and sheet affordance.
+- `DialogLayer`: shared modal backdrop, dismissal target, elevation and full-screen/sheet/center modes.
+- `AccordionItem`: shared disclosure row for FAQ and future expandable content.
+- `BottomNavigation` and `BottomNavigationItem`: canonical application navigation, active pill and label treatment.
+- `FullScreenFeedback`: canonical success/error layout for transactional outcomes.
+- `CardPressable`: shared keyboard-focus treatment for interactive regions inside clipped cards.
 - `BrandHeader`, `PageSection`, `PageTitle`, `SectionTitle`: one hierarchy for screen chrome and headings.
-- `ListRow`: shared profile and menu row with icon container, optional supporting text and trailing action.
+- `ListRow`, `LinkRow`: shared button/link rows with icon container, optional supporting text, panel/soft surfaces and trailing action.
 - `SegmentedControl`: shared two-state selector with pressed-state semantics.
 - `EmptyState`: shared illustration container, title and supporting copy.
 - `IconBadge`: shared contextual icon container for informational cards.
@@ -37,6 +45,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - Cards: panel background, border token, `rounded-card`, card shadow only when separation from the surface is needed.
 - Sheets and modals: surface background, `rounded-sheet` top corners, dimmed brand-deep overlay.
 - Inputs: 52 px height, panel background, border token, brand focus ring.
+- Primary, secondary and destructive page actions: 56 px height; compact embedded actions: 44 px height.
 - Navigation: surface background, border token, brand-soft selected pill, muted inactive icons.
 
 ## Typography and spacing

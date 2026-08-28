@@ -68,6 +68,12 @@ describe('Algan design system', () => {
     expect(app).not.toContain('absolute inset-0 z-[1000] flex items-end');
     expect(app).not.toContain('flex min-h-12 w-full items-center justify-center gap-2 border-t border-border');
     expect(app).not.toContain('shrink-0 border-t border-border bg-surface/96');
+    expect(app).not.toContain('z-[800] shrink-0 border-t border-border bg-surface/95');
+    expect(app).not.toContain('font-extrabold text-brand underline decoration-border-strong');
+    expect(app).not.toContain('className="modal-body"');
+    expect(app).not.toContain('flex min-h-dvh flex-col justify-center overflow-y-auto');
+    expect(app).not.toContain('grid h-8 w-8 shrink-0 place-items-center rounded-full');
+    expect(app).not.toContain('role="dialog"');
   });
 
   it('keeps runtime platform colors aligned with CSS tokens', () => {

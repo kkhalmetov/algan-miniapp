@@ -2,17 +2,18 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  AlertTriangle, Building2, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Heart, Home, Info, Languages, Mail, Map as MapIcon,
-  MapPin, Minus, Package, PackageCheck, Phone, Plus, QrCode, Route, ShoppingBag, Sparkles, X,
+  AlertTriangle, Building2, Check, ChevronRight, CircleHelp, Clock3, Heart, Home, Info, Languages, Mail, Map as MapIcon,
+  MapPin, Package, PackageCheck, Phone, QrCode, Route, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import {
-  BrandHeader, CardActionButton, DangerButton, DialogLayer, EmptyState, IconBadge, IconButton, ListRow, ModalHeader,
-  PageSection, PageTitle, PrimaryButton, SecondaryButton, SectionTitle, SegmentedControl, SheetHandle, StatusBadge,
-  StickyActionFooter, SurfaceCard, TextField,
+  AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, DangerButton, DialogLayer,
+  EmptyState, FullScreenFeedback, IconBadge, IconButton, LinkRow, ListRow, ModalBody, ModalHeader, PageSection, PageTitle,
+  PillButton, PrimaryButton, QuantityControl, SecondaryButton, SectionTitle, SegmentedControl, SheetHandle, StatusBadge, StickyActionFooter,
+  SurfaceCard, TertiaryButton, TextField, TextLinkButton,
 } from '@/components/ui-kit';
 import { authenticateTelegram } from '@/lib/api';
 import { getRouteOptions, type RouteProvider } from '@/lib/maps';
@@ -338,20 +339,19 @@ function CartReplacementDialog({ t, onCancel, onConfirm }: {
   onConfirm: () => void;
 }) {
   return (
-    <div className="absolute inset-0 z-[1400] grid place-items-center bg-brand-deep/45 p-5 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label={t('cart')}>
-      <button type="button" onClick={onCancel} className="absolute inset-0" aria-label={`${t('close')} ${t('cart')}`} />
-      <section className="relative z-10 w-full max-w-sm rounded-card bg-surface p-5 shadow-sheet">
+    <DialogLayer variant="center" className="z-[1400]" onClose={onCancel} closeLabel={t('close')} ariaLabel={t('cart')}>
+      <div className="p-5">
         <div className="flex items-start justify-between gap-4">
-          <h2 className="text-xl font-bold text-brand-deep">{t('cart')}</h2>
+          <h2 className="text-xl font-black text-ink">{t('cart')}</h2>
           <IconButton label={t('close')} onClick={onCancel}><X className="h-5 w-5" /></IconButton>
         </div>
-        <p className="mt-3 text-sm leading-6 text-muted">{t('replaceCartConfirm')}</p>
+        <p className="mt-3 text-sm leading-6 text-ink-secondary">{t('replaceCartConfirm')}</p>
         <div className="mt-5 grid grid-cols-2 gap-3">
           <SecondaryButton onClick={onCancel}>{t('cancel')}</SecondaryButton>
           <PrimaryButton onClick={onConfirm}>{t('replaceCartAction')}</PrimaryButton>
         </div>
-      </section>
-    </div>
+      </div>
+    </DialogLayer>
   );
 }
 
@@ -437,16 +437,16 @@ function Consent({ checked, setChecked, text, onOpen }: { checked: boolean; setC
     <label className="flex cursor-pointer gap-3">
       <input type="checkbox" checked={checked} onChange={(event) => setChecked(event.target.checked)} className="peer sr-only" />
       <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 border-border-strong bg-panel text-white transition peer-checked:border-brand peer-checked:bg-brand"><Check size={14} strokeWidth={3} /></span>
-      <span>{prefix}<button type="button" onClick={(event) => { event.preventDefault(); onOpen(); }} className="font-extrabold text-brand underline decoration-border-strong underline-offset-2">{linked}</button></span>
+      <span>{prefix}<TextLinkButton onClick={(event) => { event.preventDefault(); onOpen(); }}>{linked}</TextLinkButton></span>
     </label>
   );
 }
 
 function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; setLocale: (locale: Locale) => void; dark?: boolean }) {
   return (
-    <button type="button" onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} className={`flex h-11 items-center gap-1.5 rounded-full px-3 text-xs font-black uppercase ${dark ? 'bg-white/12 text-white' : 'bg-surface-soft text-brand'}`} aria-label="Русский / Қазақша">
+    <PillButton tone={dark ? 'dark' : 'soft'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} className="uppercase" aria-label="Русский / Қазақша">
       <Languages size={15} /> {locale === 'ru' ? 'Қаз' : 'Рус'}
-    </button>
+    </PillButton>
   );
 }
 
@@ -480,18 +480,18 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
 function StoreCard({ store, fallbackImage, t, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; t: Translator; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
   return (
     <SurfaceCard className="overflow-hidden">
-      <button type="button" onClick={onOpen} className="relative block h-44 w-full overflow-hidden text-left">
+      <CardPressable onClick={onOpen} className="relative h-44 overflow-hidden">
         <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
         <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-panel bg-panel shadow-card">
           <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
         </span>
-      </button>
+      </CardPressable>
       <div className="p-4">
         <div className="flex items-start gap-3">
-          <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left">
+          <CardPressable onClick={onOpen} className="min-w-0 flex-1 rounded-control">
             <h3 className="truncate text-lg font-black tracking-[-0.03em]">{store.name}</h3>
             <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-ink-muted"><MapPin size={14} />{store.address}</p>
-          </button>
+          </CardPressable>
           <IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={favorite} tone={favorite ? 'accent' : 'muted'}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></IconButton>
         </div>
       </div>
@@ -675,7 +675,7 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
     day: 'numeric', month: 'long', year: 'numeric',
   }).format(new Date(order.createdAt));
   return (
-    <Overlay onClose={onClose} closeLabel={t('close')} ariaLabel={t('orders')}>
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('orders')}>
       <div className="max-h-[90dvh] overflow-y-auto px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
         <SheetHandle />
         {order.status === 'paid' ? (
@@ -700,7 +700,7 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
           </>
         )}
       </div>
-    </Overlay>
+    </DialogLayer>
   );
 }
 
@@ -760,17 +760,19 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
   const normalizedPhone = normalizeKazakhstanPhone(value);
 
   return (
-    <Overlay onClose={onClose} closeLabel={t('close')} ariaLabel={t('changePhone')}>
-      <form className="modal-body" onSubmit={(event) => {
-        event.preventDefault();
-        if (normalizedPhone) onSave(normalizedPhone);
-      }}>
-        <ModalHeader title={t('changePhone')} onClose={onClose} closeLabel={t('close')} />
-        <TextField label={t('phone')} required value={value} onValueChange={(phone) => setValue(formatKazakhstanPhoneInput(phone))}
-          placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
-        <PrimaryButton type="submit" disabled={!normalizedPhone} className="mt-6">{t('savePhone')}<Check size={19} /></PrimaryButton>
-      </form>
-    </Overlay>
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('changePhone')}>
+      <ModalBody>
+        <form onSubmit={(event) => {
+          event.preventDefault();
+          if (normalizedPhone) onSave(normalizedPhone);
+        }}>
+          <ModalHeader title={t('changePhone')} onClose={onClose} closeLabel={t('close')} />
+          <TextField label={t('phone')} required value={value} onValueChange={(phone) => setValue(formatKazakhstanPhoneInput(phone))}
+            placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
+          <PrimaryButton type="submit" disabled={!normalizedPhone} className="mt-6">{t('savePhone')}<Check size={19} /></PrimaryButton>
+        </form>
+      </ModalBody>
+    </DialogLayer>
   );
 }
 
@@ -795,21 +797,18 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
     { id: 'orders', icon: <ShoppingBag size={21} />, label: 'ordersNav' },
   ];
   return (
-    <nav className="z-[800] shrink-0 border-t border-border bg-surface/95 px-1 pb-[max(.4rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl">
-      <div className="grid grid-cols-4">
-        {items.map((item) => (
-          <button key={item.id} type="button" aria-current={tab === item.id ? 'page' : undefined} onClick={() => { setTab(item.id); haptic('tap'); }} className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[9px] font-extrabold tracking-[-0.02em] transition ${tab === item.id ? 'text-brand' : 'text-ink-subtle'}`}>
-            <span className={`grid h-7 w-11 shrink-0 place-items-center rounded-full ${tab === item.id ? 'bg-brand-soft' : ''}`}>{item.icon}</span>
-            <span className="whitespace-nowrap text-center leading-none">{t(item.label)}</span>
-          </button>
-        ))}
-      </div>
-    </nav>
+    <BottomNavigation>
+      {items.map((item) => (
+        <BottomNavigationItem
+          key={item.id}
+          active={tab === item.id}
+          icon={item.icon}
+          label={t(item.label)}
+          onClick={() => { setTab(item.id); haptic('tap'); }}
+        />
+      ))}
+    </BottomNavigation>
   );
-}
-
-function Overlay({ children, onClose, closeLabel, full = false, ariaLabel }: { children: React.ReactNode; onClose: () => void; closeLabel: string; full?: boolean; ariaLabel: string }) {
-  return <DialogLayer onClose={onClose} closeLabel={closeLabel} full={full} ariaLabel={ariaLabel}>{children}</DialogLayer>;
 }
 
 function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems, purchasedBoxQuantities, onChangeQuantity, onOpenBox, onOpenCart, onClose }: {
@@ -831,7 +830,8 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
   const [routePickerOpen, setRoutePickerOpen] = useState(false);
 
   return (
-    <section className="absolute inset-0 z-[1000] flex h-full min-h-0 flex-col overflow-hidden bg-surface" role="dialog" aria-modal="true" aria-label={store.name}>
+    <DialogLayer variant="full" onClose={onClose} closeLabel={t('close')} ariaLabel={store.name}>
+      <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
       <header data-testid="store-details-header" className="shrink-0 bg-brand px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
         <div className="flex min-h-11 items-center gap-3">
           <IconButton onClick={onClose} label={t('back')} tone="dark"><ChevronRight className="rotate-180" size={20} /></IconButton>
@@ -880,8 +880,9 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
           <PrimaryButton onClick={onOpenCart}><ShoppingBag size={19} />{t('cart')} · {cartQuantity}<span className="ml-auto">{formatPrice(cartTotal, locale)}</span></PrimaryButton>
         </StickyActionFooter>
       )}
-      {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
-    </section>
+        {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
+      </div>
+    </DialogLayer>
   );
 }
 
@@ -892,7 +893,7 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
-      <button type="button" onClick={onOpen} className="flex w-full items-start gap-3 p-4 text-left" aria-label={`${t('details')} ${box.name}`}>
+      <CardPressable onClick={onOpen} className="flex items-start gap-3 p-4" aria-label={`${t('details')} ${box.name}`}>
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
             <span className="text-base font-black leading-5">{box.name}</span>
@@ -908,40 +909,14 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-pale text-brand" aria-hidden="true">
           <ChevronRight size={18} strokeWidth={2.5} />
         </span>
-      </button>
+      </CardPressable>
       {(available > 0 || cartQuantity > 0) && (
         <div className="border-t border-border px-3 py-3">
-          <CartQuantityControl boxName={box.name} quantity={cartQuantity} max={available} t={t} onChange={onChangeQuantity} />
+          <QuantityControl quantity={cartQuantity} max={available} label={t('quantity')}
+            addLabel={`${t('addToCart')} ${box.name}`} addText={t('addToCart')} onChange={onChangeQuantity} />
         </div>
       )}
     </SurfaceCard>
-  );
-}
-
-function CartQuantityControl({ boxName, quantity, max, t, onChange }: {
-  boxName: string; quantity: number; max: number; t: Translator; onChange: (quantity: number) => void;
-}) {
-  if (quantity < 1) {
-    if (max < 1) return null;
-    return (
-      <button type="button" onClick={() => onChange(1)} aria-label={`${t('addToCart')} ${boxName}`}
-        className="min-h-11 w-full rounded-control bg-brand px-4 text-sm font-black text-white transition">
-        {t('addToCart')}
-      </button>
-    );
-  }
-  return (
-    <div className="flex min-h-11 items-center justify-between rounded-control bg-brand-soft px-2.5 py-1.5">
-      <button type="button" onClick={() => onChange(quantity - 1)} aria-label={`${t('quantity')} −`}
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-surface-muted text-ink transition active:scale-95">
-        <Minus size={16} />
-      </button>
-      <span className="text-base font-black text-brand">{quantity}</span>
-      <button type="button" onClick={() => onChange(quantity + 1)} aria-label={`${t('quantity')} +`} disabled={quantity >= max}
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-white transition active:scale-95 disabled:opacity-45">
-        <Plus size={16} />
-      </button>
-    </div>
   );
 }
 
@@ -951,7 +926,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
 }) {
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
-    <Overlay onClose={onClose} closeLabel={t('close')} ariaLabel={box.name}>
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={box.name}>
       <div data-testid="box-details-sheet" className="flex h-[80dvh] min-h-0 flex-col sm:h-[624px]">
         <div className="shrink-0 px-5 pt-4">
           <SheetHandle />
@@ -1001,11 +976,12 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
         </div>
         {(available > 0 || cartQuantity > 0) && (
           <StickyActionFooter>
-            <CartQuantityControl boxName={box.name} quantity={cartQuantity} max={available} t={t} onChange={onChangeQuantity} />
+            <QuantityControl quantity={cartQuantity} max={available} label={t('quantity')}
+              addLabel={`${t('addToCart')} ${box.name}`} addText={t('addToCart')} onChange={onChangeQuantity} />
           </StickyActionFooter>
         )}
       </div>
-    </Overlay>
+    </DialogLayer>
   );
 }
 
@@ -1027,11 +1003,14 @@ function RoutePicker({ lat, lng, t, onClose }: {
         <div className="mt-4"><ModalHeader title={t('chooseMap')} onClose={onClose} closeLabel={t('close')} /></div>
         <div className="mt-4 space-y-2">
           {options.map((option) => (
-            <button key={option.id} type="button" onClick={() => { openExternalLink(option.url); haptic('tap'); }} className="flex min-h-14 w-full items-center gap-3 rounded-control border border-border bg-panel px-3.5 text-left">
-              <img src={routeProviderLogo[option.id]} alt={`${option.label} logo`} className="h-10 w-10 shrink-0 rounded-xl object-cover" />
-              <span className="flex-1 text-sm font-black">{option.label}</span>
-              <ChevronRight size={17} className="text-ink-subtle" />
-            </button>
+            <ListRow
+              key={option.id}
+              icon={<img src={routeProviderLogo[option.id]} alt={`${option.label} logo`} className="h-9 w-9 rounded-xl object-cover" />}
+              title={option.label}
+              tone="panel"
+              trailing={<ChevronRight size={17} className="text-ink-subtle" />}
+              onClick={() => { openExternalLink(option.url); haptic('tap'); }}
+            />
           ))}
         </div>
       </div>
@@ -1050,8 +1029,8 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
   });
   const total = lines.reduce((sum, line) => sum + line.box.salePrice * line.quantity, 0);
   return (
-    <Overlay onClose={onClose} closeLabel={t('close')} ariaLabel={t('cart')}>
-      <div className="modal-body">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('cart')}>
+      <ModalBody>
         <SheetHandle />
         <div className="mt-5"><ModalHeader title={t('cart')} onClose={onClose} closeLabel={t('close')} /></div>
         {lines.length === 0 ? (
@@ -1066,8 +1045,9 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
                   <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity, locale)}</p>
                 </div>
                 <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
-                  <CartQuantityControl boxName={box.name} quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} t={t} onChange={(next) => onChangeQuantity(box, next)} />
-                  <button type="button" onClick={() => onChangeQuantity(box, 0)} className="px-2 text-xs font-black text-danger">{t('removeFromCart')}</button>
+                  <QuantityControl quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} label={t('quantity')}
+                    addLabel={`${t('addToCart')} ${box.name}`} addText={t('addToCart')} onChange={(next) => onChangeQuantity(box, next)} />
+                  <TertiaryButton tone="danger" onClick={() => onChangeQuantity(box, 0)}>{t('removeFromCart')}</TertiaryButton>
                 </div>
               </div>
             ))}
@@ -1080,13 +1060,13 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
         </PrimaryButton>
         <p className="mt-3 text-center text-xs leading-5 text-ink-muted">
           {t('checkoutOfferPrefix')}{' '}
-          <button type="button" onClick={onOpenOffer} className="font-extrabold text-brand underline decoration-border-strong underline-offset-2">{t('checkoutOfferLink')}</button>
+          <TextLinkButton onClick={onOpenOffer}>{t('checkoutOfferLink')}</TextLinkButton>
           {' '}{t('checkoutOfferBetween')}{' '}
-          <button type="button" onClick={onOpenOrderRules} className="font-extrabold text-brand underline decoration-border-strong underline-offset-2">{t('checkoutRulesLink')}</button>
+          <TextLinkButton onClick={onOpenOrderRules}>{t('checkoutRulesLink')}</TextLinkButton>
           {t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
         </p>
-      </div>
-    </Overlay>
+      </ModalBody>
+    </DialogLayer>
   );
 }
 
@@ -1094,29 +1074,28 @@ function PaymentFailure({ t, onBackToCart }: {
   t: Translator; onBackToCart: () => void;
 }) {
   return (
-    <Overlay onClose={onBackToCart} closeLabel={t('close')} ariaLabel={t('paymentFailedTitle')} full>
-      <div className="flex min-h-dvh flex-col justify-center overflow-y-auto px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]">
-        <div className="mx-auto grid h-16 w-16 shrink-0 place-items-center rounded-full bg-danger-soft text-danger">
-          <AlertTriangle size={32} strokeWidth={2.5} />
-        </div>
-        <PageTitle className="mt-5">{t('paymentFailedTitle')}</PageTitle>
-        <p className="mx-auto mt-3 max-w-[320px] text-sm leading-6 text-ink-secondary">{t('paymentFailedText')}</p>
+    <DialogLayer onClose={onBackToCart} closeLabel={t('close')} ariaLabel={t('paymentFailedTitle')} variant="full">
+      <FullScreenFeedback
+        centered
+        tone="danger"
+        icon={<AlertTriangle size={32} strokeWidth={2.5} />}
+        title={t('paymentFailedTitle')}
+        description={t('paymentFailedText')}
+      >
         <PrimaryButton onClick={onBackToCart} className="mt-8">{t('backToCart')}</PrimaryButton>
-      </div>
-    </Overlay>
+      </FullScreenFeedback>
+    </DialogLayer>
   );
 }
 
 function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: () => void }) {
   return (
-    <Overlay onClose={onDone} closeLabel={t('close')} ariaLabel={t('ordersCreated')} full>
-      <div className="flex min-h-dvh flex-col overflow-y-auto px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]">
-        <div className="mx-auto relative grid h-16 w-16 shrink-0 place-items-center rounded-full bg-highlight text-brand">
-          <Check size={32} strokeWidth={3} />
-          <Sparkles className="absolute -right-2 -top-1 text-accent" size={20} />
-        </div>
-        <PageTitle className="mt-4">{t('ordersCreated')}</PageTitle>
-        <p className="mx-auto mt-2 max-w-[320px] text-sm leading-5 text-ink-secondary">{t('successText')}</p>
+    <DialogLayer onClose={onDone} closeLabel={t('close')} ariaLabel={t('ordersCreated')} variant="full">
+      <FullScreenFeedback
+        icon={<><Check size={32} strokeWidth={3} /><Sparkles className="absolute -right-2 -top-1 text-accent" size={20} /></>}
+        title={t('ordersCreated')}
+        description={t('successText')}
+      >
         <div className="mt-5"><OrderQr order={order} t={t} /></div>
         <div className="mx-auto mt-4 w-full max-w-[320px] rounded-control bg-brand p-3 text-white">
           <p className="text-xs font-bold text-white/65">{t('pickupCode')}</p>
@@ -1124,8 +1103,8 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
         </div>
         <p className="mt-4 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
         <PrimaryButton onClick={onDone} className="mt-6 shrink-0">{t('toOrders')}<ChevronRight size={19} /></PrimaryButton>
-      </div>
-    </Overlay>
+      </FullScreenFeedback>
+    </DialogLayer>
   );
 }
 
@@ -1139,8 +1118,8 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
   ];
 
   return (
-    <Overlay onClose={onClose} closeLabel={t('close')} ariaLabel={t('legal')}>
-      <div className="modal-body">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('legal')}>
+      <ModalBody>
         <ModalHeader
           title={selectedDocument ? t(LEGAL_TITLE_KEYS[selectedDocument]) : t('legal')}
           onBack={selectedDocument ? () => setSelectedDocument(null) : undefined}
@@ -1160,8 +1139,8 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
             ))}
           </div>
         )}
-      </div>
-    </Overlay>
+      </ModalBody>
+    </DialogLayer>
   );
 }
 
@@ -1178,8 +1157,8 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
   const title = view === 'faq' ? t('faq') : view === 'contacts' ? t('contacts') : t('support');
 
   return (
-    <Overlay onClose={onClose} closeLabel={t('close')} ariaLabel={t('support')}>
-      <div className="max-h-[82dvh] overflow-y-auto px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('support')}>
+      <ModalBody className="max-h-[82dvh] overflow-y-auto">
         <div className="sticky top-0 z-10 bg-surface pb-3">
           <ModalHeader
             title={title}
@@ -1203,13 +1182,9 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
             {faqItems.map((item, index) => {
               const expanded = openQuestion === index;
               return (
-                <div key={item.question} className="overflow-hidden rounded-control bg-surface-soft">
-                  <button type="button" aria-expanded={expanded} onClick={() => setOpenQuestion(expanded ? null : index)} className="flex w-full items-center gap-3 p-4 text-left">
-                    <span className="min-w-0 flex-1 text-sm font-black leading-5">{t(item.question)}</span>
-                    <ChevronDown size={18} className={`shrink-0 text-ink-subtle transition ${expanded ? 'rotate-180' : ''}`} />
-                  </button>
-                  {expanded && <p className="px-4 pb-4 text-sm leading-6 text-ink-secondary">{t(item.answer)}</p>}
-                </div>
+                <AccordionItem key={item.question} title={t(item.question)} expanded={expanded} onToggle={() => setOpenQuestion(expanded ? null : index)}>
+                  {t(item.answer)}
+                </AccordionItem>
               );
             })}
           </div>
@@ -1221,13 +1196,13 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
             <p className="mt-1 font-bold text-ink-secondary">{t('companyId')}</p>
             <div className="mt-5 space-y-4">
               <div><p className="text-xs font-black text-ink-muted">{t('contactLegalAddressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
-              <a href="mailto:algansupport@gmail.com" className="flex items-center gap-3 rounded-control bg-panel p-3 text-brand"><Mail size={18} className="shrink-0" /><span><span className="block text-xs text-ink-muted">{t('emailLabel')}</span><span className="mt-0.5 block font-bold">algansupport@gmail.com</span></span></a>
-              <a href="tel:+77059768000" className="flex items-center gap-3 rounded-control bg-panel p-3 text-brand"><Phone size={18} className="shrink-0" /><span><span className="block text-xs text-ink-muted">{t('contactPhoneLabel')}</span><span className="mt-0.5 block font-bold">+7 705 976 80 00</span></span></a>
+              <LinkRow tone="panel" href="mailto:algansupport@gmail.com" icon={<Mail size={18} />} title={t('emailLabel')} subtitle="algansupport@gmail.com" />
+              <LinkRow tone="panel" href="tel:+77059768000" icon={<Phone size={18} />} title={t('contactPhoneLabel')} subtitle="+7 705 976 80 00" />
             </div>
           </div>
         )}
-      </div>
-    </Overlay>
+      </ModalBody>
+    </DialogLayer>
   );
 }
 
@@ -1244,12 +1219,12 @@ function LegalDocumentNotice({ t }: { t: Translator }) {
 }
 function LegalModal({ type, t, onClose }: { type: LegalDocument; t: Translator; onClose: () => void }) {
   return (
-    <Overlay onClose={onClose} closeLabel={t('close')} ariaLabel={t(LEGAL_TITLE_KEYS[type])}>
-      <div className="modal-body">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t(LEGAL_TITLE_KEYS[type])}>
+      <ModalBody>
         <ModalHeader title={t(LEGAL_TITLE_KEYS[type])} onClose={onClose} closeLabel={t('close')} />
         <LegalDocumentNotice t={t} />
         <PrimaryButton onClick={onClose} className="mt-5">{t('back')}</PrimaryButton>
-      </div>
-    </Overlay>
+      </ModalBody>
+    </DialogLayer>
   );
 }

@@ -133,30 +133,6 @@ button:disabled { cursor: not-allowed; }
   animation: algan-loader-spin .8s linear infinite;
 }
 
-.primary-button {
-  display: flex;
-  min-height: 3.5rem;
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-  border-radius: var(--radius-control);
-  background: var(--color-brand);
-  padding-inline: 1rem;
-  color: white;
-  font-size: .95rem;
-  font-weight: 900;
-  box-shadow: var(--shadow-action);
-  transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
-}
-
-.primary-button:active { transform: scale(.99); }
-.primary-button:disabled {
-  background: var(--color-surface-muted);
-  color: var(--color-ink-subtle);
-  box-shadow: none;
-}
-
 .hide-scrollbar { scrollbar-width: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 
@@ -195,10 +171,6 @@ button:disabled { cursor: not-allowed; }
   border-radius: 50%;
   background: white;
   box-shadow: var(--shadow-marker);
-}
-
-.modal-body {
-  padding: 1.25rem var(--spacing-page-wide) max(1.5rem, env(safe-area-inset-bottom));
 }
 
 .algan-store-marker img {

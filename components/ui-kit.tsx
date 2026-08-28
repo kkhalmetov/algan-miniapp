@@ -1,14 +1,19 @@
 'use client';
 
-import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
-import { ArrowLeft, X } from 'lucide-react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
+import { ArrowLeft, ChevronDown, Minus, Plus, X } from 'lucide-react';
 
 export function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
-export function PrimaryButton({ className, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button type={type} className={cx('primary-button', className)} {...props} />;
+const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-4 font-black transition duration-150 active:scale-[.99] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
+type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { size?: 'md' | 'lg' };
+const actionButtonSize = { md: 'min-h-11 text-sm', lg: 'min-h-14 text-[15px]' } as const;
+
+export function PrimaryButton({ className, type = 'button', size = 'lg', ...props }: ActionButtonProps) {
+  return <button type={type} className={cx(actionButtonBase, actionButtonSize[size], 'bg-brand text-white shadow-action hover:bg-brand-hover disabled:bg-surface-muted disabled:text-ink-subtle', className)} {...props} />;
 }
 
 export function PageTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
@@ -41,21 +46,63 @@ export function BrandHeader({ className, ...props }: HTMLAttributes<HTMLElement>
   );
 }
 
-export function SecondaryButton({ className, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+export function SecondaryButton({ className, type = 'button', size = 'lg', ...props }: ActionButtonProps) {
   return (
     <button
       type={type}
-      className={cx('flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-brand-pale px-4 text-sm font-black text-brand transition active:scale-[.99] disabled:opacity-45', className)}
+      className={cx(actionButtonBase, actionButtonSize[size], 'bg-brand-pale text-brand hover:bg-brand-soft', className)}
       {...props}
     />
   );
 }
 
-export function DangerButton({ className, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+export function DangerButton({ className, type = 'button', size = 'lg', ...props }: ActionButtonProps) {
   return (
     <button
       type={type}
-      className={cx('flex min-h-14 w-full items-center justify-center rounded-control bg-accent-soft px-4 text-sm font-black text-accent-strong transition active:scale-[.99] disabled:opacity-45', className)}
+      className={cx(actionButtonBase, actionButtonSize[size], 'bg-danger-soft text-danger', className)}
+      {...props}
+    />
+  );
+}
+
+export function TextLinkButton({ className, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type={type}
+      className={cx('font-extrabold text-brand underline decoration-border-strong underline-offset-2 transition hover:text-brand-hover', className)}
+      {...props}
+    />
+  );
+}
+
+export function PillButton({ className, type = 'button', tone = 'soft', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
+  tone?: 'soft' | 'dark';
+}) {
+  return (
+    <button
+      type={type}
+      className={cx(
+        'flex h-11 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-black transition active:scale-95',
+        tone === 'dark' ? 'bg-white/12 text-white' : 'bg-surface-soft text-brand',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function TertiaryButton({ className, type = 'button', tone = 'brand', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
+  tone?: 'brand' | 'danger';
+}) {
+  return (
+    <button
+      type={type}
+      className={cx(
+        'inline-flex min-h-11 items-center justify-center rounded-control px-3 text-xs font-black transition active:bg-surface-muted',
+        tone === 'danger' ? 'text-danger' : 'text-brand',
+        className,
+      )}
       {...props}
     />
   );
@@ -158,8 +205,25 @@ export function SheetHandle() {
   return <div aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-border-strong" />;
 }
 
+export function ModalBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={cx('px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5', className)} {...props} />;
+}
+
 export function SurfaceCard({ className, ...props }: HTMLAttributes<HTMLElement>) {
   return <article className={cx('rounded-card border border-border bg-panel shadow-card', className)} {...props} />;
+}
+
+export function CardPressable({ className, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type={type}
+      className={cx(
+        'block w-full text-left transition focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 type StatusTone = 'brand' | 'dark' | 'accent' | 'accentSolid' | 'danger' | 'warning' | 'neutral';
@@ -216,6 +280,7 @@ export function ListRow({
   title,
   subtitle,
   trailing,
+  tone = 'soft',
   className,
   type = 'button',
   ...props
@@ -224,11 +289,16 @@ export function ListRow({
   title: ReactNode;
   subtitle?: ReactNode;
   trailing?: ReactNode;
+  tone?: 'soft' | 'panel';
 }) {
   return (
     <button
       type={type}
-      className={cx('flex min-h-17 w-full items-center gap-3 rounded-control bg-surface-soft p-4 text-left transition active:scale-[.99] disabled:opacity-100', className)}
+      className={cx(
+        'flex min-h-17 w-full items-center gap-3 rounded-control p-4 text-left transition active:scale-[.99] disabled:opacity-100',
+        tone === 'panel' ? 'border border-border bg-panel' : 'bg-surface-soft',
+        className,
+      )}
       {...props}
     >
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-panel text-brand">{icon}</span>
@@ -238,6 +308,72 @@ export function ListRow({
       </span>
       {trailing}
     </button>
+  );
+}
+
+export function LinkRow({ icon, title, subtitle, trailing, tone = 'soft', className, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & {
+  icon: ReactNode;
+  title: ReactNode;
+  subtitle?: ReactNode;
+  trailing?: ReactNode;
+  tone?: 'soft' | 'panel';
+}) {
+  return (
+    <a className={cx(
+      'flex min-h-17 w-full items-center gap-3 rounded-control p-4 text-left text-ink transition active:scale-[.99]',
+      tone === 'panel' ? 'border border-border bg-panel' : 'bg-surface-soft',
+      className,
+    )} {...props}>
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-panel text-brand">{icon}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-black">{title}</span>
+        {subtitle && <span className="mt-0.5 block truncate text-xs text-ink-muted">{subtitle}</span>}
+      </span>
+      {trailing}
+    </a>
+  );
+}
+
+export function AccordionItem({ title, expanded, onToggle, children }: {
+  title: ReactNode;
+  expanded: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div className="overflow-hidden rounded-control bg-surface-soft">
+      <button type="button" aria-expanded={expanded} onClick={onToggle} className="flex min-h-14 w-full items-center gap-3 p-4 text-left transition focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover">
+        <span className="min-w-0 flex-1 text-sm font-black leading-5">{title}</span>
+        <ChevronDown size={18} className={cx('shrink-0 text-ink-subtle transition', expanded && 'rotate-180')} />
+      </button>
+      {expanded && <div className="px-4 pb-4 text-sm leading-6 text-ink-secondary">{children}</div>}
+    </div>
+  );
+}
+
+export function QuantityControl({ quantity, max, label, addLabel, addText, onChange }: {
+  quantity: number;
+  max: number;
+  label: string;
+  addLabel: string;
+  addText: ReactNode;
+  onChange: (quantity: number) => void;
+}) {
+  if (quantity < 1) {
+    if (max < 1) return null;
+    return <PrimaryButton size="md" onClick={() => onChange(1)} aria-label={addLabel}>{addText}</PrimaryButton>;
+  }
+
+  return (
+    <div className="flex min-h-12 items-center justify-between rounded-control bg-brand-soft px-1.5">
+      <button type="button" onClick={() => onChange(quantity - 1)} aria-label={`${label} −`} className="grid h-11 w-11 shrink-0 place-items-center">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-surface-muted text-ink transition active:scale-95"><Minus size={16} /></span>
+      </button>
+      <span className="text-base font-black text-brand">{quantity}</span>
+      <button type="button" onClick={() => onChange(quantity + 1)} aria-label={`${label} +`} disabled={quantity >= max} className="grid h-11 w-11 shrink-0 place-items-center disabled:opacity-45">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-white transition active:scale-95"><Plus size={16} /></span>
+      </button>
+    </div>
   );
 }
 
@@ -311,18 +447,92 @@ export function StickyActionFooter({ className, ...props }: HTMLAttributes<HTMLE
   );
 }
 
-export function DialogLayer({ children, onClose, closeLabel, full = false, ariaLabel, className }: {
+export function BottomNavigation({ children }: { children: ReactNode }) {
+  return (
+    <nav className="z-[800] shrink-0 border-t border-border bg-surface/95 px-1 pb-[max(.4rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl">
+      <div className="grid grid-cols-4">{children}</div>
+    </nav>
+  );
+}
+
+export function BottomNavigationItem({ active, icon, label, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
+  active: boolean;
+  icon: ReactNode;
+  label: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-current={active ? 'page' : undefined}
+      className={cx(
+        'flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[9px] font-extrabold tracking-[-0.02em] transition',
+        active ? 'text-brand' : 'text-ink-subtle',
+      )}
+      {...props}
+    >
+      <span aria-hidden="true" className={cx('grid h-7 w-11 shrink-0 place-items-center rounded-full', active && 'bg-brand-soft')}>{icon}</span>
+      <span className="whitespace-nowrap text-center leading-none">{label}</span>
+    </button>
+  );
+}
+
+export function FullScreenFeedback({ icon, title, description, children, centered = false, tone = 'brand' }: {
+  icon: ReactNode;
+  title: ReactNode;
+  description: ReactNode;
+  children: ReactNode;
+  centered?: boolean;
+  tone?: 'brand' | 'danger';
+}) {
+  return (
+    <div className={cx(
+      'flex min-h-dvh flex-col overflow-y-auto px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]',
+      centered && 'justify-center',
+    )}>
+      <div className={cx(
+        'relative mx-auto grid h-16 w-16 shrink-0 place-items-center rounded-full',
+        tone === 'danger' ? 'bg-danger-soft text-danger' : 'bg-highlight text-brand',
+      )}>{icon}</div>
+      <PageTitle className="mt-5">{title}</PageTitle>
+      <p className="mx-auto mt-3 max-w-[320px] text-sm leading-6 text-ink-secondary">{description}</p>
+      {children}
+    </div>
+  );
+}
+
+export function DialogLayer({ children, onClose, closeLabel, full = false, variant, ariaLabel, className }: {
   children: ReactNode;
   onClose: () => void;
   closeLabel: string;
   full?: boolean;
+  variant?: 'sheet' | 'center' | 'full';
   ariaLabel?: string;
   className?: string;
 }) {
+  const resolvedVariant = full ? 'full' : variant ?? 'sheet';
+  const panelRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    panelRef.current?.focus();
+    return () => {
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
+  }, []);
+
   return (
-    <div className={cx('absolute inset-0 z-[1000] flex items-end bg-brand-deep/40 backdrop-blur-[2px]', className)} role="dialog" aria-modal="true" aria-label={ariaLabel}>
-      <button type="button" onClick={onClose} className="absolute inset-0" aria-label={`${closeLabel} (${ariaLabel ?? 'dialog'})`} />
-      <section className={cx('relative z-10 w-full overflow-hidden bg-surface', full ? 'min-h-full' : 'max-h-[92%] rounded-t-sheet shadow-sheet')}>
+    <div className={cx(
+      'absolute inset-0 z-[1000] flex bg-brand-deep/40 backdrop-blur-[2px]',
+      resolvedVariant === 'center' ? 'items-center p-page' : 'items-end',
+      className,
+    )} role="dialog" aria-modal="true" aria-label={ariaLabel}>
+      {resolvedVariant !== 'full' && <button type="button" onClick={onClose} className="absolute inset-0" aria-label={`${closeLabel} (${ariaLabel ?? 'dialog'})`} />}
+      <section ref={panelRef} tabIndex={-1} className={cx(
+        'relative z-10 w-full overflow-hidden bg-surface outline-none',
+        resolvedVariant === 'full' && 'h-full min-h-0',
+        resolvedVariant === 'sheet' && 'max-h-[92%] rounded-t-sheet shadow-sheet',
+        resolvedVariant === 'center' && 'mx-auto max-w-sm rounded-card shadow-floating',
+      )}>
         {children}
       </section>
     </div>
