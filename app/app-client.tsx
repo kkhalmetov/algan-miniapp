@@ -1165,7 +1165,7 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
             <h3 className="text-lg font-black">{t('companyName')}</h3>
             <p className="mt-1 font-bold text-ink-secondary">{t('companyId')}</p>
             <div className="mt-5 space-y-4">
-              <div><p className="text-xs font-black text-ink-muted">{t('addressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
+              <div><p className="text-xs font-black text-ink-muted">{t('contactLegalAddressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
               <a href="mailto:algansupport@gmail.com" className="flex items-center gap-3 rounded-control bg-panel p-3 text-brand"><Mail size={18} className="shrink-0" /><span><span className="block text-xs text-ink-muted">{t('emailLabel')}</span><span className="mt-0.5 block font-bold">algansupport@gmail.com</span></span></a>
               <a href="tel:+77059768000" className="flex items-center gap-3 rounded-control bg-panel p-3 text-brand"><Phone size={18} className="shrink-0" /><span><span className="block text-xs text-ink-muted">{t('contactPhoneLabel')}</span><span className="mt-0.5 block font-bold">+7 705 976 80 00</span></span></a>
             </div>

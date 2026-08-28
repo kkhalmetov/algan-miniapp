@@ -95,6 +95,7 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Контакты' }));
     expect(screen.getByText('ИП «ALGAN»')).toBeInTheDocument();
     expect(screen.getByText('ИИН: 030705500040')).toBeInTheDocument();
+    expect(screen.getByText('Юридический адрес')).toBeInTheDocument();
     expect(screen.queryByText('Казахстан, г. Шымкент')).not.toBeInTheDocument();
     expect(screen.getByText(/Аль-Фарабийский район/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /algansupport@gmail.com/ })).toHaveAttribute('href', 'mailto:algansupport@gmail.com');
