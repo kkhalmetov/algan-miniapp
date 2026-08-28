@@ -71,7 +71,7 @@ describe('multi-box cart', () => {
     expect(useAppStore.getState().cartItems).toEqual([]);
   });
 
-  it('keeps the cart after a failed payment and creates the order after retry', async () => {
+  it('keeps the cart after a failed payment and creates the order after returning to checkout', async () => {
     window.history.replaceState({}, '', '/?mockPayment=failed');
     openTatti();
     fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
@@ -84,13 +84,16 @@ describe('multi-box cart', () => {
     const failureDialog = screen.getByRole('dialog', { name: 'Оплата не прошла' });
     expect(within(failureDialog).getByText('Не удалось завершить оплату. Попробуйте ещё раз или вернитесь в корзину.')).toBeInTheDocument();
     expect(within(failureDialog).queryByRole('button', { name: 'Закрыть' })).not.toBeInTheDocument();
+    expect(within(failureDialog).queryByRole('button', { name: 'Повторить оплату' })).not.toBeInTheDocument();
     expect(useAppStore.getState().orders).toEqual([]);
     expect(useAppStore.getState().purchasedBoxQuantities).toEqual({});
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 1 }]);
     expect(window.location.search).toBe('');
 
+    fireEvent.click(within(failureDialog).getByRole('button', { name: 'Вернуться в корзину' }));
+    const cartDialog = screen.getByRole('dialog', { name: 'Корзина' });
     await act(async () => {
-      fireEvent.click(within(failureDialog).getByRole('button', { name: 'Повторить оплату' }));
+      fireEvent.click(within(cartDialog).getByRole('button', { name: /Оформить заказ/ }));
     });
 
     expect(screen.getByText('Заказ оформлен!')).toBeInTheDocument();

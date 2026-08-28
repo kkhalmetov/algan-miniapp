@@ -49,7 +49,7 @@ describe('mock customer catalog', () => {
     expect(kk('orderRulesTitle')).toBe('Тапсырыс беру, төлеу, алу, бас тарту және қайтару ережелері');
     expect(ru('paymentFailedTitle')).toBe('Оплата не прошла');
     expect(kk('paymentFailedTitle')).toBe('Төлем өтпеді');
-    expect(ru('retryPayment')).toBe('Повторить оплату');
-    expect(kk('retryPayment')).toBe('Төлемді қайталау');
+    expect(ru('backToCart')).toBe('Вернуться в корзину');
+    expect(kk('backToCart')).toBe('Себетке оралу');
   });
 });

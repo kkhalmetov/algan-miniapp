@@ -305,8 +305,6 @@ export default function AlganApp() {
       {paymentFailed && (
         <PaymentFailure
           t={t}
-          paymentPending={paymentPending}
-          onRetry={() => void payCart()}
           onBackToCart={() => { setPaymentFailed(false); setCartOpen(true); }}
         />
       )}
@@ -1086,8 +1084,8 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
   );
 }
 
-function PaymentFailure({ t, paymentPending, onRetry, onBackToCart }: {
-  t: Translator; paymentPending: boolean; onRetry: () => void; onBackToCart: () => void;
+function PaymentFailure({ t, onBackToCart }: {
+  t: Translator; onBackToCart: () => void;
 }) {
   return (
     <Overlay onClose={onBackToCart} closeLabel={t('close')} ariaLabel={t('paymentFailedTitle')} full>
@@ -1097,12 +1095,7 @@ function PaymentFailure({ t, paymentPending, onRetry, onBackToCart }: {
         </div>
         <PageTitle className="mt-5">{t('paymentFailedTitle')}</PageTitle>
         <p className="mx-auto mt-3 max-w-[320px] text-sm leading-6 text-ink-secondary">{t('paymentFailedText')}</p>
-        <div className="mt-8 space-y-3">
-          <PrimaryButton onClick={onRetry} disabled={paymentPending}>
-            {paymentPending ? t('paymentProcessing') : t('retryPayment')}
-          </PrimaryButton>
-          <SecondaryButton onClick={onBackToCart} disabled={paymentPending}>{t('backToCart')}</SecondaryButton>
-        </div>
+        <PrimaryButton onClick={onBackToCart} className="mt-8">{t('backToCart')}</PrimaryButton>
       </div>
     </Overlay>
   );
