@@ -30,6 +30,9 @@ export const MINIMUM_SPLASH_MS = 900;
 const TELEGRAM_SYNC_DELAYS_MS = [0, 250, 750, 1500, 3000] as const;
 const SUPPORT_TELEGRAM_URL = 'https://t.me/kkhalmetov';
 type LegalDocument = 'terms' | 'privacy' | 'orderRules' | 'publicOffer';
+type PendingCartReplacement =
+  | { kind: 'openStore'; storeId: string }
+  | { kind: 'changeQuantity'; box: Box; quantity: number };
 const LEGAL_TITLE_KEYS: Record<LegalDocument, CopyKey> = {
   terms: 'termsTitle', privacy: 'privacyTitle', orderRules: 'orderRulesTitle', publicOffer: 'publicOfferTitle',
 };
@@ -59,6 +62,7 @@ export default function AlganApp() {
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [pendingCartReplacement, setPendingCartReplacement] = useState<PendingCartReplacement | null>(null);
   const [successOrder, setSuccessOrder] = useState<Order | null>(null);
   const [editingPhone, setEditingPhone] = useState(false);
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
@@ -143,15 +147,19 @@ export default function AlganApp() {
     });
   };
 
-  const openStore = useCallback((storeId: string) => {
-    if (cartItems.length > 0 && cartStoreId && cartStoreId !== storeId) {
-      if (!window.confirm(t('replaceCartConfirm'))) return;
-      clearCart();
-    }
+  const showStore = useCallback((storeId: string) => {
     haptic('tap');
     setSelectedBox(null);
     setSelectedStoreId(storeId);
-  }, [cartItems.length, cartStoreId, clearCart, t]);
+  }, []);
+
+  const openStore = useCallback((storeId: string) => {
+    if (cartItems.length > 0 && cartStoreId && cartStoreId !== storeId) {
+      setPendingCartReplacement({ kind: 'openStore', storeId });
+      return;
+    }
+    showStore(storeId);
+  }, [cartItems.length, cartStoreId, showStore]);
 
   const openBox = (box: Box) => {
     haptic('tap');
@@ -159,14 +167,30 @@ export default function AlganApp() {
     setSelectedBox(box);
   };
 
-  const changeCartQuantity = (box: Box, nextQuantity: number) => {
-    if (nextQuantity > 0 && cartStoreId && cartStoreId !== box.storeId) {
-      if (!window.confirm(t('replaceCartConfirm'))) return;
-      clearCart();
-    }
+  const applyCartQuantity = (box: Box, nextQuantity: number) => {
     const quantity = Math.min(Math.max(0, nextQuantity), availableQuantity(box, purchasedBoxQuantities));
     setCartItemQuantity(box.id, box.storeId, quantity);
     haptic(quantity > 0 ? 'tap' : 'success');
+  };
+
+  const changeCartQuantity = (box: Box, nextQuantity: number) => {
+    if (nextQuantity > 0 && cartStoreId && cartStoreId !== box.storeId) {
+      setPendingCartReplacement({ kind: 'changeQuantity', box, quantity: nextQuantity });
+      return;
+    }
+    applyCartQuantity(box, nextQuantity);
+  };
+
+  const confirmCartReplacement = () => {
+    if (!pendingCartReplacement) return;
+    const pending = pendingCartReplacement;
+    setPendingCartReplacement(null);
+    clearCart();
+    if (pending.kind === 'openStore') {
+      showStore(pending.storeId);
+      return;
+    }
+    applyCartQuantity(pending.box, pending.quantity);
   };
 
   const payCart = () => {
@@ -266,7 +290,37 @@ export default function AlganApp() {
       {documentsOpen && <DocumentsModal t={t} onClose={() => setDocumentsOpen(false)} />}
       {helpOpen && <HelpModal t={t} onClose={() => setHelpOpen(false)} />}
       {legal && <LegalModal type={legal} t={t} onClose={() => setLegal(null)} />}
+      {pendingCartReplacement && (
+        <CartReplacementDialog
+          t={t}
+          onCancel={() => setPendingCartReplacement(null)}
+          onConfirm={confirmCartReplacement}
+        />
+      )}
     </PhoneShell>
+  );
+}
+
+function CartReplacementDialog({ t, onCancel, onConfirm }: {
+  t: Translator;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="absolute inset-0 z-[1400] grid place-items-center bg-brand-deep/45 p-5 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="Algan">
+      <button type="button" onClick={onCancel} className="absolute inset-0" aria-label={`${t('close')} Algan`} />
+      <section className="relative z-10 w-full max-w-sm rounded-card bg-surface p-5 shadow-sheet">
+        <div className="flex items-start justify-between gap-4">
+          <h2 className="text-xl font-bold text-brand-deep">Algan</h2>
+          <IconButton label={t('close')} onClick={onCancel}><X className="h-5 w-5" /></IconButton>
+        </div>
+        <p className="mt-3 text-sm leading-6 text-muted">{t('replaceCartConfirm')}</p>
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <SecondaryButton onClick={onCancel}>{t('cancel')}</SecondaryButton>
+          <PrimaryButton onClick={onConfirm}>{t('replaceCartAction')}</PrimaryButton>
+        </div>
+      </section>
+    </div>
   );
 }
 
