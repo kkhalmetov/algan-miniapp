@@ -45,6 +45,8 @@ describe('orders tab', () => {
     expect(screen.getByText('Surprise Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 12345678')).toBeInTheDocument();
+    expect(screen.getByText(/Время выдачи:/)).toBeInTheDocument();
+    expect(screen.queryByText(/Забрать:/)).not.toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 12345678').closest('button')).toBeNull();
     fireEvent.click(screen.getByText('Номер заказа: 12345678'));
     expect(screen.queryByTitle('QR-код')).not.toBeInTheDocument();
