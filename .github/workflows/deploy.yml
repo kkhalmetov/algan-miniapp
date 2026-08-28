@@ -44,10 +44,12 @@ jobs:
       - name: Upload release
         env:
           VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_PORT: ${{ vars.VPS_PORT }}
           VPS_USER: ${{ vars.VPS_USER }}
         run: |
           SSH_ARGS=(
             -i ~/.ssh/algan_deploy
+            -p "$VPS_PORT"
             -o BatchMode=yes
             -o IdentitiesOnly=yes
             -o ConnectTimeout=15
