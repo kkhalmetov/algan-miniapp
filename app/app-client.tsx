@@ -456,8 +456,10 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
       <section className="bg-surface px-5 pt-6">
         <div className="space-y-4 pb-6">
           {stores.map((store) => {
-            const box = boxes.find((item) => item.storeId === store.id);
-            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} t={t} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
+            const storeBoxes = boxes.filter((item) => item.storeId === store.id);
+            const box = storeBoxes[0];
+            const isHalal = storeBoxes.length > 0 && storeBoxes.every((item) => item.isHalal);
+            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} isHalal={isHalal} t={t} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
           })}
         </div>
       </section>
@@ -465,7 +467,7 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
   );
 }
 
-function StoreCard({ store, fallbackImage, t, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; t: Translator; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
+function StoreCard({ store, fallbackImage, isHalal, t, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; isHalal: boolean; t: Translator; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
   return (
     <SurfaceCard className="overflow-hidden">
       <CardPressable onClick={onOpen} className="relative h-44 overflow-hidden">
@@ -476,8 +478,11 @@ function StoreCard({ store, fallbackImage, t, favorite, toggleFavorite, onOpen }
       </CardPressable>
       <div className="p-4">
         <div className="flex items-start gap-3">
-          <CardPressable onClick={onOpen} className="min-w-0 flex-1 rounded-control">
-            <h3 className="truncate text-lg font-black tracking-[-0.03em]">{store.name}</h3>
+          <CardPressable onClick={onOpen} className="min-w-0 flex-1 rounded-control" aria-label={`${store.name} ${store.address}`}>
+            <span className="flex min-w-0 items-center gap-2">
+              <h3 className="truncate text-lg font-black tracking-[-0.03em]">{store.name}</h3>
+              {isHalal && <img src="/images/halal-logo.svg" alt={t('halal')} className="h-6 w-6 shrink-0 object-contain" />}
+            </span>
             <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-ink-muted"><MapPin size={14} />{store.address}</p>
           </CardPressable>
           <IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={favorite} tone={favorite ? 'accent' : 'muted'}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></IconButton>
@@ -515,8 +520,10 @@ function FavoritesTab({ t, favoriteStoreIds, toggleFavorite, openStore }: { t: T
       ) : (
         <div className="mt-6 space-y-4">
           {favoriteStores.map((store) => {
-            const box = boxes.find((item) => item.storeId === store.id);
-            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} t={t} favorite toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
+            const storeBoxes = boxes.filter((item) => item.storeId === store.id);
+            const box = storeBoxes[0];
+            const isHalal = storeBoxes.length > 0 && storeBoxes.every((item) => item.isHalal);
+            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} isHalal={isHalal} t={t} favorite toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
           })}
         </div>
       )}

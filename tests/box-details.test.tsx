@@ -55,7 +55,7 @@ describe('store details presentation', () => {
     expect(screen.queryByRole('button', { name: 'Пекарни' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Кофейни' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Магазины' })).not.toBeInTheDocument();
-    expect(screen.queryByAltText('Halal')).not.toBeInTheDocument();
+    expect(screen.getAllByAltText('Halal')).toHaveLength(stores.length);
   });
 
   it('shows venue information and all five Tatti boxes', () => {
