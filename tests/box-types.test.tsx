@@ -66,7 +66,7 @@ describe('box types', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Толығырақ Surprise Tatti-box' }));
 
     const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
-    expect(within(dialog).getByRole('heading', { name: 'Не түсуі мүмкін' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('heading', { name: 'Ішінде не болуы мүмкін' })).toBeInTheDocument();
     expect(within(dialog).getByText('Круассандар, қатпарлы қамыр өнімдері, тоқаштар, багеттер және басқа да пісірмелер.')).toBeInTheDocument();
     expect(within(dialog).getByText('Нақты жиынтық алдын ала белгісіз және оны мекеме тапсырысты алатын күні қалыптастырады.')).toBeInTheDocument();
     expect(within(dialog).getByText('SURPRISE')).toBeInTheDocument();

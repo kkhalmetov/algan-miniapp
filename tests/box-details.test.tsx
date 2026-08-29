@@ -89,7 +89,7 @@ describe('store details presentation', () => {
     const scroll = within(dialog).getByTestId('box-details-scroll');
     expect(within(dialog).queryByTestId('box-details-cover')).not.toBeInTheDocument();
     expect(within(scroll).getByText('SURPRISE')).toBeInTheDocument();
-    expect(within(scroll).getByRole('heading', { name: 'Что может попасться' })).toBeInTheDocument();
+    expect(within(scroll).getByRole('heading', { name: 'Что может быть внутри' })).toBeInTheDocument();
     expect(within(scroll).getByText('Круассаны, слойки, булочки, багеты и другая выпечка.')).toBeInTheDocument();
     const surpriseNotice = within(scroll).getByTestId('surprise-composition-notice');
     expect(within(surpriseNotice).getByRole('heading', { name: 'Состав — сюрприз' })).toBeInTheDocument();
