@@ -70,7 +70,7 @@ export const useAppStore = create<AppState>()(
       hydrated: false,
       onboardingDone: false,
       profile: { firstName: '' },
-      locale: 'ru',
+      locale: 'kk',
       tab: 'home',
       favoriteStoreIds: [],
       orders: [],

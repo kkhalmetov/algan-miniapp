@@ -71,8 +71,6 @@ export default function AlganApp() {
   const paymentPendingRef = useRef(false);
   const [editingPhone, setEditingPhone] = useState(false);
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
-  const onboardingLocaleInitialized = useRef(false);
-  const onboardingLocaleChosenManually = useRef(false);
 
   useEffect(() => {
     const splashTimer = window.setTimeout(() => setMinimumSplashElapsed(true), MINIMUM_SPLASH_MS);
@@ -82,25 +80,14 @@ export default function AlganApp() {
   const syncFromTelegram = useCallback(() => {
     prepareTelegram();
     const tgProfile = telegramProfile();
-    if (!tgProfile.isTelegram) return;
-    if (onboardingDone) {
-      syncTelegramProfile({
-        telegramId: tgProfile.telegramId,
-        firstName: tgProfile.firstName,
-        lastName: tgProfile.lastName || undefined,
-        photoUrl: tgProfile.photoUrl || undefined,
-      });
-    } else if (!onboardingLocaleInitialized.current && !onboardingLocaleChosenManually.current) {
-      onboardingLocaleInitialized.current = true;
-      setLocale(tgProfile.locale);
-    }
-  }, [onboardingDone, setLocale, syncTelegramProfile]);
-
-  const setOnboardingLocale = useCallback((nextLocale: Locale) => {
-    onboardingLocaleChosenManually.current = true;
-    onboardingLocaleInitialized.current = true;
-    setLocale(nextLocale);
-  }, [setLocale]);
+    if (!tgProfile.isTelegram || !onboardingDone) return;
+    syncTelegramProfile({
+      telegramId: tgProfile.telegramId,
+      firstName: tgProfile.firstName,
+      lastName: tgProfile.lastName || undefined,
+      photoUrl: tgProfile.photoUrl || undefined,
+    });
+  }, [onboardingDone, syncTelegramProfile]);
 
   useEffect(() => {
     const retryTimers = new Set<number>();
@@ -251,7 +238,7 @@ export default function AlganApp() {
     return (
       <PhoneShell>
         <Onboarding
-          t={t} locale={locale} setLocale={setOnboardingLocale}
+          t={t} locale={locale} setLocale={setLocale}
           phone={phone} setPhone={setPhone}
           openLegal={setLegal} onContinue={finishOnboarding}
         />

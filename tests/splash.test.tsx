@@ -99,6 +99,30 @@ describe('startup splash', () => {
     act(() => vi.advanceTimersByTime(TELEGRAM_RETRY_WINDOW_MS));
     expect(useAppStore.getState().locale).toBe('kk');
   });
+
+  it('does not replace the default Kazakh language with the Telegram account language', () => {
+    useAppStore.setState({ locale: 'kk' });
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed-data',
+        initDataUnsafe: {
+          user: {
+            id: 123456,
+            first_name: 'Kimal',
+            language_code: 'ru',
+          },
+        },
+        ready: () => undefined,
+        expand: () => undefined,
+      },
+    };
+
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS + TELEGRAM_RETRY_WINDOW_MS));
+
+    expect(useAppStore.getState().locale).toBe('kk');
+    expect(screen.getByRole('button', { name: /Жалғастыру/i })).toBeInTheDocument();
+  });
 });
 
 const TELEGRAM_RETRY_WINDOW_MS = 2500;

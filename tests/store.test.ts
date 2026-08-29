@@ -17,6 +17,10 @@ describe('local MVP state', () => {
     });
   });
 
+  it('uses Kazakh as the default language for a new user', () => {
+    expect(useAppStore.getInitialState().locale).toBe('kk');
+  });
+
   it('completes onboarding and saves an optional profile', () => {
     useAppStore.getState().completeOnboarding({ firstName: 'Алия' });
     expect(useAppStore.getState().onboardingDone).toBe(true);
