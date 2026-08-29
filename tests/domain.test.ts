@@ -25,6 +25,10 @@ describe('mock customer catalog', () => {
   it('provides matching Russian and Kazakh copy', () => {
     const ru = getCopy('ru');
     const kk = getCopy('kk');
+    expect(ru('slogan')).toBe('Выгодные предложения рядом');
+    expect(ru('hero')).toBe('Выбирайте боксы от любимых заведений по приятным ценам.');
+    expect(kk('slogan')).toBe('Тиімді ұсыныстар жаныңызда');
+    expect(kk('hero')).toBe('Сүйікті мекемелеріңізден бокстарды тиімді бағамен таңдаңыз.');
     expect(ru('continue')).toBe('Продолжить');
     expect(kk('continue')).toBe('Жалғастыру');
     expect(ru('onboardingConsentLink')).toBe('согласие на сбор и обработку персональных данных');
