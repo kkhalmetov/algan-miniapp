@@ -3,7 +3,7 @@
 
 import {
   AlertTriangle, Building2, Check, ChevronRight, CircleHelp, Clock3, FileCheck2, Heart, Home, Info, Languages, Mail, Map as MapIcon,
-  MapPin, Package, PackageCheck, Phone, QrCode, Route, ShoppingBag, Sparkles, X,
+  MapPin, Package, PackageCheck, Phone, QrCode, Route, Settings2, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -69,6 +69,7 @@ export default function AlganApp() {
   const [paymentFailed, setPaymentFailed] = useState(false);
   const [paymentPending, setPaymentPending] = useState(false);
   const paymentPendingRef = useRef(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [editingPhone, setEditingPhone] = useState(false);
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
 
@@ -262,10 +263,11 @@ export default function AlganApp() {
           )}
           {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} />}
           {tab === 'profile' && (
-            <ProfileTab t={t} locale={locale} setLocale={setLocale} profile={profile}
+            <ProfileTab t={t} profile={profile}
+              openSettings={() => setSettingsOpen(true)}
               openHelp={() => setHelpOpen(true)}
               openDocuments={() => setDocumentsOpen(true)}
-              resetDemo={resetDemo} onEditPhone={() => setEditingPhone(true)} />
+              resetDemo={resetDemo} />
           )}
         </main>
         <BottomNav tab={tab} setTab={setTab} t={t} />
@@ -297,6 +299,10 @@ export default function AlganApp() {
       )}
       {successOrder && (
         <Success order={successOrder} t={t} onDone={() => { setSuccessOrder(null); setTab('orders'); }} />
+      )}
+      {settingsOpen && (
+        <SettingsModal t={t} locale={locale} setLocale={setLocale} phone={profile.phone}
+          onEditPhone={() => setEditingPhone(true)} onClose={() => setSettingsOpen(false)} />
       )}
       {editingPhone && (
         <PhoneEditor currentPhone={profile.phone} t={t} onClose={() => setEditingPhone(false)} onSave={(value) => {
@@ -694,9 +700,9 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
   );
 }
 
-function ProfileTab({ t, locale, setLocale, profile, openHelp, openDocuments, resetDemo, onEditPhone }: {
-  t: Translator; locale: Locale; setLocale: (locale: Locale) => void; profile: UserProfile;
-  openHelp: () => void; openDocuments: () => void; resetDemo: () => void; onEditPhone: () => void;
+function ProfileTab({ t, profile, openSettings, openHelp, openDocuments, resetDemo }: {
+  t: Translator; profile: UserProfile; openSettings: () => void;
+  openHelp: () => void; openDocuments: () => void; resetDemo: () => void;
 }) {
   const telegramUsername = telegramProfile().username.trim().replace(/^@/, '');
   return (
@@ -710,8 +716,7 @@ function ProfileTab({ t, locale, setLocale, profile, openHelp, openDocuments, re
 
       <div className="bg-surface px-5 pt-6">
         <div className="space-y-2">
-          <ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={profile.phone ? formatKazakhstanPhoneInput(profile.phone) : undefined} onClick={onEditPhone} />
-          <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
+          <ProfileRow icon={<Settings2 size={18} />} label={t('settings')} onClick={openSettings} />
           <ProfileRow icon={<CircleHelp size={18} />} label={t('support')} onClick={openHelp} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
         </div>
@@ -750,7 +755,7 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
   const normalizedPhone = normalizeKazakhstanPhone(value);
 
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('changePhone')}>
+    <DialogLayer className="z-[1200]" onClose={onClose} closeLabel={t('close')} ariaLabel={t('changePhone')}>
       <ModalBody>
         <form onSubmit={(event) => {
           event.preventDefault();
@@ -798,6 +803,23 @@ function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t
         />
       ))}
     </BottomNavigation>
+  );
+}
+
+function SettingsModal({ t, locale, setLocale, phone, onEditPhone, onClose }: {
+  t: Translator; locale: Locale; setLocale: (locale: Locale) => void; phone?: string;
+  onEditPhone: () => void; onClose: () => void;
+}) {
+  return (
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('settings')}>
+      <ModalBody>
+        <ModalHeader title={t('settings')} onClose={onClose} closeLabel={t('close')} />
+        <div className="mt-5 space-y-2">
+          <ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={phone ? formatKazakhstanPhoneInput(phone) : undefined} onClick={onEditPhone} />
+          <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
+        </div>
+      </ModalBody>
+    </DialogLayer>
   );
 }
 

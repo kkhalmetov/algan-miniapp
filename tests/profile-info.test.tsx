@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlganApp, { MINIMUM_SPLASH_MS } from '../app/app-client';
 import { useAppStore } from '../lib/store';
@@ -86,10 +86,10 @@ describe('profile information sections', () => {
   it('opens help and FAQ answers without company details', () => {
     openProfile();
 
-    const language = screen.getByRole('button', { name: /Язык/ });
+    const settings = screen.getByRole('button', { name: 'Настройки' });
     const support = screen.getByRole('button', { name: 'Помощь и поддержка' });
     const legal = screen.getByRole('button', { name: 'Правовая информация' });
-    expect(language.compareDocumentPosition(support) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(settings.compareDocumentPosition(support) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(support.compareDocumentPosition(legal) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     fireEvent.click(support);
@@ -107,6 +107,24 @@ describe('profile information sections', () => {
     expect(screen.getByText(/После оплаты заказ появится/)).toBeInTheDocument();
     fireEvent.click(question);
     expect(screen.queryByText(/После оплаты заказ появится/)).not.toBeInTheDocument();
+  });
+
+  it('groups phone and language controls under settings', () => {
+    openProfile();
+
+    expect(screen.queryByRole('button', { name: /Номер телефона/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Язык/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Настройки' }));
+
+    expect(screen.getByRole('heading', { name: 'Настройки' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Номер телефона.*\+7 705 976 80 00/ }));
+    const phoneDialog = screen.getByRole('dialog', { name: 'Сменить номер телефона' });
+    expect(within(phoneDialog).getByDisplayValue('+7 705 976 80 00')).toBeInTheDocument();
+    fireEvent.click(within(phoneDialog).getByRole('button', { name: 'Закрыть' }));
+    expect(screen.getByRole('heading', { name: 'Настройки' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Язык.*Русский/ }));
+    expect(screen.getByRole('heading', { name: 'Баптаулар' })).toBeInTheDocument();
+    expect(useAppStore.getState().locale).toBe('kk');
   });
 
   it('shows localized help content in Kazakh', () => {

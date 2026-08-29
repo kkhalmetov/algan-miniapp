@@ -40,6 +40,8 @@ describe('mock customer catalog', () => {
     expect(kk('legal')).toBe('Құқықтық ақпарат');
     expect(ru('support')).toBe('Помощь и поддержка');
     expect(kk('support')).toBe('Көмек және қолдау');
+    expect(ru('settings')).toBe('Настройки');
+    expect(kk('settings')).toBe('Баптаулар');
     expect(ru('contacts')).toBe('Реквизиты и контакты');
     expect(kk('contacts')).toBe('Деректемелер және байланыс');
     expect(ru('workingHours')).toBe('Ежедневно с 09:00 до 21:00');
