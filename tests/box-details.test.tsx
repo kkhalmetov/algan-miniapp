@@ -89,7 +89,12 @@ describe('store details presentation', () => {
     const scroll = within(dialog).getByTestId('box-details-scroll');
     expect(within(dialog).queryByTestId('box-details-cover')).not.toBeInTheDocument();
     expect(within(scroll).getByText('SURPRISE')).toBeInTheDocument();
-    expect(within(scroll).getByText('Точный состав этого бокса заранее неизвестен — содержимое станет сюрпризом.')).toBeInTheDocument();
+    expect(within(scroll).getByRole('heading', { name: 'Что может попасться' })).toBeInTheDocument();
+    expect(within(scroll).getByText('Круассаны, слойки, булочки, багеты и другая выпечка.')).toBeInTheDocument();
+    const surpriseNotice = within(scroll).getByTestId('surprise-composition-notice');
+    expect(within(surpriseNotice).getByRole('heading', { name: 'Состав — сюрприз' })).toBeInTheDocument();
+    expect(within(surpriseNotice).getByText('Точный набор заранее неизвестен и формируется заведением в день получения.')).toBeInTheDocument();
+    expect(surpriseNotice).not.toHaveTextContent(/остат/i);
     expect(within(scroll).getByTestId('box-stock')).toHaveTextContent('Осталось 4 бокса');
     expect(within(within(scroll).getByTestId('box-price-card')).getByText('−60%')).toBeInTheDocument();
     expect(within(scroll).queryByText('19:30–20:30')).not.toBeInTheDocument();

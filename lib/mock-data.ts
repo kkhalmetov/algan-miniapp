@@ -11,7 +11,7 @@ export const stores: Store[] = [
 export const boxes: Box[] = [
   {
     id: 'bakery-surprise', storeId: 'tatti', type: 'SURPRISE', name: 'Surprise Tatti-box',
-    description: 'Свежая выпечка дня: круассаны, слойки и хлеб. Точный состав станет сюрпризом.',
+    description: 'В набор могут попасться круассаны, слойки, булочки, багеты и другая выпечка.',
     originalPrice: 6200, salePrice: 2490, quantity: 4, pickupFrom: '19:30', pickupTo: '20:30',
     image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 0.8,
   },
@@ -50,7 +50,7 @@ export const boxes: Box[] = [
   },
   {
     id: 'tatti-evening-surprise', storeId: 'tatti', type: 'SURPRISE', name: 'Вечерний Surprise Tatti-box',
-    description: 'Нераспроданная выпечка дня с неизвестным заранее составом.',
+    description: 'В набор могут попасться круассаны, слойки, хлеб, булочки и другая выпечка.',
     originalPrice: 5800, salePrice: 2290, quantity: 2, pickupFrom: '20:00', pickupTo: '21:00',
     image: '/images/bakery.jpg', allergens: 'Глютен, молоко, яйца', isHalal: true, distanceKm: 0.8,
   },

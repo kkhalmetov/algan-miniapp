@@ -944,18 +944,32 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
               </div>
             </div>
           </div>
-          <SectionTitle className="mt-6">{t('composition')}</SectionTitle>
           {box.type === 'SURPRISE' ? (
-            <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprise')}</p>
+            <>
+              <SectionTitle className="mt-6">{t('surprisePossibleTitle')}</SectionTitle>
+              <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprisePossibleContents')}</p>
+              <div data-testid="surprise-composition-notice" className="mt-4 rounded-control border border-brand/15 bg-brand-pale p-4">
+                <div className="flex items-start gap-3">
+                  <IconBadge tone="soft"><Sparkles size={18} /></IconBadge>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-black text-brand">{t('surpriseNoticeTitle')}</h3>
+                    <p className="mt-1.5 text-sm leading-5 text-ink-secondary">{t('surprise')}</p>
+                  </div>
+                </div>
+              </div>
+            </>
           ) : (
-            <ul className="mt-3 space-y-2" data-testid="box-contents">
-              {box.contents?.map((item) => (
-                <li key={item.contentName} className="flex items-center justify-between gap-4 rounded-control bg-surface-soft px-4 py-3 text-sm">
-                  <span className="font-bold text-ink">{item.contentName}</span>
-                  <span className="shrink-0 font-black text-brand">× {item.quantity}</span>
-                </li>
-              ))}
-            </ul>
+            <>
+              <SectionTitle className="mt-6">{t('composition')}</SectionTitle>
+              <ul className="mt-3 space-y-2" data-testid="box-contents">
+                {box.contents?.map((item) => (
+                  <li key={item.contentName} className="flex items-center justify-between gap-4 rounded-control bg-surface-soft px-4 py-3 text-sm">
+                    <span className="font-bold text-ink">{item.contentName}</span>
+                    <span className="shrink-0 font-black text-brand">× {item.quantity}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
           <div className="mt-4 rounded-control border border-allergen-border bg-allergen-surface p-4">
             <div className="flex items-start gap-3">
