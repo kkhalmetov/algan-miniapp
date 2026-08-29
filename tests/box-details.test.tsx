@@ -69,6 +69,7 @@ describe('store details presentation', () => {
     expect(within(header).getByRole('button', { name: 'Избранное' })).toHaveAttribute('aria-pressed', 'false');
     expect(within(scroll).getByAltText('Tatti Bakery logo')).toHaveAttribute('src', stores[0]!.logo);
     expect(within(cover).queryByAltText('Halal')).not.toBeInTheDocument();
+    expect(within(scroll).getByAltText('Halal')).toHaveAttribute('src', '/images/halal-logo.svg');
     expect(within(scroll).queryByText('Доступные боксы')).not.toBeInTheDocument();
     expect(within(scroll).getAllByRole('button', { name: /^Подробнее / })).toHaveLength(5);
     expect(within(scroll).getAllByText('SURPRISE')).toHaveLength(2);

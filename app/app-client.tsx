@@ -808,6 +808,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
   onOpenCart: () => void; onClose: () => void;
 }) {
   const storeBoxes = boxes.filter((box) => box.storeId === store.id);
+  const isHalal = storeBoxes.length > 0 && storeBoxes.every((box) => box.isHalal);
   const fallbackImage = storeBoxes[0]?.image ?? '/images/bakery.jpg';
   const pickupFrom = storeBoxes.map((box) => box.pickupFrom).sort()[0];
   const pickupTo = storeBoxes.map((box) => box.pickupTo).sort().at(-1);
@@ -838,7 +839,10 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
           </span>
         </div>
         <div className="px-6 pb-6 pt-11">
-          <PageTitle>{store.name}</PageTitle>
+          <div className="flex min-w-0 items-center gap-3">
+            <PageTitle className="min-w-0 truncate">{store.name}</PageTitle>
+            {isHalal && <img src="/images/halal-logo.svg" alt={t('halal')} className="h-8 w-8 shrink-0 object-contain" />}
+          </div>
           <SurfaceCard className="mt-5 p-4">
             <div className="flex items-start gap-3">
               <IconBadge><MapPin size={19} /></IconBadge>
