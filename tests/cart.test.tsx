@@ -82,7 +82,7 @@ describe('multi-box cart', () => {
     });
 
     const failureDialog = screen.getByRole('dialog', { name: 'Оплата не прошла' });
-    expect(within(failureDialog).getByText('Не удалось завершить оплату. Попробуйте ещё раз или вернитесь в корзину.')).toBeInTheDocument();
+    expect(within(failureDialog).getByText('Не удалось завершить оплату. Попробуйте ещё раз.')).toBeInTheDocument();
     expect(within(failureDialog).queryByRole('button', { name: 'Закрыть' })).not.toBeInTheDocument();
     expect(within(failureDialog).queryByRole('button', { name: 'Повторить оплату' })).not.toBeInTheDocument();
     expect(useAppStore.getState().orders).toEqual([]);
