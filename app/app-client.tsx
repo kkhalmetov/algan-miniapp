@@ -1157,13 +1157,6 @@ function CompanyContacts({ t }: { t: Translator }) {
       <p className="mt-1 font-bold text-ink-secondary">{t('companyId')}</p>
       <div className="mt-5 space-y-4">
         <div><p className="text-xs font-black text-ink-muted">{t('contactLegalAddressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
-        <div className="flex items-center gap-3 rounded-control border border-border bg-panel p-4">
-          <IconBadge tone="soft"><Clock3 size={18} /></IconBadge>
-          <div className="min-w-0 flex-1">
-            <p className="font-black">{t('workingHoursLabel')}</p>
-            <p className="mt-0.5 text-xs text-ink-muted">{t('workingHours')}</p>
-          </div>
-        </div>
         <LinkRow tone="panel" href="mailto:algansupport@gmail.com" icon={<Mail size={18} />} title={t('emailLabel')} subtitle="algansupport@gmail.com" />
         <LinkRow tone="panel" href="tel:+77059768000" icon={<Phone size={18} />} title={t('contactPhoneLabel')} subtitle="+7 705 976 80 00" />
       </div>
@@ -1199,7 +1192,7 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
         {view === 'menu' && (
           <div className="mt-2 space-y-2">
             <ProfileRow icon={<CircleHelp size={18} />} label={t('faq')} onClick={() => setView('faq')} />
-            <ProfileRow icon={<TelegramIcon />} label={t('contactSupport')} onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
+            <ProfileRow icon={<TelegramIcon />} label={t('contactSupport')} value={t('workingHours')} onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
           </div>
         )}
 

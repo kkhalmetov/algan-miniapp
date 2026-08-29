@@ -64,10 +64,9 @@ describe('profile information sections', () => {
     expect(screen.getByRole('heading', { name: 'Реквизиты и контакты' })).toBeInTheDocument();
     expect(screen.getByText('ИП «ALGAN»')).toBeInTheDocument();
     expect(screen.getByText('ИИН: 030705500040')).toBeInTheDocument();
-    expect(screen.getByText('Юридический адрес')).toBeInTheDocument();
+    expect(screen.getByText('Адрес')).toBeInTheDocument();
     expect(screen.getByText(/Аль-Фарабийский район/)).toBeInTheDocument();
-    expect(screen.getByText('График работы')).toBeInTheDocument();
-    expect(screen.getByText('Ежедневно с 09:00 до 21:00')).toBeInTheDocument();
+    expect(screen.queryByText('Ежедневно с 09:00 до 21:00')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /algansupport@gmail.com/ })).toHaveAttribute('href', 'mailto:algansupport@gmail.com');
     expect(screen.getByRole('link', { name: /\+7 705 976 80 00/ })).toHaveAttribute('href', 'tel:+77059768000');
     fireEvent.click(screen.getAllByRole('button', { name: 'Назад' })[0]!);
@@ -96,7 +95,7 @@ describe('profile information sections', () => {
     fireEvent.click(support);
     expect(screen.getByRole('heading', { name: 'Помощь и поддержка' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'FAQ' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Связаться с поддержкой' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Связаться с поддержкой.*Ежедневно с 09:00 до 21:00/ })).toBeInTheDocument();
     expect(screen.queryByText('@kkhalmetov')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Реквизиты и контакты' })).not.toBeInTheDocument();
 
