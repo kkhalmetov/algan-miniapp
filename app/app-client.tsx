@@ -1018,12 +1018,12 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
             <StatusBadge data-testid="box-stock" tone={available > 0 ? 'accent' : 'danger'} size="lg" icon={<Package size={15} />}>{formatBoxesLeft(available, locale)}</StatusBadge>
           </div>
           <div className="mt-4">
-            <InsetSurface data-testid="box-price-card" tone="brand" className="p-4">
+            <InsetSurface data-testid="box-price-card" tone="brand" className="px-4 py-3">
               <p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p>
-              <p className="mt-2 text-[25px] font-black tracking-[-0.04em] text-brand">{formatPrice(box.salePrice)}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <p className="mr-auto text-[25px] font-black leading-none tracking-[-0.04em] text-brand">{formatPrice(box.salePrice)}</p>
                 <span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
-                <StatusBadge tone="accentSolid">−{discount}%</StatusBadge>
+                <StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge>
               </div>
             </InsetSurface>
           </div>
