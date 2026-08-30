@@ -76,7 +76,7 @@ describe('store details presentation', () => {
     expect(within(scroll).getByText('пр. Тауке хана, 47')).toBeInTheDocument();
     expect(within(scroll).queryByTestId('store-pickup-time')).not.toBeInTheDocument();
     expect(within(scroll).getByAltText('Surprise Tatti-box')).toHaveAttribute('src', '/images/bakery.jpg');
-    expect(within(scroll).getByText('Время выдачи: 19:30–20:30')).toBeInTheDocument();
+    expect(within(scroll).getByText('Время выдачи: 19:30–20:30')).toHaveClass('whitespace-nowrap');
     expect(within(scroll).getByText('Время выдачи: 18:30–19:30')).toBeInTheDocument();
     const appearanceNotice = within(scroll).getByTestId('store-appearance-notice');
     expect(within(appearanceNotice).getByRole('heading', { name: 'Внешний вид может отличаться' })).toBeInTheDocument();

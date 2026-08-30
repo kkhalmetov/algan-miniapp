@@ -969,17 +969,17 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
-      <CardPressable onClick={onOpen} className="flex items-stretch gap-3 p-3" aria-label={`${t('details')} ${box.name}`}>
+      <CardPressable onClick={onOpen} className="relative flex items-stretch gap-3 p-3" aria-label={`${t('details')} ${box.name}`}>
         <img src={box.image} alt={box.name} className="h-28 w-24 shrink-0 rounded-media object-cover" />
         <span className="min-w-0 flex-1">
-          <span className="flex flex-wrap items-center gap-2">
+          <span className="flex flex-wrap items-center gap-2 pr-10">
             <span className="text-base font-black leading-5">{box.name}</span>
             {box.type === 'SURPRISE' && <SurpriseBadge compact />}
           </span>
           <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />} className="mt-2">{formatBoxesLeft(available, locale)}</StatusBadge>
-          <span className="mt-2 flex items-center gap-1.5 text-xs font-bold text-ink-secondary">
+          <span className="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-[-0.02em] text-ink-secondary">
             <Clock3 size={14} className="shrink-0 text-brand" />
-            <span>{t('pickupTime')}: {box.pickupFrom}–{box.pickupTo}</span>
+            <span className="whitespace-nowrap">{t('pickupTime')}: {box.pickupFrom}–{box.pickupTo}</span>
           </span>
           <span className="mt-2 flex flex-wrap items-center gap-2">
             <b className="text-base text-brand">{formatPrice(box.salePrice)}</b>
@@ -987,7 +987,7 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
             <StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge>
           </span>
         </span>
-        <DisclosureIndicator />
+        <DisclosureIndicator className="absolute right-3 top-3" />
       </CardPressable>
       {(available > 0 || cartQuantity > 0) && (
         <div className="border-t border-border px-3 py-3">
