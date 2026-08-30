@@ -70,5 +70,5 @@ export default function LocationMap({ lat, lng, stores = [], interactiveMarker =
     };
   }, [interactiveMarker, lat, lng, onChange, onSelectStore, stores]);
 
-  return <div ref={containerRef} className={`z-0 ${className}`} aria-label="OpenStreetMap" />;
+  return <div ref={containerRef} className={`z-0 ${className}`} role="region" aria-label="OpenStreetMap" />;
 }

@@ -27,12 +27,12 @@ describe('startup splash', () => {
   it('stays visible for at least 900 milliseconds', () => {
     render(<AlganApp />);
 
-    expect(screen.getByLabelText('Algan загружается')).toBeInTheDocument();
+    expect(screen.getByLabelText('Algan — Загрузка')).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS - 1));
-    expect(screen.getByLabelText('Algan загружается')).toBeInTheDocument();
+    expect(screen.getByLabelText('Algan — Загрузка')).toBeInTheDocument();
 
     act(() => vi.advanceTimersByTime(1));
-    expect(screen.queryByLabelText('Algan загружается')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Algan — Загрузка')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Продолжить/i })).toBeInTheDocument();
   });
 
@@ -41,10 +41,10 @@ describe('startup splash', () => {
     render(<AlganApp />);
 
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
-    expect(screen.getByLabelText('Algan загружается')).toBeInTheDocument();
+    expect(screen.getByLabelText('Algan — Загрузка')).toBeInTheDocument();
 
     act(() => useAppStore.setState({ hydrated: true }));
-    expect(screen.queryByLabelText('Algan загружается')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Algan — Загрузка')).not.toBeInTheDocument();
   });
 
   it('syncs a Telegram avatar when user data becomes available on a retry', () => {

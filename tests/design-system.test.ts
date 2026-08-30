@@ -39,6 +39,9 @@ describe('Algan design system', () => {
       '--text-section-title',
       '--shadow-card',
       '--shadow-floating',
+      '--motion-fast',
+      '--motion-medium',
+      '--ease-standard',
     ];
 
     for (const token of requiredTokens) expect(css).toContain(token);
@@ -78,7 +81,21 @@ describe('Algan design system', () => {
     expect(app).not.toContain('grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-pale');
     expect(app).not.toContain('shrink-0 bg-brand px-4 pb-3');
     expect(app).not.toContain('px-7');
+    expect(app).not.toContain('window.confirm');
+    expect(app).not.toContain('description=""');
     expect(app).not.toContain('role="dialog"');
+  });
+
+  it('uses the primary Kazakh document language and keeps it synchronized at runtime', () => {
+    const layout = readFileSync(resolve(root, 'app/layout.tsx'), 'utf8');
+    const app = readFileSync(resolve(root, 'app/app-client.tsx'), 'utf8');
+    const map = readFileSync(resolve(root, 'components/location-map.tsx'), 'utf8');
+
+    expect(layout).toContain('<html lang="kk">');
+    expect(app).toContain('document.documentElement.lang = locale');
+    expect(app).toContain('aria-busy={paymentPending}');
+    expect(map).toContain('role="region"');
+    expect(layout).not.toContain('спасаем еду');
   });
 
   it('keeps runtime platform colors aligned with CSS tokens', () => {

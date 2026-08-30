@@ -14,6 +14,7 @@ Algan uses a warm, friendly food-rescue visual language: deep green for trust, c
 - Layout: `page` (20 px) and `page-wide` (24 px) horizontal gutters; safe-area additions remain explicit because they are supplied by Telegram/the operating system.
 - Typography: `display`, `page-title`, and `section-title` encode size, weight, line height, and tracking as a unit.
 - Elevation: `shadow-card`, `shadow-floating`, `shadow-shell`, `shadow-action`, `shadow-sheet`, `shadow-marker`, `shadow-control`.
+- Motion: `motion-fast`, `motion-medium`, `ease-standard`; sheets, centered dialogs and full-screen layers use these shared timings.
 
 Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Components must use semantic utilities such as `bg-brand`, `text-ink-muted`, `border-border`, and `rounded-card`; new raw hex values are not allowed in application markup.
 
@@ -31,6 +32,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - `TextField`: shared label, required marker, border, focus ring and placeholder treatment.
 - `ModalBody`, `ModalHeader` and `SheetHandle`: consistent safe-area spacing, navigation, close controls and sheet affordance.
 - `DialogLayer`: shared modal backdrop, dismissal target, elevation and full-screen/sheet/center modes.
+- `ConfirmationDialog`: one confirmation pattern for ordinary and destructive actions; native browser confirmation windows are not used.
 - `AccordionItem`: shared disclosure row for FAQ and future expandable content.
 - `BottomNavigation` and `BottomNavigationItem`: canonical application navigation, active pill and label treatment.
 - `FullScreenFeedback`: canonical success/error layout for transactional outcomes.
@@ -78,6 +80,9 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - Keep touch targets at least 44 px and provide accessible labels for icon-only controls.
 - Product photography and partner logos keep their original colors; design tokens control their containers.
 - Use native button, link and input semantics. Selected controls expose `aria-pressed` or `aria-current`; modal surfaces expose dialog semantics.
+- Dialogs lock background scrolling, keep keyboard focus inside the active layer, close with Escape and restore prior focus.
+- Loading controls expose `aria-busy`; empty states omit unused supporting text instead of rendering blank layout space.
+- The document language follows the selected RU/KK locale, with Kazakh as the initial language.
 - Motion respects `prefers-reduced-motion`.
 
 ## Governance
@@ -89,4 +94,4 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 
 ## Audit status
 
-The interface audit covers onboarding, home, map markers, favorites, orders, profile, settings, legal/help flows, store details, box details, cart and payment feedback. Screen gutters now use only the documented 20/24 px values; repeated information, notice, media, disclosure and compact-header patterns are routed through the UI kit. Modal layers share focus restoration, background scroll locking, Escape dismissal, safe-area spacing and one elevation model.
+The interface audit covers onboarding, home, map markers, favorites, orders, profile, settings, legal/help flows, store details, box details, cart and payment feedback. Screen gutters now use only the documented 20/24 px values; repeated information, notice, media, disclosure, confirmation and compact-header patterns are routed through the UI kit. Modal layers share focus containment and restoration, background scroll locking, Escape dismissal, safe-area spacing, motion and one elevation model. The detailed discrepancy register lives in `UX_AUDIT.md`.

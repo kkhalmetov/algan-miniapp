@@ -1,7 +1,7 @@
 'use client';
 
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { ArrowLeft, ChevronDown, Minus, Plus, X } from 'lucide-react';
 
 export function cx(...classes: Array<string | false | null | undefined>) {
@@ -455,13 +455,15 @@ export function AccordionItem({ title, expanded, onToggle, children }: {
   onToggle: () => void;
   children: ReactNode;
 }) {
+  const buttonId = useId();
+  const contentId = useId();
   return (
     <div className="overflow-hidden rounded-control bg-surface-soft">
-      <button type="button" aria-expanded={expanded} onClick={onToggle} className="flex min-h-14 w-full items-center gap-3 p-4 text-left transition focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover">
+      <button id={buttonId} type="button" aria-expanded={expanded} aria-controls={contentId} onClick={onToggle} className="flex min-h-14 w-full items-center gap-3 p-4 text-left transition focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover">
         <span className="min-w-0 flex-1 text-sm font-black leading-5">{title}</span>
         <ChevronDown size={18} className={cx('shrink-0 text-ink-subtle transition', expanded && 'rotate-180')} />
       </button>
-      {expanded && <div className="px-4 pb-4 text-sm leading-6 text-ink-secondary">{children}</div>}
+      {expanded && <div id={contentId} role="region" aria-labelledby={buttonId} className="px-4 pb-4 text-sm leading-6 text-ink-secondary">{children}</div>}
     </div>
   );
 }
@@ -480,11 +482,11 @@ export function QuantityControl({ quantity, max, label, addLabel, addText, onCha
   }
 
   return (
-    <div className="flex min-h-12 items-center justify-between rounded-control bg-brand-soft px-1.5">
+    <div className="flex min-h-12 items-center justify-between rounded-control bg-brand-soft px-1.5" role="group" aria-label={label}>
       <button type="button" onClick={() => onChange(quantity - 1)} aria-label={`${label} −`} className="grid h-11 w-11 shrink-0 place-items-center">
         <span className="grid h-8 w-8 place-items-center rounded-full bg-surface-muted text-ink transition active:scale-95"><Minus size={16} /></span>
       </button>
-      <span className="text-base font-black text-brand">{quantity}</span>
+      <span className="text-base font-black text-brand" aria-live="polite" aria-atomic="true">{quantity}</span>
       <button type="button" onClick={() => onChange(quantity + 1)} aria-label={`${label} +`} disabled={quantity >= max} className="grid h-11 w-11 shrink-0 place-items-center disabled:opacity-45">
         <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-white transition active:scale-95"><Plus size={16} /></span>
       </button>
@@ -495,7 +497,7 @@ export function QuantityControl({ quantity, max, label, addLabel, addText, onCha
 export function EmptyState({ icon, title, description, tone = 'brand' }: {
   icon: ReactNode;
   title: ReactNode;
-  description: ReactNode;
+  description?: ReactNode;
   tone?: 'brand' | 'accent';
 }) {
   return (
@@ -507,7 +509,7 @@ export function EmptyState({ icon, title, description, tone = 'brand' }: {
         {icon}
       </span>
       <h2 className="mx-auto mt-6 max-w-[290px] text-xl font-black">{title}</h2>
-      <p className="mx-auto mt-2 max-w-[290px] text-sm leading-6 text-ink-secondary">{description}</p>
+      {description && <p className="mx-auto mt-2 max-w-[290px] text-sm leading-6 text-ink-secondary">{description}</p>}
     </div>
   );
 }
@@ -637,14 +639,37 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     panelRef.current?.focus();
-    const closeOnEscape = (event: KeyboardEvent) => {
+    const handleDialogKeys = (event: KeyboardEvent) => {
       const dialogs = document.querySelectorAll('[role="dialog"]');
       const isTopDialog = panelRef.current?.parentElement === dialogs.item(dialogs.length - 1);
-      if (event.key === 'Escape' && isTopDialog) onCloseRef.current();
+      if (!isTopDialog) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== 'Tab' || !panelRef.current) return;
+      const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+      )).filter((element) => !element.hasAttribute('hidden') && element.getAttribute('aria-hidden') !== 'true');
+      if (focusable.length === 0) {
+        event.preventDefault();
+        panelRef.current.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable.at(-1)!;
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    document.addEventListener('keydown', closeOnEscape);
+    document.addEventListener('keydown', handleDialogKeys);
     return () => {
-      document.removeEventListener('keydown', closeOnEscape);
+      document.removeEventListener('keydown', handleDialogKeys);
       document.body.style.overflow = previousOverflow;
       if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
     };
@@ -652,13 +677,13 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
 
   return (
     <div className={cx(
-      'absolute inset-0 z-[1000] flex bg-brand-deep/40 backdrop-blur-[2px]',
+      'algan-dialog-backdrop absolute inset-0 z-[1000] flex bg-brand-deep/40 backdrop-blur-[2px]',
       resolvedVariant === 'center' ? 'items-center p-page' : 'items-end',
       className,
     )} role="dialog" aria-modal="true" aria-label={ariaLabel}>
       {resolvedVariant !== 'full' && <button type="button" onClick={onClose} className="absolute inset-0" aria-label={`${closeLabel} (${ariaLabel ?? 'dialog'})`} />}
-      <section ref={panelRef} tabIndex={-1} className={cx(
-        'relative z-10 w-full overflow-hidden bg-surface outline-none',
+      <section ref={panelRef} tabIndex={-1} data-dialog-variant={resolvedVariant} className={cx(
+        'algan-dialog-panel relative z-10 w-full overflow-hidden bg-surface outline-none',
         resolvedVariant === 'full' && 'h-full min-h-0',
         resolvedVariant === 'sheet' && 'max-h-[92%] rounded-t-sheet shadow-sheet',
         resolvedVariant === 'center' && 'mx-auto max-w-sm rounded-card shadow-floating',
@@ -666,5 +691,31 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
         {children}
       </section>
     </div>
+  );
+}
+
+export function ConfirmationDialog({ title, description, confirmLabel, cancelLabel, closeLabel, onConfirm, onCancel, tone = 'brand', className }: {
+  title: string;
+  description: ReactNode;
+  confirmLabel: ReactNode;
+  cancelLabel: ReactNode;
+  closeLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  tone?: 'brand' | 'danger';
+  className?: string;
+}) {
+  const ConfirmButton = tone === 'danger' ? DangerButton : PrimaryButton;
+  return (
+    <DialogLayer variant="center" onClose={onCancel} closeLabel={closeLabel} ariaLabel={title} className={className}>
+      <ModalBody>
+        <ModalHeader title={title} onClose={onCancel} closeLabel={closeLabel} />
+        <p className="mt-3 text-sm leading-6 text-ink-secondary">{description}</p>
+        <div className="mt-5 flex flex-col gap-3">
+          <ConfirmButton onClick={onConfirm}>{confirmLabel}</ConfirmButton>
+          <SecondaryButton onClick={onCancel}>{cancelLabel}</SecondaryButton>
+        </div>
+      </ModalBody>
+    </DialogLayer>
   );
 }

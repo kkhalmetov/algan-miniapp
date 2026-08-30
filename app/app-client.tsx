@@ -10,7 +10,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import {
-  AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, DangerButton, DialogLayer,
+  AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
   MediaBadge, ModalBody, ModalHeader, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, ScreenBody,
   SecondaryButton, SectionTitle, SegmentedControl, SheetHandle, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
@@ -133,6 +133,10 @@ export default function AlganApp() {
   useEffect(() => {
     void authenticateTelegram().catch(() => undefined);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   useEffect(() => {
     if (currency !== 'RUB') return;
@@ -266,7 +270,7 @@ export default function AlganApp() {
     haptic('success');
   };
 
-  if (!hydrated || !minimumSplashElapsed) return <Splash />;
+  if (!hydrated || !minimumSplashElapsed) return <Splash t={t} />;
   if (!onboardingDone) {
     return (
       <PhoneShell>
@@ -284,7 +288,7 @@ export default function AlganApp() {
     <PriceContext.Provider value={{ currency: displayCurrency, kztToRubRate }}>
     <PhoneShell>
       <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-surface sm:h-[780px]">
-        <main className={`min-h-0 flex-1 overflow-x-hidden overscroll-contain ${tab === 'map' ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
+        <main className={`hide-scrollbar min-h-0 flex-1 overflow-x-hidden overscroll-contain ${tab === 'map' ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
           {tab === 'home' && (
             <HomeTab
               t={t} profile={profile} openProfile={() => { setTab('profile'); haptic('tap'); }}
@@ -367,22 +371,22 @@ function CartReplacementDialog({ t, onCancel, onConfirm }: {
   onConfirm: () => void;
 }) {
   return (
-    <DialogLayer variant="center" className="z-[1400]" onClose={onCancel} closeLabel={t('close')} ariaLabel={t('cart')}>
-      <ModalBody>
-        <ModalHeader title={t('cart')} onClose={onCancel} closeLabel={t('close')} />
-        <p className="mt-3 text-sm leading-6 text-ink-secondary">{t('replaceCartConfirm')}</p>
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <SecondaryButton onClick={onCancel}>{t('cancel')}</SecondaryButton>
-          <PrimaryButton onClick={onConfirm}>{t('replaceCartAction')}</PrimaryButton>
-        </div>
-      </ModalBody>
-    </DialogLayer>
+    <ConfirmationDialog
+      className="z-[1400]"
+      title={t('cart')}
+      description={t('replaceCartConfirm')}
+      confirmLabel={t('replaceCartAction')}
+      cancelLabel={t('cancel')}
+      closeLabel={t('close')}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
   );
 }
 
-function Splash() {
+function Splash({ t }: { t: Translator }) {
   return (
-    <main className="grid min-h-dvh place-items-center overflow-hidden bg-brand px-6 text-white" aria-label="Algan загружается">
+    <main className="grid min-h-dvh place-items-center overflow-hidden bg-brand px-6 text-white" aria-label={`Algan — ${t('loading')}`}>
       <div className="flex flex-col items-center">
         <AlganLogo
           light
@@ -391,7 +395,7 @@ function Splash() {
           wordmarkClassName="h-9 w-[110px]"
         />
         <span className="algan-loader mt-10" role="status">
-          <span className="sr-only">Загрузка</span>
+          <span className="sr-only">{t('loading')}</span>
         </span>
       </div>
     </main>
@@ -496,7 +500,7 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
 function StoreCard({ store, fallbackImage, isHalal, t, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; isHalal: boolean; t: Translator; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
   return (
     <SurfaceCard className="overflow-hidden">
-      <CardPressable onClick={onOpen} className="relative h-44 overflow-hidden">
+      <CardPressable onClick={onOpen} className="relative h-44 overflow-hidden" aria-label={`${t('details')}: ${store.name}`}>
         <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
         <MediaBadge className="absolute bottom-3 left-3 border-3 border-panel">
           <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
@@ -750,6 +754,7 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
   onToggleCurrency: () => void; openSettings: () => void; openHelp: () => void; openDocuments: () => void; resetDemo: () => void;
 }) {
   const telegramUsername = telegramProfile().username.trim().replace(/^@/, '');
+  const [resetConfirmationOpen, setResetConfirmationOpen] = useState(false);
   return (
     <section className="pb-8">
       <BrandHeader>
@@ -765,12 +770,24 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
           <ProfileRow icon={<CircleHelp size={18} />} label={t('support')} onClick={openHelp} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
         </div>
-        <DangerButton onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6">{t('signOutDemo')}</DangerButton>
-        <SecondaryButton onClick={onToggleCurrency} disabled={currencyLoading} className="mt-2">
+        <DangerButton onClick={() => setResetConfirmationOpen(true)} className="mt-6">{t('signOutDemo')}</DangerButton>
+        <SecondaryButton onClick={onToggleCurrency} disabled={currencyLoading} aria-busy={currencyLoading} className="mt-2">
           <CircleDollarSign size={19} />{currencyLoading ? t('currencyLoading') : currency === 'KZT' ? t('showRubles') : t('showTenge')}
         </SecondaryButton>
-        {currencyRateError && <p className="mt-2 text-center text-xs font-bold text-danger">{t('currencyRateError')}</p>}
+        {currencyRateError && <p role="alert" className="mt-2 text-center text-xs font-bold text-danger">{t('currencyRateError')}</p>}
       </ScreenBody>
+      {resetConfirmationOpen && (
+        <ConfirmationDialog
+          title={t('signOutDemo')}
+          description={t('resetDemoConfirm')}
+          confirmLabel={t('signOutDemo')}
+          cancelLabel={t('cancel')}
+          closeLabel={t('close')}
+          tone="danger"
+          onCancel={() => setResetConfirmationOpen(false)}
+          onConfirm={resetDemo}
+        />
+      )}
     </section>
   );
 }
@@ -1098,7 +1115,7 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
         <SheetHandle />
         <div className="mt-5"><ModalHeader title={t('cart')} onClose={onClose} closeLabel={t('close')} /></div>
         {lines.length === 0 ? (
-          <EmptyState icon={<ShoppingBag size={32} />} title={t('cartEmpty')} description="" />
+          <EmptyState icon={<ShoppingBag size={32} />} title={t('cartEmpty')} />
         ) : (
           <div className="mt-5 max-h-[48vh] space-y-3 overflow-y-auto pr-1">
             {lines.map(({ box, quantity }) => (
@@ -1118,8 +1135,8 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
           </div>
         )}
         <div className="my-5 h-px bg-border" />
-        <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black">{formatPrice(total)}</span></div>
-        <PrimaryButton onClick={() => void onPay()} disabled={lines.length === 0 || paymentPending} className="mt-5">
+        <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black" aria-live="polite">{formatPrice(total)}</span></div>
+        <PrimaryButton onClick={() => void onPay()} disabled={lines.length === 0 || paymentPending} aria-busy={paymentPending} className="mt-5">
           {paymentPending ? t('paymentProcessing') : t('checkoutCart')}<ChevronRight size={19} />
         </PrimaryButton>
         <p className="mt-3 text-center text-xs leading-5 text-ink-muted">

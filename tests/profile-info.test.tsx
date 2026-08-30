@@ -147,6 +147,20 @@ describe('profile information sections', () => {
     expect(screen.getByRole('button', { name: 'Показывать цены в тенге' })).toBeInTheDocument();
   });
 
+  it('confirms demo reset inside the shared app dialog', () => {
+    openProfile();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Сбросить демо-данные' }));
+    const confirmation = screen.getByRole('dialog', { name: 'Сбросить демо-данные' });
+    expect(within(confirmation).getByText(/Профиль, корзина, избранное и история заказов будут удалены/)).toBeInTheDocument();
+    fireEvent.click(within(confirmation).getByRole('button', { name: 'Отмена' }));
+    expect(useAppStore.getState().onboardingDone).toBe(true);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Сбросить демо-данные' }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Сбросить демо-данные' })).getByRole('button', { name: 'Сбросить демо-данные' }));
+    expect(useAppStore.getState().onboardingDone).toBe(false);
+  });
+
   it('shows localized help content in Kazakh', () => {
     useAppStore.setState({ locale: 'kk', tab: 'profile' });
     render(<AlganApp />);

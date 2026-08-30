@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, DangerButton, DialogLayer,
+  AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, MediaBadge,
   ModalBody, ModalHeader, NoticeCard, PageSection, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton,
   SegmentedControl, StatusBadge, StickyActionFooter, TextField, TextLinkButton, TertiaryButton, TopAppBar,
@@ -106,7 +106,10 @@ describe('Algan UI kit', () => {
     expect(screen.getByTestId('modal-body')).toHaveClass('px-page-wide');
     expect(screen.getByRole('button', { name: 'Политика' })).toHaveClass('underline');
     expect(screen.getByRole('link', { name: /Email/ })).toHaveClass('border-border', 'bg-panel');
-    fireEvent.click(screen.getByRole('button', { name: 'Вопрос' }));
+    const question = screen.getByRole('button', { name: 'Вопрос' });
+    expect(question).toHaveAttribute('aria-controls');
+    expect(screen.getByRole('region', { name: 'Вопрос' })).toHaveTextContent('Ответ');
+    fireEvent.click(question);
     expect(onToggle).toHaveBeenCalledOnce();
     expect(screen.getByText('Ответ')).toBeInTheDocument();
   });
@@ -144,6 +147,7 @@ describe('Algan UI kit', () => {
     expect(onChange).toHaveBeenCalledWith(1);
 
     rerender(<QuantityControl quantity={1} max={2} label="Количество" addLabel="Добавить бокс" addText="Добавить" onChange={onChange} />);
+    expect(screen.getByRole('group', { name: 'Количество' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Количество −' })).toHaveClass('h-11', 'w-11');
     expect(screen.getByRole('button', { name: 'Количество +' })).toHaveClass('h-11', 'w-11');
   });
@@ -186,12 +190,50 @@ describe('Algan UI kit', () => {
 
   it('locks background scrolling and closes the top dialog with Escape', () => {
     const onClose = vi.fn();
-    const { unmount } = render(<DialogLayer onClose={onClose} closeLabel="Закрыть" ariaLabel="Корзина">Корзина</DialogLayer>);
+    const { unmount } = render(
+      <DialogLayer onClose={onClose} closeLabel="Закрыть" ariaLabel="Корзина">
+        <button type="button">Первое действие</button>
+        <button type="button">Последнее действие</button>
+      </DialogLayer>,
+    );
 
     expect(document.body.style.overflow).toBe('hidden');
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(screen.getByRole('button', { name: 'Последнее действие' })).toHaveFocus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(screen.getByRole('button', { name: 'Первое действие' })).toHaveFocus();
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledOnce();
     unmount();
     expect(document.body.style.overflow).toBe('');
+  });
+
+  it('provides one confirmation-dialog pattern for normal and destructive actions', () => {
+    const onCancel = vi.fn();
+    const onConfirm = vi.fn();
+    render(
+      <ConfirmationDialog
+        title="Сбросить данные"
+        description="Данные будут удалены"
+        cancelLabel="Отмена"
+        confirmLabel="Сбросить"
+        closeLabel="Закрыть"
+        tone="danger"
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Сбросить данные' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Сбросить' })).toHaveClass('bg-danger-soft');
+    fireEvent.click(screen.getByRole('button', { name: 'Отмена' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Сбросить' }));
+    expect(onCancel).toHaveBeenCalledOnce();
+    expect(onConfirm).toHaveBeenCalledOnce();
+  });
+
+  it('does not render empty supporting copy in empty states', () => {
+    const { container } = render(<EmptyState icon="♡" title="Корзина пуста" />);
+    expect(container.querySelector('p')).toBeNull();
   });
 });

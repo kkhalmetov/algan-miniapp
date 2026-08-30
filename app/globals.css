@@ -90,6 +90,10 @@
   --shadow-sheet: 0 -18px 60px rgba(23, 60, 49, .20);
   --shadow-marker: 0 8px 22px rgba(31, 92, 73, .28);
   --shadow-control: 0 7px 22px rgba(31, 92, 73, .16);
+
+  --motion-fast: 160ms;
+  --motion-medium: 220ms;
+  --ease-standard: cubic-bezier(.2, .8, .2, 1);
 }
 
 :root {
@@ -121,6 +125,21 @@ button:disabled { cursor: not-allowed; }
 
 @keyframes algan-loader-spin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes algan-dialog-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes algan-sheet-enter {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes algan-dialog-enter {
+  from { opacity: 0; transform: scale(.97); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .algan-loader {
@@ -172,6 +191,11 @@ button:disabled { cursor: not-allowed; }
   background: white;
   box-shadow: var(--shadow-marker);
 }
+
+.algan-dialog-backdrop { animation: algan-dialog-fade-in var(--motion-fast) ease-out both; }
+.algan-dialog-panel[data-dialog-variant='sheet'] { animation: algan-sheet-enter var(--motion-medium) var(--ease-standard) both; }
+.algan-dialog-panel[data-dialog-variant='center'] { animation: algan-dialog-enter var(--motion-fast) ease-out both; }
+.algan-dialog-panel[data-dialog-variant='full'] { animation: algan-dialog-fade-in var(--motion-fast) ease-out both; }
 
 .algan-store-marker img {
   width: 32px;

@@ -64,5 +64,9 @@ describe('mock customer catalog', () => {
     expect(kk('paymentFailedTitle')).toBe('Төлем өтпеді');
     expect(ru('backToCart')).toBe('Вернуться в корзину');
     expect(kk('backToCart')).toBe('Себетке оралу');
+    expect(ru('resetDemoConfirm')).toMatch(/история заказов/);
+    expect(kk('resetDemoConfirm')).toMatch(/тапсырыстар тарихы/);
+    expect(ru('loading')).toBe('Загрузка');
+    expect(kk('loading')).toBe('Жүктелуде');
   });
 });
