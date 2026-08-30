@@ -691,7 +691,7 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
   );
 }
 
-export function ConfirmationDialog({ title, description, confirmLabel, cancelLabel, closeLabel, onConfirm, onCancel, tone = 'brand', className }: {
+export function ConfirmationDialog({ title, description, confirmLabel, cancelLabel, closeLabel, onConfirm, onCancel, tone = 'brand', className, showClose = true }: {
   title: string;
   description: ReactNode;
   confirmLabel: ReactNode;
@@ -701,12 +701,17 @@ export function ConfirmationDialog({ title, description, confirmLabel, cancelLab
   onCancel: () => void;
   tone?: 'brand' | 'danger';
   className?: string;
+  showClose?: boolean;
 }) {
   const ConfirmButton = tone === 'danger' ? DangerButton : PrimaryButton;
   return (
     <DialogLayer variant="center" onClose={onCancel} closeLabel={closeLabel} ariaLabel={title} className={className}>
       <ModalBody>
-        <ModalHeader title={title} onClose={onCancel} closeLabel={closeLabel} />
+        {showClose ? (
+          <ModalHeader title={title} onClose={onCancel} closeLabel={closeLabel} />
+        ) : (
+          <h2 className="min-h-11 text-xl font-black tracking-[-0.035em]">{title}</h2>
+        )}
         <p className="mt-3 text-sm leading-6 text-ink-secondary">{description}</p>
         <div className="mt-5 flex flex-col gap-3">
           <ConfirmButton onClick={onConfirm}>{confirmLabel}</ConfirmButton>

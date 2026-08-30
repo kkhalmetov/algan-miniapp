@@ -378,6 +378,7 @@ function CartReplacementDialog({ t, onCancel, onConfirm }: {
       confirmLabel={t('replaceCartAction')}
       cancelLabel={t('cancel')}
       closeLabel={t('close')}
+      showClose={false}
       onConfirm={onConfirm}
       onCancel={onCancel}
     />

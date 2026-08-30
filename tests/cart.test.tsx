@@ -152,6 +152,7 @@ describe('multi-box cart', () => {
     fireEvent.click(screen.getByRole('button', { name: /Köfi ул\. Байтурсынова, 12/ }));
     const confirmation = screen.getByRole('dialog', { name: 'Корзина' });
     expect(within(confirmation).getByText('В корзине есть боксы другого заведения. Очистить корзину и перейти?')).toBeInTheDocument();
+    expect(within(confirmation).queryByRole('button', { name: 'Закрыть' })).not.toBeInTheDocument();
     fireEvent.click(within(confirmation).getByRole('button', { name: 'Отмена' }));
     expect(screen.queryByRole('dialog', { name: 'Köfi' })).not.toBeInTheDocument();
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 1 }]);
