@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  AlertTriangle, Building2, Check, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, Heart, Home, Info, Languages, Mail, Map as MapIcon,
+  AlertTriangle, Building2, Check, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, Heart, Home, Image as ImageIcon, Info, Languages, Mail, Map as MapIcon,
   MapPin, Package, PackageCheck, Phone, QrCode, Route, Settings2, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -900,8 +900,6 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
   const storeBoxes = boxes.filter((box) => box.storeId === store.id);
   const isHalal = storeBoxes.length > 0 && storeBoxes.every((box) => box.isHalal);
   const fallbackImage = storeBoxes[0]?.image ?? '/images/bakery.jpg';
-  const pickupFrom = storeBoxes.map((box) => box.pickupFrom).sort()[0];
-  const pickupTo = storeBoxes.map((box) => box.pickupTo).sort().at(-1);
   const cartLines = cartItems.flatMap((item) => {
     const box = storeBoxes.find((candidate) => candidate.id === item.boxId);
     return box ? [{ box, quantity: item.quantity }] : [];
@@ -934,9 +932,6 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
           </div>
           <SurfaceCard className="mt-5 p-4">
             <DetailRow icon={<MapPin size={19} />} label={t('addressLabel')} value={store.address} />
-            {pickupFrom && pickupTo && (
-              <DetailRow data-testid="store-pickup-time" divided className="mt-4" icon={<Clock3 size={18} />} label={t('pickupTime')} value={`${pickupFrom}–${pickupTo}`} />
-            )}
             <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">
               <Route size={18} />{t('buildRoute')}
             </SecondaryButton>
@@ -971,13 +966,18 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
-      <CardPressable onClick={onOpen} className="flex items-start gap-3 p-4" aria-label={`${t('details')} ${box.name}`}>
+      <CardPressable onClick={onOpen} className="flex items-stretch gap-3 p-3" aria-label={`${t('details')} ${box.name}`}>
+        <img src={box.image} alt={box.name} className="h-28 w-24 shrink-0 rounded-media object-cover" />
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
             <span className="text-base font-black leading-5">{box.name}</span>
             {box.type === 'SURPRISE' && <SurpriseBadge compact />}
           </span>
           <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />} className="mt-2">{formatBoxesLeft(available, locale)}</StatusBadge>
+          <span className="mt-2 flex items-center gap-1.5 text-xs font-bold text-ink-secondary">
+            <Clock3 size={14} className="shrink-0 text-brand" />
+            <span>{t('pickupTime')}: {box.pickupFrom}–{box.pickupTo}</span>
+          </span>
           <span className="mt-2 flex flex-wrap items-center gap-2">
             <b className="text-base text-brand">{formatPrice(box.salePrice)}</b>
             <span className="text-[11px] text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
@@ -1027,6 +1027,10 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
               </div>
             </InsetSurface>
           </div>
+          <DetailRow data-testid="box-pickup-time" className="mt-4" icon={<Clock3 size={18} />} label={t('pickupTime')} value={`${box.pickupFrom}–${box.pickupTo}`} />
+          <NoticeCard data-testid="box-appearance-notice" className="mt-4" icon={<ImageIcon size={18} />} title={t('appearanceMayDifferTitle')}>
+            {t('appearanceMayDifferText')}
+          </NoticeCard>
           {box.type === 'SURPRISE' ? (
             <>
               <SectionTitle className="mt-6">{t('surprisePossibleTitle')}</SectionTitle>
