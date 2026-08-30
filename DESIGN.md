@@ -80,7 +80,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - Keep touch targets at least 44 px and provide accessible labels for icon-only controls.
 - Product photography and partner logos keep their original colors; design tokens control their containers.
 - Use native button, link and input semantics. Selected controls expose `aria-pressed` or `aria-current`; modal surfaces expose dialog semantics.
-- Dialogs lock background scrolling, keep keyboard focus inside the active layer, close with Escape and restore prior focus.
+- Dialogs keep keyboard focus inside the active layer without changing the viewport scroll position, close with Escape and restore prior focus.
 - Loading controls expose `aria-busy`; empty states omit unused supporting text instead of rendering blank layout space.
 - The document language follows the selected RU/KK locale, with Kazakh as the initial language.
 - Motion respects `prefers-reduced-motion`.
@@ -94,4 +94,4 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 
 ## Audit status
 
-The interface audit covers onboarding, home, map markers, favorites, orders, profile, settings, legal/help flows, store details, box details, cart and payment feedback. Screen gutters now use only the documented 20/24 px values; repeated information, notice, media, disclosure, confirmation and compact-header patterns are routed through the UI kit. Modal layers share focus containment and restoration, background scroll locking, Escape dismissal, safe-area spacing, motion and one elevation model. The detailed discrepancy register lives in `UX_AUDIT.md`.
+The interface audit covers onboarding, home, map markers, favorites, orders, profile, settings, legal/help flows, store details, box details, cart and payment feedback. Screen gutters now use only the documented 20/24 px values; repeated information, notice, media, disclosure, confirmation and compact-header patterns are routed through the UI kit. Modal layers share focus containment and restoration without scroll jumps, Escape dismissal, safe-area spacing, motion and one elevation model. The detailed discrepancy register lives in `UX_AUDIT.md`.

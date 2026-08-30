@@ -636,9 +636,7 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
 
   useEffect(() => {
     const previouslyFocused = document.activeElement;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    panelRef.current?.focus();
+    panelRef.current?.focus({ preventScroll: true });
     const handleDialogKeys = (event: KeyboardEvent) => {
       const dialogs = document.querySelectorAll('[role="dialog"]');
       const isTopDialog = panelRef.current?.parentElement === dialogs.item(dialogs.length - 1);
@@ -654,7 +652,7 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
       )).filter((element) => !element.hasAttribute('hidden') && element.getAttribute('aria-hidden') !== 'true');
       if (focusable.length === 0) {
         event.preventDefault();
-        panelRef.current.focus();
+        panelRef.current.focus({ preventScroll: true });
         return;
       }
       const first = focusable[0];
@@ -670,14 +668,13 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
     document.addEventListener('keydown', handleDialogKeys);
     return () => {
       document.removeEventListener('keydown', handleDialogKeys);
-      document.body.style.overflow = previousOverflow;
-      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus({ preventScroll: true });
     };
   }, []);
 
   return (
     <div className={cx(
-      'algan-dialog-backdrop absolute inset-0 z-[1000] flex bg-brand-deep/40 backdrop-blur-[2px]',
+      'algan-dialog-backdrop absolute inset-0 z-[1000] flex overscroll-contain bg-brand-deep/40 backdrop-blur-[2px]',
       resolvedVariant === 'center' ? 'items-center p-page' : 'items-end',
       className,
     )} role="dialog" aria-modal="true" aria-label={ariaLabel}>

@@ -16,7 +16,7 @@ The audit covers onboarding, startup, home, map, favorites, active and past orde
 | Detail headers | Store details used a feature-local branded toolbar | `TopAppBar` is the canonical compact header |
 | Confirmations | Cart replacement was custom and demo reset used `window.confirm` | Both use `ConfirmationDialog`; ordinary and destructive tones are explicit |
 | Empty states | Empty cart rendered an empty description paragraph | Supporting copy is optional and absent content creates no layout gap |
-| Modal behavior | Focus could leave a dialog and the page could scroll behind it | `DialogLayer` traps focus, locks background scroll, restores focus and closes the top layer with Escape |
+| Modal behavior | Focus could leave a dialog; locking `body` or focusing a moving sheet could shift the mobile viewport | `DialogLayer` traps focus with `preventScroll`, preserves the viewport position and closes the top layer with Escape |
 | Motion | Overlays appeared without a shared transition model | Sheet, centered and full-screen transitions use the same motion tokens and respect reduced-motion settings |
 | Loading | Busy actions relied only on changed copy/disabled state | Payment and currency actions expose `aria-busy`; splash copy is localized |
 | Localization | The document language stayed Russian while Kazakh is the default | Initial HTML language is `kk` and follows the selected locale at runtime |

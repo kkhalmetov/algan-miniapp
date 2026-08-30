@@ -188,7 +188,7 @@ describe('Algan UI kit', () => {
     expect(screen.getByText('Заведение')).toHaveClass('truncate', 'text-center');
   });
 
-  it('locks background scrolling and closes the top dialog with Escape', () => {
+  it('contains focus without changing page scroll state and closes the top dialog with Escape', () => {
     const onClose = vi.fn();
     const { unmount } = render(
       <DialogLayer onClose={onClose} closeLabel="Закрыть" ariaLabel="Корзина">
@@ -197,7 +197,7 @@ describe('Algan UI kit', () => {
       </DialogLayer>,
     );
 
-    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.body.style.overflow).toBe('');
     fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
     expect(screen.getByRole('button', { name: 'Последнее действие' })).toHaveFocus();
     fireEvent.keyDown(document, { key: 'Tab' });
