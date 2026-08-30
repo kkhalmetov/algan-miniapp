@@ -936,6 +936,9 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
               <Route size={18} />{t('buildRoute')}
             </SecondaryButton>
           </SurfaceCard>
+          <NoticeCard data-testid="store-appearance-notice" className="mt-4" icon={<ImageIcon size={18} />} title={t('appearanceMayDifferTitle')}>
+            {t('appearanceMayDifferText')}
+          </NoticeCard>
 
           <div className="mt-6 space-y-3">
             {storeBoxes.map((box) => (
@@ -1028,9 +1031,6 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
             </InsetSurface>
           </div>
           <DetailRow data-testid="box-pickup-time" className="mt-4" icon={<Clock3 size={18} />} label={t('pickupTime')} value={`${box.pickupFrom}–${box.pickupTo}`} />
-          <NoticeCard data-testid="box-appearance-notice" className="mt-4" icon={<ImageIcon size={18} />} title={t('appearanceMayDifferTitle')}>
-            {t('appearanceMayDifferText')}
-          </NoticeCard>
           {box.type === 'SURPRISE' ? (
             <>
               <SectionTitle className="mt-6">{t('surprisePossibleTitle')}</SectionTitle>

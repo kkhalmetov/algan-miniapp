@@ -63,14 +63,16 @@ describe('box types', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery пр\. Тауке хана, 47/ }));
+    const storeDialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
+    expect(within(storeDialog).getByText('Сыртқы көрінісі өзгеше болуы мүмкін')).toBeInTheDocument();
+    expect(within(storeDialog).getByText('Бокстың және өнімдердің нақты сыртқы көрінісі суреттен өзгеше болуы мүмкін.')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Толығырақ Surprise Tatti-box' }));
 
     const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
     expect(within(dialog).getByRole('heading', { name: 'Ішінде не болуы мүмкін' })).toBeInTheDocument();
     expect(within(dialog).getByText('Круассандар, қатпарлы қамыр өнімдері, тоқаштар, багеттер және басқа да пісірмелер.')).toBeInTheDocument();
     expect(within(dialog).getByText('Нақты жиынтық алдын ала белгісіз және оны мекеме тапсырысты алатын күні қалыптастырады.')).toBeInTheDocument();
-    expect(within(dialog).getByText('Сыртқы көрінісі өзгеше болуы мүмкін')).toBeInTheDocument();
-    expect(within(dialog).getByText('Бокстың және өнімдердің нақты сыртқы көрінісі суреттен өзгеше болуы мүмкін.')).toBeInTheDocument();
+    expect(within(dialog).queryByText('Сыртқы көрінісі өзгеше болуы мүмкін')).not.toBeInTheDocument();
     expect(within(dialog).getByText('SURPRISE')).toBeInTheDocument();
   });
 });
