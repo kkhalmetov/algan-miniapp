@@ -11,9 +11,10 @@ import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, DangerButton, DialogLayer,
-  EmptyState, FullScreenFeedback, IconBadge, IconButton, LinkRow, ListRow, ModalBody, ModalHeader, PageSection, PageTitle,
-  PillButton, PrimaryButton, QuantityControl, SecondaryButton, SectionTitle, SegmentedControl, SheetHandle, StatusBadge, StickyActionFooter,
-  SurfaceCard, TertiaryButton, TextField, TextLinkButton,
+  ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
+  MediaBadge, ModalBody, ModalHeader, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, ScreenBody,
+  SecondaryButton, SectionTitle, SegmentedControl, SheetHandle, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
+  TextLinkButton, TopAppBar,
 } from '@/components/ui-kit';
 import { authenticateTelegram } from '@/lib/api';
 import { fetchKztToRubRate, formatCurrency } from '@/lib/currency';
@@ -367,17 +368,14 @@ function CartReplacementDialog({ t, onCancel, onConfirm }: {
 }) {
   return (
     <DialogLayer variant="center" className="z-[1400]" onClose={onCancel} closeLabel={t('close')} ariaLabel={t('cart')}>
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <h2 className="text-xl font-black text-ink">{t('cart')}</h2>
-          <IconButton label={t('close')} onClick={onCancel}><X className="h-5 w-5" /></IconButton>
-        </div>
+      <ModalBody>
+        <ModalHeader title={t('cart')} onClose={onCancel} closeLabel={t('close')} />
         <p className="mt-3 text-sm leading-6 text-ink-secondary">{t('replaceCartConfirm')}</p>
         <div className="mt-5 grid grid-cols-2 gap-3">
           <SecondaryButton onClick={onCancel}>{t('cancel')}</SecondaryButton>
           <PrimaryButton onClick={onConfirm}>{t('replaceCartAction')}</PrimaryButton>
         </div>
-      </div>
+      </ModalBody>
     </DialogLayer>
   );
 }
@@ -423,7 +421,7 @@ function Onboarding(props: OnboardingProps) {
   const canContinue = Boolean(normalizeKazakhstanPhone(phone));
   return (
     <div className="flex min-h-dvh flex-col sm:min-h-[780px]">
-      <div className="relative overflow-hidden bg-brand px-7 pb-9 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
+      <div className="relative overflow-hidden bg-brand px-page-wide pb-9 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
         <div className="absolute -right-8 -top-6 h-40 w-40 rounded-full bg-warning-ink/20" />
         <div className="absolute -bottom-14 -left-8 h-36 w-36 rounded-full border-[28px] border-highlight/20" />
         <div className="relative flex items-start justify-between">
@@ -436,9 +434,9 @@ function Onboarding(props: OnboardingProps) {
         </div>
       </div>
 
-      <form className="flex flex-1 flex-col px-7 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-7" onSubmit={(event) => { event.preventDefault(); onContinue(); }}>
+      <form className="flex flex-1 flex-col px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-7" onSubmit={(event) => { event.preventDefault(); onContinue(); }}>
         <p className="text-sm font-bold text-accent">{t('intro')}</p>
-        <h2 className="mt-1 text-2xl font-black tracking-[-0.04em]">{t('askName')}</h2>
+        <ContentTitle className="mt-1">{t('askName')}</ContentTitle>
         <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('nameHelp')}</p>
 
         <TextField label={t('phone')} required value={phone} onValueChange={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
@@ -475,13 +473,13 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
       <BrandHeader>
         <div className="mt-2 flex items-center justify-between gap-4">
           <div className="min-w-0"><p className="text-sm text-white/70">{t('greeting')},</p><PageTitle className="mt-0.5 truncate text-white">{profile.firstName}!</PageTitle></div>
-          <button type="button" onClick={openProfile} aria-label={t('profile')} className="shrink-0 rounded-full outline-none ring-white/70 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
+          <button type="button" onClick={openProfile} aria-label={t('profile')} className="shrink-0 rounded-full outline-none transition active:scale-95 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
             <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} compact />
           </button>
         </div>
       </BrandHeader>
 
-      <section className="bg-surface px-5 pt-6">
+      <ScreenBody>
         <div className="space-y-4 pb-6">
           {stores.map((store) => {
             const storeBoxes = boxes.filter((item) => item.storeId === store.id);
@@ -490,7 +488,7 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
             return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} isHalal={isHalal} t={t} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
           })}
         </div>
-      </section>
+      </ScreenBody>
     </>
   );
 }
@@ -500,9 +498,9 @@ function StoreCard({ store, fallbackImage, isHalal, t, favorite, toggleFavorite,
     <SurfaceCard className="overflow-hidden">
       <CardPressable onClick={onOpen} className="relative h-44 overflow-hidden">
         <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
-        <span className="absolute bottom-3 left-3 grid h-12 w-12 place-items-center overflow-hidden rounded-full border-3 border-panel bg-panel shadow-card">
+        <MediaBadge className="absolute bottom-3 left-3 border-3 border-panel">
           <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
-        </span>
+        </MediaBadge>
       </CardPressable>
       <div className="p-4">
         <div className="flex items-start gap-3">
@@ -612,7 +610,7 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
             const summary = (
               <>
                 <span className="flex gap-3">
-                  {store && <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-surface"><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></span>}
+                  {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-xs font-bold text-ink-muted">{store?.name}</span>
                     <span className="mt-1 block truncate text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</span>
@@ -685,6 +683,15 @@ function OrderQr({ order, t }: { order: Order; t: Translator }) {
   );
 }
 
+function PickupCodePanel({ pickupCode, label, className }: { pickupCode: string; label: string; className?: string }) {
+  return (
+    <InsetSurface tone="brandSolid" className={`p-4 text-center ${className ?? ''}`}>
+      <p className="text-xs font-bold text-white/65">{label}</p>
+      <p className="mt-1 text-3xl font-black tracking-[0.12em]">{formatPickupCode(pickupCode)}</p>
+    </InsetSurface>
+  );
+}
+
 function OrderItemsList({ order, locale }: { order: Order; locale: Locale }) {
   const formatPrice = usePriceFormatter(locale);
   return (
@@ -692,10 +699,10 @@ function OrderItemsList({ order, locale }: { order: Order; locale: Locale }) {
       {order.items.map((item) => {
         const box = boxes.find((candidate) => candidate.id === item.boxId);
         return (
-          <div key={item.boxId} className="flex items-start justify-between gap-4 rounded-control bg-surface-soft px-4 py-3">
+          <InsetSurface key={item.boxId} className="flex items-start justify-between gap-4 px-4 py-3">
             <div className="min-w-0"><p className="text-sm font-black">{box?.name}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</p></div>
             <b className="shrink-0 text-sm text-brand">{formatPrice(item.unitPrice * item.quantity)}</b>
-          </div>
+          </InsetSurface>
         );
       })}
     </div>
@@ -710,7 +717,7 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
   }).format(new Date(order.createdAt));
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('orders')}>
-      <div className="max-h-[90dvh] overflow-y-auto px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5">
+      <ModalBody className="max-h-[90dvh] overflow-y-auto">
         <SheetHandle />
         {order.status === 'paid' ? (
           <div className="mt-3 flex justify-end"><IconButton onClick={onClose} label={t('close')}><X size={18} /></IconButton></div>
@@ -721,19 +728,19 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
           <>
             <div className="mt-4"><OrderQr order={order} t={t} /></div>
             <p className="mx-auto mt-4 max-w-[300px] text-center text-xs leading-5 text-ink-secondary">{t('successText')}</p>
-            <div className="mt-4 rounded-control bg-brand p-4 text-center text-white"><p className="text-xs font-bold text-white/65">{t('pickupCode')}</p><p className="mt-1 text-3xl font-black tracking-[0.12em]">{formatPickupCode(order.pickupCode)}</p></div>
+            <PickupCodePanel pickupCode={order.pickupCode} label={t('pickupCode')} className="mt-4" />
           </>
         )}
         {order.status === 'collected' && (
           <>
             <p className="mt-5 text-center text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
-            <h3 className="mt-6 text-base font-black">{t('orderContents')}</h3>
+            <SectionTitle className="mt-6 text-base">{t('orderContents')}</SectionTitle>
             <div className="mt-3"><OrderItemsList order={order} locale={locale} /></div>
             <div className="mt-4 flex items-center justify-between border-t border-border pt-4"><span className="text-sm font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-brand">{formatPrice(order.total)}</b></div>
             <p className="mt-3 text-sm font-bold text-ink-secondary">{orderDate}</p>
           </>
         )}
-      </div>
+      </ModalBody>
     </DialogLayer>
   );
 }
@@ -748,11 +755,11 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
       <BrandHeader>
         <div className="mt-2 flex items-center gap-4">
           <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} />
-          <div><h1 className="text-2xl font-black">{profile.firstName} {profile.lastName}</h1><p className="mt-1 text-sm text-white/65">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
+          <div><ContentTitle className="text-white">{profile.firstName} {profile.lastName}</ContentTitle><p className="mt-1 text-sm text-white/65">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
         </div>
       </BrandHeader>
 
-      <div className="bg-surface px-5 pt-6">
+      <ScreenBody>
         <div className="space-y-2">
           <ProfileRow icon={<Settings2 size={18} />} label={t('settings')} onClick={openSettings} />
           <ProfileRow icon={<CircleHelp size={18} />} label={t('support')} onClick={openHelp} />
@@ -763,7 +770,7 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
           <CircleDollarSign size={19} />{currencyLoading ? t('currencyLoading') : currency === 'KZT' ? t('showRubles') : t('showTenge')}
         </SecondaryButton>
         {currencyRateError && <p className="mt-2 text-center text-xs font-bold text-danger">{t('currencyRateError')}</p>}
-      </div>
+      </ScreenBody>
     </section>
   );
 }
@@ -888,36 +895,29 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
   return (
     <DialogLayer variant="full" onClose={onClose} closeLabel={t('close')} ariaLabel={store.name}>
       <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
-      <header data-testid="store-details-header" className="shrink-0 bg-brand px-4 pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white">
-        <div className="flex min-h-11 items-center gap-3">
-          <IconButton onClick={onClose} label={t('back')} tone="dark"><ChevronRight className="rotate-180" size={20} /></IconButton>
-          <p className="min-w-0 flex-1 truncate text-center text-sm font-black">{store.name}</p>
-          <IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={isFavorite} tone={isFavorite ? 'accent' : 'dark'}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></IconButton>
-        </div>
-      </header>
+      <TopAppBar
+        data-testid="store-details-header"
+        leading={<IconButton onClick={onClose} label={t('back')} tone="dark"><ChevronRight className="rotate-180" size={20} /></IconButton>}
+        title={store.name}
+        trailing={<IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={isFavorite} tone={isFavorite ? 'accent' : 'dark'}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></IconButton>}
+      />
 
       <div data-testid="store-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <div data-testid="store-details-cover" className="relative h-[240px] bg-canvas">
           <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover object-center" />
-          <span className="absolute -bottom-8 left-5 grid h-17 w-17 place-items-center overflow-hidden rounded-full border-4 border-surface bg-panel shadow-card">
+          <MediaBadge size="lg" className="absolute -bottom-8 left-page">
             <img src={store.logo} alt={`${store.name} logo`} className="h-13 w-13 object-contain" />
-          </span>
+          </MediaBadge>
         </div>
-        <div className="px-6 pb-6 pt-11">
+        <div className="px-page-wide pb-6 pt-11">
           <div className="flex min-w-0 items-center gap-3">
             <PageTitle className="min-w-0 truncate">{store.name}</PageTitle>
             {isHalal && <img src="/images/halal-logo.svg" alt={t('halal')} className="h-8 w-8 shrink-0 object-contain" />}
           </div>
           <SurfaceCard className="mt-5 p-4">
-            <div className="flex items-start gap-3">
-              <IconBadge><MapPin size={19} /></IconBadge>
-              <div className="min-w-0"><p className="text-xs font-bold text-ink-muted">{t('addressLabel')}</p><p className="mt-1 text-sm font-black leading-5">{store.address}</p></div>
-            </div>
+            <DetailRow icon={<MapPin size={19} />} label={t('addressLabel')} value={store.address} />
             {pickupFrom && pickupTo && (
-              <div data-testid="store-pickup-time" className="mt-4 flex items-start gap-3 border-t border-border pt-4">
-                <IconBadge tone="soft"><Clock3 size={18} /></IconBadge>
-                <div className="min-w-0"><p className="text-xs font-bold text-ink-muted">{t('pickupTime')}</p><p className="mt-1 text-sm font-black leading-5">{pickupFrom}–{pickupTo}</p></div>
-              </div>
+              <DetailRow data-testid="store-pickup-time" divided className="mt-4" icon={<Clock3 size={18} />} label={t('pickupTime')} value={`${pickupFrom}–${pickupTo}`} />
             )}
             <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">
               <Route size={18} />{t('buildRoute')}
@@ -966,9 +966,7 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
             <StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge>
           </span>
         </span>
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-pale text-brand" aria-hidden="true">
-          <ChevronRight size={18} strokeWidth={2.5} />
-        </span>
+        <DisclosureIndicator />
       </CardPressable>
       {(available > 0 || cartQuantity > 0) && (
         <div className="border-t border-border px-3 py-3">
@@ -989,64 +987,54 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={box.name}>
       <div data-testid="box-details-sheet" className="flex h-[80dvh] min-h-0 flex-col sm:h-[624px]">
-        <div className="shrink-0 px-5 pt-4">
+        <div className="shrink-0 px-page pt-4">
           <SheetHandle />
           <div className="mt-2 flex justify-end"><IconButton onClick={onClose} label={t('close')}><X size={18} /></IconButton></div>
         </div>
 
         <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <div className="px-6 pb-6 pt-4">
+          <div className="px-page-wide pb-6 pt-4">
           <PageTitle>{box.name}</PageTitle>
           {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}
           <div className="mt-2">
             <StatusBadge data-testid="box-stock" tone={available > 0 ? 'accent' : 'danger'} size="lg" icon={<Package size={15} />}>{formatBoxesLeft(available, locale)}</StatusBadge>
           </div>
           <div className="mt-4">
-            <div data-testid="box-price-card" className="rounded-control bg-brand-pale p-4">
+            <InsetSurface data-testid="box-price-card" tone="brand" className="p-4">
               <p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p>
               <p className="mt-2 text-[25px] font-black tracking-[-0.04em] text-brand">{formatPrice(box.salePrice)}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
                 <StatusBadge tone="accentSolid">−{discount}%</StatusBadge>
               </div>
-            </div>
+            </InsetSurface>
           </div>
           {box.type === 'SURPRISE' ? (
             <>
               <SectionTitle className="mt-6">{t('surprisePossibleTitle')}</SectionTitle>
               <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprisePossibleContents')}</p>
-              <div data-testid="surprise-composition-notice" className="mt-4 rounded-control border border-brand/15 bg-brand-pale p-4">
-                <div className="flex items-start gap-3">
-                  <IconBadge tone="soft"><Sparkles size={18} /></IconBadge>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-black text-brand">{t('surpriseNoticeTitle')}</h3>
-                    <p className="mt-1.5 text-sm leading-5 text-ink-secondary">{t('surprise')}</p>
-                  </div>
-                </div>
-              </div>
+              <NoticeCard data-testid="surprise-composition-notice" className="mt-4" icon={<Sparkles size={18} />} title={t('surpriseNoticeTitle')}>
+                {t('surprise')}
+              </NoticeCard>
             </>
           ) : (
             <>
               <SectionTitle className="mt-6">{t('composition')}</SectionTitle>
               <ul className="mt-3 space-y-2" data-testid="box-contents">
                 {box.contents?.map((item) => (
-                  <li key={item.contentName} className="flex items-center justify-between gap-4 rounded-control bg-surface-soft px-4 py-3 text-sm">
-                    <span className="font-bold text-ink">{item.contentName}</span>
-                    <span className="shrink-0 font-black text-brand">× {item.quantity}</span>
+                  <li key={item.contentName}>
+                    <InsetSurface className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+                      <span className="font-bold text-ink">{item.contentName}</span>
+                      <span className="shrink-0 font-black text-brand">× {item.quantity}</span>
+                    </InsetSurface>
                   </li>
                 ))}
               </ul>
             </>
           )}
-          <div className="mt-4 rounded-control border border-allergen-border bg-allergen-surface p-4">
-            <div className="flex items-start gap-3">
-              <IconBadge tone="accent"><AlertTriangle size={19} /></IconBadge>
-              <div className="min-w-0">
-                <h3 className="text-sm font-black text-allergen-ink">{box.allergens ? t('containsAllergens') : t('allergens')}</h3>
-                <p className="mt-1.5 text-sm leading-5 text-allergen-body">{box.allergens ?? t('allergensUnknown')}</p>
-              </div>
-            </div>
-          </div>
+          <NoticeCard className="mt-4" tone="allergen" icon={<AlertTriangle size={19} />} title={box.allergens ? t('containsAllergens') : t('allergens')}>
+            {box.allergens ?? t('allergensUnknown')}
+          </NoticeCard>
           </div>
         </div>
         {(available > 0 || cartQuantity > 0) && (
@@ -1114,7 +1102,7 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
         ) : (
           <div className="mt-5 max-h-[48vh] space-y-3 overflow-y-auto pr-1">
             {lines.map(({ box, quantity }) => (
-              <div key={box.id} className="rounded-control border border-border bg-panel p-3">
+              <InsetSurface key={box.id} tone="panel" className="p-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-black">{box.name}</p>
                   <p className="mt-1 text-xs font-bold text-ink-muted">{formatPrice(box.salePrice)} × {quantity}</p>
@@ -1125,7 +1113,7 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
                     addLabel={`${t('addToCart')} ${box.name}`} addText={t('addToCart')} onChange={(next) => onChangeQuantity(box, next)} />
                   <TertiaryButton tone="danger" onClick={() => onChangeQuantity(box, 0)}>{t('removeFromCart')}</TertiaryButton>
                 </div>
-              </div>
+              </InsetSurface>
             ))}
           </div>
         )}
@@ -1173,10 +1161,7 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
         description={t('successText')}
       >
         <div className="mt-5"><OrderQr order={order} t={t} /></div>
-        <div className="mx-auto mt-4 w-full max-w-[320px] rounded-control bg-brand p-3 text-white">
-          <p className="text-xs font-bold text-white/65">{t('pickupCode')}</p>
-          <p className="mt-1 text-3xl font-black tracking-[0.12em]">{formatPickupCode(order.pickupCode)}</p>
-        </div>
+        <PickupCodePanel pickupCode={order.pickupCode} label={t('pickupCode')} className="mx-auto mt-4 w-full max-w-[320px] p-3" />
         <p className="mt-4 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
         <PrimaryButton onClick={onDone} className="mt-6 shrink-0">{t('toOrders')}<ChevronRight size={19} /></PrimaryButton>
       </FullScreenFeedback>
@@ -1232,15 +1217,15 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
 
 function CompanyContacts({ t }: { t: Translator }) {
   return (
-    <div className="mt-5 rounded-card bg-surface-soft p-5 text-sm">
-      <h3 className="text-lg font-black">{t('companyName')}</h3>
+    <InsetSurface radius="card" className="mt-5 p-5 text-sm">
+      <SectionTitle>{t('companyName')}</SectionTitle>
       <p className="mt-1 font-bold text-ink-secondary">{t('companyId')}</p>
       <div className="mt-5 space-y-4">
         <div><p className="text-xs font-black text-ink-muted">{t('contactLegalAddressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
         <LinkRow tone="panel" href="mailto:algansupport@gmail.com" icon={<Mail size={18} />} title={t('emailLabel')} subtitle="algansupport@gmail.com" />
         <LinkRow tone="panel" href="tel:+77059768000" icon={<Phone size={18} />} title={t('contactPhoneLabel')} subtitle="+7 705 976 80 00" />
       </div>
-    </div>
+    </InsetSurface>
   );
 }
 
@@ -1303,7 +1288,7 @@ function TelegramIcon() {
 }
 
 function LegalDocumentNotice({ t }: { t: Translator }) {
-  return <div className="mt-5 rounded-control bg-warning-surface p-4 text-sm leading-6 text-warning-ink"><Info size={20} className="mb-3" />{t('placeholderLegal')}</div>;
+  return <NoticeCard className="mt-5" tone="warning" icon={<Info size={20} />}>{t('placeholderLegal')}</NoticeCard>;
 }
 function LegalModal({ type, t, onClose }: { type: LegalDocument; t: Translator; onClose: () => void }) {
   return (

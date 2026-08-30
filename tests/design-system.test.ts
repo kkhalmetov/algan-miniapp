@@ -73,6 +73,11 @@ describe('Algan design system', () => {
     expect(app).not.toContain('className="modal-body"');
     expect(app).not.toContain('flex min-h-dvh flex-col justify-center overflow-y-auto');
     expect(app).not.toContain('grid h-8 w-8 shrink-0 place-items-center rounded-full');
+    expect(app).not.toContain('rounded-control bg-surface-soft px-4 py-3');
+    expect(app).not.toContain('rounded-control border border-allergen-border bg-allergen-surface');
+    expect(app).not.toContain('grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-pale');
+    expect(app).not.toContain('shrink-0 bg-brand px-4 pb-3');
+    expect(app).not.toContain('px-7');
     expect(app).not.toContain('role="dialog"');
   });
 

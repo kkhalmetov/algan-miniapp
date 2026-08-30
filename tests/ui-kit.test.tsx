@@ -2,9 +2,9 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, DangerButton, DialogLayer,
-  EmptyState, FullScreenFeedback, IconButton, LinkRow, ModalBody, ModalHeader, PageSection, PillButton, PrimaryButton, SecondaryButton,
-  QuantityControl, SegmentedControl, StatusBadge, StickyActionFooter, TextField, TextLinkButton,
-  TertiaryButton,
+  ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, MediaBadge,
+  ModalBody, ModalHeader, NoticeCard, PageSection, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton,
+  SegmentedControl, StatusBadge, StickyActionFooter, TextField, TextLinkButton, TertiaryButton, TopAppBar,
 } from '../components/ui-kit';
 
 describe('Algan UI kit', () => {
@@ -155,5 +155,43 @@ describe('Algan UI kit', () => {
       'focus-visible:ring-inset',
       'focus-visible:ring-brand-hover',
     );
+  });
+
+  it('shares screen spacing, information surfaces and disclosure affordances', () => {
+    render(
+      <ScreenBody>
+        <ContentTitle>Параметры</ContentTitle>
+        <InsetSurface data-testid="inset" className="p-4">
+          <DetailRow icon="i" label="Адрес" value="Шымкент" />
+        </InsetSurface>
+        <MediaBadge>logo</MediaBadge>
+        <DisclosureIndicator />
+        <NoticeCard icon="!" title="Важно">Описание</NoticeCard>
+      </ScreenBody>,
+    );
+
+    expect(screen.getByText('Параметры')).toHaveClass('text-2xl');
+    expect(screen.getByTestId('inset')).toHaveClass('rounded-control', 'bg-surface-soft');
+    expect(screen.getByText('Адрес')).toHaveClass('text-ink-muted');
+    expect(screen.getByText('logo')).toHaveClass('h-12', 'w-12');
+    expect(screen.getByText('Описание')).toHaveClass('text-ink-secondary');
+  });
+
+  it('shares compact branded app bars', () => {
+    render(<TopAppBar leading={<span>Назад</span>} title="Заведение" trailing={<span>Нравится</span>} />);
+
+    expect(screen.getByRole('banner')).toHaveClass('bg-brand', 'px-page');
+    expect(screen.getByText('Заведение')).toHaveClass('truncate', 'text-center');
+  });
+
+  it('locks background scrolling and closes the top dialog with Escape', () => {
+    const onClose = vi.fn();
+    const { unmount } = render(<DialogLayer onClose={onClose} closeLabel="Закрыть" ariaLabel="Корзина">Корзина</DialogLayer>);
+
+    expect(document.body.style.overflow).toBe('hidden');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledOnce();
+    unmount();
+    expect(document.body.style.overflow).toBe('');
   });
 });

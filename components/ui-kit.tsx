@@ -24,6 +24,10 @@ export function SectionTitle({ className, ...props }: HTMLAttributes<HTMLHeading
   return <h2 className={cx('text-section-title text-ink', className)} {...props} />;
 }
 
+export function ContentTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+  return <h2 className={cx('text-2xl font-black tracking-[-0.04em] text-ink', className)} {...props} />;
+}
+
 export function PageSection({ title, children, className }: {
   title: ReactNode;
   children: ReactNode;
@@ -44,6 +48,26 @@ export function BrandHeader({ className, ...props }: HTMLAttributes<HTMLElement>
       {...props}
     />
   );
+}
+
+export function TopAppBar({ leading, title, trailing, className, ...props }: HTMLAttributes<HTMLElement> & {
+  leading: ReactNode;
+  title: ReactNode;
+  trailing: ReactNode;
+}) {
+  return (
+    <header className={cx('shrink-0 bg-brand px-page pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white', className)} {...props}>
+      <div className="flex min-h-11 items-center gap-3">
+        {leading}
+        <div className="min-w-0 flex-1 truncate text-center text-sm font-black">{title}</div>
+        {trailing}
+      </div>
+    </header>
+  );
+}
+
+export function ScreenBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={cx('bg-surface px-page pt-6', className)} {...props} />;
 }
 
 export function SecondaryButton({ className, type = 'button', size = 'lg', ...props }: ActionButtonProps) {
@@ -213,6 +237,25 @@ export function SurfaceCard({ className, ...props }: HTMLAttributes<HTMLElement>
   return <article className={cx('rounded-card border border-border bg-panel shadow-card', className)} {...props} />;
 }
 
+type InsetTone = 'soft' | 'panel' | 'brand' | 'brandSolid' | 'warning' | 'danger' | 'allergen';
+
+const insetTone: Record<InsetTone, string> = {
+  soft: 'bg-surface-soft',
+  panel: 'border border-border bg-panel',
+  brand: 'border border-brand/15 bg-brand-pale',
+  brandSolid: 'bg-brand text-white',
+  warning: 'bg-warning-surface text-warning-ink',
+  danger: 'bg-danger-soft text-danger',
+  allergen: 'border border-allergen-border bg-allergen-surface',
+};
+
+export function InsetSurface({ tone = 'soft', radius = 'control', className, ...props }: HTMLAttributes<HTMLDivElement> & {
+  tone?: InsetTone;
+  radius?: 'control' | 'card';
+}) {
+  return <div className={cx(radius === 'card' ? 'rounded-card' : 'rounded-control', insetTone[tone], className)} {...props} />;
+}
+
 export function CardPressable({ className, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
@@ -259,19 +302,91 @@ export function StatusBadge({ children, icon, tone = 'brand', size = 'md', class
 
 export function IconBadge({ children, tone = 'brand', className }: {
   children: ReactNode;
-  tone?: 'brand' | 'accent' | 'soft';
+  tone?: 'brand' | 'accent' | 'soft' | 'warning' | 'danger';
   className?: string;
 }) {
   const tones = {
     brand: 'bg-brand-pale text-brand',
     accent: 'bg-accent-soft text-accent-strong',
     soft: 'bg-surface-soft text-brand',
+    warning: 'bg-warning-surface text-warning-ink',
+    danger: 'bg-danger-soft text-danger',
   };
 
   return (
     <span className={cx('grid h-10 w-10 shrink-0 place-items-center rounded-full', tones[tone], className)}>
       {children}
     </span>
+  );
+}
+
+export function MediaBadge({ children, size = 'md', className }: {
+  children: ReactNode;
+  size?: 'md' | 'lg';
+  className?: string;
+}) {
+  return (
+    <span className={cx(
+      'grid shrink-0 place-items-center overflow-hidden rounded-full border bg-panel shadow-card',
+      size === 'lg' ? 'h-17 w-17 border-4 border-surface' : 'h-12 w-12 border-border',
+      className,
+    )}>
+      {children}
+    </span>
+  );
+}
+
+export function DisclosureIndicator({ className }: { className?: string }) {
+  return (
+    <span className={cx('grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-pale text-brand', className)} aria-hidden="true">
+      <ChevronDown size={18} strokeWidth={2.5} className="-rotate-90" />
+    </span>
+  );
+}
+
+export function DetailRow({ icon, label, value, divided = false, className, ...props }: HTMLAttributes<HTMLDivElement> & {
+  icon: ReactNode;
+  label: ReactNode;
+  value: ReactNode;
+  divided?: boolean;
+}) {
+  return (
+    <div className={cx('flex items-start gap-3', divided && 'border-t border-border pt-4', className)} {...props}>
+      <IconBadge tone="soft">{icon}</IconBadge>
+      <div className="min-w-0">
+        <p className="text-xs font-bold text-ink-muted">{label}</p>
+        <div className="mt-1 text-sm font-black leading-5 text-ink">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+type NoticeTone = 'brand' | 'warning' | 'danger' | 'allergen';
+
+const noticeTextTone: Record<NoticeTone, { title: string; body: string; icon: 'soft' | 'warning' | 'danger' | 'accent' }> = {
+  brand: { title: 'text-brand', body: 'text-ink-secondary', icon: 'soft' },
+  warning: { title: 'text-warning-ink', body: 'text-warning-ink', icon: 'warning' },
+  danger: { title: 'text-danger', body: 'text-danger', icon: 'danger' },
+  allergen: { title: 'text-allergen-ink', body: 'text-allergen-body', icon: 'accent' },
+};
+
+export function NoticeCard({ icon, title, children, tone = 'brand', className, ...props }: Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
+  icon: ReactNode;
+  title?: ReactNode;
+  children: ReactNode;
+  tone?: NoticeTone;
+}) {
+  const styles = noticeTextTone[tone];
+  return (
+    <InsetSurface tone={tone} className={cx('p-4', className)} {...props}>
+      <div className="flex items-start gap-3">
+        <IconBadge tone={styles.icon}>{icon}</IconBadge>
+        <div className="min-w-0 text-sm leading-6">
+          {title && <h3 className={cx('font-black', styles.title)}>{title}</h3>}
+          <div className={cx(Boolean(title) && 'mt-1.5', styles.body)}>{children}</div>
+        </div>
+      </div>
+    </InsetSurface>
   );
 }
 
@@ -511,11 +626,26 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
 }) {
   const resolvedVariant = full ? 'full' : variant ?? 'sheet';
   const panelRef = useRef<HTMLElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     const previouslyFocused = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     panelRef.current?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      const dialogs = document.querySelectorAll('[role="dialog"]');
+      const isTopDialog = panelRef.current?.parentElement === dialogs.item(dialogs.length - 1);
+      if (event.key === 'Escape' && isTopDialog) onCloseRef.current();
+    };
+    document.addEventListener('keydown', closeOnEscape);
     return () => {
+      document.removeEventListener('keydown', closeOnEscape);
+      document.body.style.overflow = previousOverflow;
       if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
     };
   }, []);

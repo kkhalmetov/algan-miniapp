@@ -35,8 +35,10 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - `BottomNavigation` and `BottomNavigationItem`: canonical application navigation, active pill and label treatment.
 - `FullScreenFeedback`: canonical success/error layout for transactional outcomes.
 - `CardPressable`: shared keyboard-focus treatment for interactive regions inside clipped cards.
-- `BrandHeader`, `PageSection`, `PageTitle`, `SectionTitle`: one hierarchy for screen chrome and headings.
+- `BrandHeader`, `TopAppBar`, `PageSection`, `ScreenBody`, `PageTitle`, `ContentTitle`, `SectionTitle`: one hierarchy for screen chrome, gutters and headings.
 - `ListRow`, `LinkRow`: shared button/link rows with icon container, optional supporting text, panel/soft surfaces and trailing action.
+- `InsetSurface`, `NoticeCard`, `DetailRow`: canonical inset surfaces, semantic notices and labelled detail rows.
+- `MediaBadge`, `DisclosureIndicator`: shared logo/avatar containers and affordances for tappable content.
 - `SegmentedControl`: shared two-state selector with pressed-state semantics.
 - `EmptyState`: shared illustration container, title and supporting copy.
 - `IconBadge`: shared contextual icon container for informational cards.
@@ -61,7 +63,9 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 ## Composition rules
 
 - Top-level list screens use `PageSection`; branded identity screens use `BrandHeader`.
+- Screen content uses the 20 px `ScreenBody` gutter; detail and modal content may use the 24 px `page-wide` gutter. One screen must not introduce an additional gutter value.
 - Elevated content uses `SurfaceCard`; inset content uses `surface-soft` with `rounded-control`.
+- Repeated labelled facts use `DetailRow`; semantic explanatory blocks use `NoticeCard`; logos shown over imagery or in lists use `MediaBadge`.
 - Modal and bottom-sheet flows start with `DialogLayer`; nested implementations must not recreate a backdrop.
 - Repeated state labels use `StatusBadge` and repeated card/footer actions use their UI-kit primitives.
 - Domain components may own their internal layout, but may not redefine shared control, surface, typography, overlay, or status styles.
@@ -82,3 +86,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - Extend an existing primitive before copying its full class list into a feature screen.
 - Every new primitive needs a focused test in `tests/ui-kit.test.tsx`.
 - `tests/design-system.test.ts` enforces token ownership and guards against duplicated page-title, overlay, card-action and sticky-footer recipes.
+
+## Audit status
+
+The interface audit covers onboarding, home, map markers, favorites, orders, profile, settings, legal/help flows, store details, box details, cart and payment feedback. Screen gutters now use only the documented 20/24 px values; repeated information, notice, media, disclosure and compact-header patterns are routed through the UI kit. Modal layers share focus restoration, background scroll locking, Escape dismissal, safe-area spacing and one elevation model.
