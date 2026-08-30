@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { boxes } from './mock-data';
 import { normalizePickupCode } from './order-id';
-import type { CartItem, Locale, Order, Tab, UserLocation, UserProfile } from './types';
+import type { CartItem, Currency, Locale, Order, Tab, UserLocation, UserProfile } from './types';
 
 interface AppState {
   hydrated: boolean;
@@ -12,6 +12,7 @@ interface AppState {
   profile: UserProfile;
   location?: UserLocation;
   locale: Locale;
+  currency: Currency;
   tab: Tab;
   favoriteStoreIds: string[];
   orders: Order[];
@@ -24,6 +25,7 @@ interface AppState {
   updatePhone: (phone: string) => void;
   setLocation: (location: UserLocation) => void;
   setLocale: (locale: Locale) => void;
+  setCurrency: (currency: Currency) => void;
   setTab: (tab: Tab) => void;
   toggleFavorite: (storeId: string) => void;
   addOrder: (order: Order) => void;
@@ -71,6 +73,7 @@ export const useAppStore = create<AppState>()(
       onboardingDone: false,
       profile: { firstName: '' },
       locale: 'kk',
+      currency: 'KZT',
       tab: 'home',
       favoriteStoreIds: [],
       orders: [],
@@ -95,6 +98,7 @@ export const useAppStore = create<AppState>()(
       updatePhone: (phone) => set((state) => ({ profile: { ...state.profile, phone } })),
       setLocation: (location) => set({ location }),
       setLocale: (locale) => set({ locale }),
+      setCurrency: (currency) => set({ currency }),
       setTab: (tab) => set({ tab }),
       toggleFavorite: (storeId) => set((state) => ({
         favoriteStoreIds: state.favoriteStoreIds.includes(storeId)
@@ -133,8 +137,8 @@ export const useAppStore = create<AppState>()(
       name: 'algan-miniapp',
       version: 2,
       migrate: (persistedState) => migratePersistedState(persistedState) as never,
-      partialize: ({ onboardingDone, profile, location, locale, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities }) => ({
-        onboardingDone, profile, location, locale, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
+      partialize: ({ onboardingDone, profile, location, locale, currency, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities }) => ({
+        onboardingDone, profile, location, locale, currency, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
       }),
       onRehydrateStorage: () => (state) => state?.setHydrated(true),
     },

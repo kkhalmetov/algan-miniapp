@@ -12,6 +12,7 @@ describe('profile information sections', () => {
       onboardingDone: true,
       profile: { firstName: 'Kimal', phone: '+77059768000' },
       locale: 'ru',
+      currency: 'KZT',
       tab: 'home',
       favoriteStoreIds: [],
       orders: [],
@@ -19,6 +20,7 @@ describe('profile information sections', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     cleanup();
     vi.useRealTimers();
   });
@@ -125,6 +127,24 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getByRole('button', { name: /Язык.*Русский/ }));
     expect(screen.getByRole('heading', { name: 'Баптаулар' })).toBeInTheDocument();
     expect(useAppStore.getState().locale).toBe('kk');
+  });
+
+  it('places the currency switch below demo reset and loads the RUB rate', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ result: 'success', rates: { RUB: 0.185297 } }) }));
+    openProfile();
+
+    const reset = screen.getByRole('button', { name: 'Сбросить демо-данные' });
+    const switchCurrency = screen.getByRole('button', { name: 'Показывать цены в рублях' });
+    expect(reset.compareDocumentPosition(switchCurrency) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.click(switchCurrency);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(useAppStore.getState().currency).toBe('RUB');
+    expect(screen.getByRole('button', { name: 'Показывать цены в тенге' })).toBeInTheDocument();
   });
 
   it('shows localized help content in Kazakh', () => {

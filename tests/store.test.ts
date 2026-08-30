@@ -8,6 +8,7 @@ describe('local MVP state', () => {
       profile: { firstName: '' },
       location: undefined,
       locale: 'ru',
+      currency: 'KZT',
       tab: 'home',
       favoriteStoreIds: [],
       orders: [],
@@ -19,6 +20,12 @@ describe('local MVP state', () => {
 
   it('uses Kazakh as the default language for a new user', () => {
     expect(useAppStore.getInitialState().locale).toBe('kk');
+  });
+
+  it('uses tenge by default and saves the selected display currency', () => {
+    expect(useAppStore.getInitialState().currency).toBe('KZT');
+    useAppStore.getState().setCurrency('RUB');
+    expect(useAppStore.getState().currency).toBe('RUB');
   });
 
   it('completes onboarding and saves an optional profile', () => {

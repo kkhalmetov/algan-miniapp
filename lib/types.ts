@@ -1,4 +1,5 @@
 export type Locale = 'ru' | 'kk';
+export type Currency = 'KZT' | 'RUB';
 export type Tab = 'home' | 'map' | 'favorites' | 'orders' | 'profile';
 
 export interface UserProfile {

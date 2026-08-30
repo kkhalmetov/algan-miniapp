@@ -2,11 +2,11 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  AlertTriangle, Building2, Check, ChevronRight, CircleHelp, Clock3, FileCheck2, Heart, Home, Info, Languages, Mail, Map as MapIcon,
+  AlertTriangle, Building2, Check, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, Heart, Home, Info, Languages, Mail, Map as MapIcon,
   MapPin, Package, PackageCheck, Phone, QrCode, Route, Settings2, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import {
@@ -16,6 +16,7 @@ import {
   SurfaceCard, TertiaryButton, TextField, TextLinkButton,
 } from '@/components/ui-kit';
 import { authenticateTelegram } from '@/lib/api';
+import { fetchKztToRubRate, formatCurrency } from '@/lib/currency';
 import { getRouteOptions, type RouteProvider } from '@/lib/maps';
 import { boxes, demoPastOrder, storeById, stores } from '@/lib/mock-data';
 import { createOrderId, createOrderQrPayload, createPickupCode, formatOrderId, formatPickupCode } from '@/lib/order-id';
@@ -25,7 +26,7 @@ import { formatBoxesLeft } from '@/lib/stock';
 import { useAppStore } from '@/lib/store';
 import { getCopy, type CopyKey } from '@/lib/translations';
 import { haptic, openExternalLink, openTelegramLink, prepareTelegram, telegramProfile } from '@/lib/telegram';
-import type { Box, CartItem, Locale, Order, Store, Tab, UserProfile } from '@/lib/types';
+import type { Box, CartItem, Currency, Locale, Order, Store, Tab, UserProfile } from '@/lib/types';
 
 const SHYMKENT = { lat: 42.3155, lng: 69.5869 };
 export const MINIMUM_SPLASH_MS = 900;
@@ -44,16 +45,20 @@ const LEGAL_TITLE_KEYS: Record<LegalDocument, CopyKey> = {
 export const avatarRetryUrl = (url: string, attempt: number) =>
   `${url}${url.includes('?') ? '&' : '?'}algan_avatar_retry=${attempt}`;
 
-const formatPrice = (value: number, locale: Locale) =>
-  `${new Intl.NumberFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ').format(value)} ₸`;
+const PriceContext = createContext<{ currency: Currency; kztToRubRate: number | null }>({ currency: 'KZT', kztToRubRate: null });
+
+const usePriceFormatter = (locale: Locale) => {
+  const { currency, kztToRubRate } = useContext(PriceContext);
+  return useCallback((value: number) => formatCurrency(value, locale, currency, kztToRubRate), [currency, kztToRubRate, locale]);
+};
 
 const availableQuantity = (box: Box, purchasedBoxQuantities: Record<string, number>) =>
   Math.max(0, box.quantity - (purchasedBoxQuantities[box.id] ?? 0));
 
 export default function AlganApp() {
   const {
-    hydrated, onboardingDone, profile, locale, tab, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
-    completeOnboarding, syncTelegramProfile, updatePhone, setLocale, setTab, toggleFavorite,
+    hydrated, onboardingDone, profile, locale, currency, tab, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
+    completeOnboarding, syncTelegramProfile, updatePhone, setLocale, setCurrency, setTab, toggleFavorite,
     setCartItemQuantity, clearCart, completePurchase, resetDemo,
   } = useAppStore();
   const t = useCallback((key: CopyKey) => getCopy(locale)(key), [locale]);
@@ -71,6 +76,8 @@ export default function AlganApp() {
   const paymentPendingRef = useRef(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [editingPhone, setEditingPhone] = useState(false);
+  const [kztToRubRate, setKztToRubRate] = useState<number | null>(null);
+  const [currencyRateError, setCurrencyRateError] = useState(false);
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
 
   useEffect(() => {
@@ -125,6 +132,30 @@ export default function AlganApp() {
   useEffect(() => {
     void authenticateTelegram().catch(() => undefined);
   }, []);
+
+  useEffect(() => {
+    if (currency !== 'RUB') return;
+    const controller = new AbortController();
+    void fetchKztToRubRate(controller.signal)
+      .then((rate) => setKztToRubRate(rate))
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        setKztToRubRate(null);
+        setCurrencyRateError(true);
+        setCurrency('KZT');
+      });
+    return () => controller.abort();
+  }, [currency, setCurrency]);
+
+  const toggleCurrency = () => {
+    setCurrencyRateError(false);
+    if (currency === 'RUB') {
+      setCurrency('KZT');
+      return;
+    }
+    setKztToRubRate(null);
+    setCurrency('RUB');
+  };
 
   const finishOnboarding = () => {
     const normalizedPhone = normalizeKazakhstanPhone(phone);
@@ -247,7 +278,9 @@ export default function AlganApp() {
       </PhoneShell>
     );
   }
+  const displayCurrency: Currency = currency === 'RUB' && kztToRubRate ? 'RUB' : 'KZT';
   return (
+    <PriceContext.Provider value={{ currency: displayCurrency, kztToRubRate }}>
     <PhoneShell>
       <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-surface sm:h-[780px]">
         <main className={`min-h-0 flex-1 overflow-x-hidden overscroll-contain ${tab === 'map' ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
@@ -263,7 +296,8 @@ export default function AlganApp() {
           )}
           {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} />}
           {tab === 'profile' && (
-            <ProfileTab t={t} profile={profile}
+            <ProfileTab t={t} profile={profile} currency={currency}
+              currencyLoading={currency === 'RUB' && !kztToRubRate} currencyRateError={currencyRateError} onToggleCurrency={toggleCurrency}
               openSettings={() => setSettingsOpen(true)}
               openHelp={() => setHelpOpen(true)}
               openDocuments={() => setDocumentsOpen(true)}
@@ -322,6 +356,7 @@ export default function AlganApp() {
         />
       )}
     </PhoneShell>
+    </PriceContext.Provider>
   );
 }
 
@@ -535,6 +570,7 @@ function orderPickupWindow(order: Order) {
 }
 
 function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; orders: Order[] }) {
+  const formatPrice = usePriceFormatter(locale);
   const [view, setView] = useState<'active' | 'past'>('active');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [routeStore, setRouteStore] = useState<Store | null>(null);
@@ -586,7 +622,7 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
                         <span key={item.boxId} className="flex items-center justify-between gap-3 text-xs">
                           <span className="truncate font-bold">{box?.name}</span>
                           <span className="shrink-0 text-right">
-                            <span className="font-black text-ink-secondary">{formatPrice(item.unitPrice, locale)}</span>
+                            <span className="font-black text-ink-secondary">{formatPrice(item.unitPrice)}</span>
                             <span className="ml-1 font-semibold text-ink-muted">× {item.quantity}</span>
                           </span>
                         </span>
@@ -601,10 +637,10 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
                         <span className="block font-bold text-ink-secondary">{t('pickupTime')}: {pickupWindow}</span>
                         <span className="mt-1 block font-bold text-ink-muted">{orderDate}</span>
                       </span>
-                      <span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total, locale)}</span>
+                      <span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total)}</span>
                     </>
                   ) : (
-                    <><span className="font-bold text-ink-muted">{orderDate}</span><span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total, locale)}</span></>
+                    <><span className="font-bold text-ink-muted">{orderDate}</span><span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total)}</span></>
                   )}
                 </span>
               </>
@@ -650,14 +686,15 @@ function OrderQr({ order, t }: { order: Order; t: Translator }) {
 }
 
 function OrderItemsList({ order, locale }: { order: Order; locale: Locale }) {
+  const formatPrice = usePriceFormatter(locale);
   return (
     <div className="space-y-2">
       {order.items.map((item) => {
         const box = boxes.find((candidate) => candidate.id === item.boxId);
         return (
           <div key={item.boxId} className="flex items-start justify-between gap-4 rounded-control bg-surface-soft px-4 py-3">
-            <div className="min-w-0"><p className="text-sm font-black">{box?.name}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice, locale)} × {item.quantity}</p></div>
-            <b className="shrink-0 text-sm text-brand">{formatPrice(item.unitPrice * item.quantity, locale)}</b>
+            <div className="min-w-0"><p className="text-sm font-black">{box?.name}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</p></div>
+            <b className="shrink-0 text-sm text-brand">{formatPrice(item.unitPrice * item.quantity)}</b>
           </div>
         );
       })}
@@ -666,6 +703,7 @@ function OrderItemsList({ order, locale }: { order: Order; locale: Locale }) {
 }
 
 function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Locale; t: Translator; onClose: () => void }) {
+  const formatPrice = usePriceFormatter(locale);
   const store = stores.find((item) => item.id === order.storeId);
   const orderDate = new Intl.DateTimeFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ', {
     day: 'numeric', month: 'long', year: 'numeric',
@@ -691,7 +729,7 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
             <p className="mt-5 text-center text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
             <h3 className="mt-6 text-base font-black">{t('orderContents')}</h3>
             <div className="mt-3"><OrderItemsList order={order} locale={locale} /></div>
-            <div className="mt-4 flex items-center justify-between border-t border-border pt-4"><span className="text-sm font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-brand">{formatPrice(order.total, locale)}</b></div>
+            <div className="mt-4 flex items-center justify-between border-t border-border pt-4"><span className="text-sm font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-brand">{formatPrice(order.total)}</b></div>
             <p className="mt-3 text-sm font-bold text-ink-secondary">{orderDate}</p>
           </>
         )}
@@ -700,9 +738,9 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
   );
 }
 
-function ProfileTab({ t, profile, openSettings, openHelp, openDocuments, resetDemo }: {
-  t: Translator; profile: UserProfile; openSettings: () => void;
-  openHelp: () => void; openDocuments: () => void; resetDemo: () => void;
+function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, onToggleCurrency, openSettings, openHelp, openDocuments, resetDemo }: {
+  t: Translator; profile: UserProfile; currency: Currency; currencyLoading: boolean; currencyRateError: boolean;
+  onToggleCurrency: () => void; openSettings: () => void; openHelp: () => void; openDocuments: () => void; resetDemo: () => void;
 }) {
   const telegramUsername = telegramProfile().username.trim().replace(/^@/, '');
   return (
@@ -721,6 +759,10 @@ function ProfileTab({ t, profile, openSettings, openHelp, openDocuments, resetDe
           <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
         </div>
         <DangerButton onClick={() => { if (window.confirm(t('signOutDemo'))) resetDemo(); }} className="mt-6">{t('signOutDemo')}</DangerButton>
+        <SecondaryButton onClick={onToggleCurrency} disabled={currencyLoading} className="mt-2">
+          <CircleDollarSign size={19} />{currencyLoading ? t('currencyLoading') : currency === 'KZT' ? t('showRubles') : t('showTenge')}
+        </SecondaryButton>
+        {currencyRateError && <p className="mt-2 text-center text-xs font-bold text-danger">{t('currencyRateError')}</p>}
       </div>
     </section>
   );
@@ -829,6 +871,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
   onChangeQuantity: (box: Box, quantity: number) => void; onOpenBox: (box: Box) => void;
   onOpenCart: () => void; onClose: () => void;
 }) {
+  const formatPrice = usePriceFormatter(locale);
   const storeBoxes = boxes.filter((box) => box.storeId === store.id);
   const isHalal = storeBoxes.length > 0 && storeBoxes.every((box) => box.isHalal);
   const fallbackImage = storeBoxes[0]?.image ?? '/images/bakery.jpg';
@@ -893,7 +936,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
       </div>
       {cartQuantity > 0 && (
         <StickyActionFooter>
-          <PrimaryButton onClick={onOpenCart}><ShoppingBag size={19} />{t('cart')} · {cartQuantity}<span className="ml-auto">{formatPrice(cartTotal, locale)}</span></PrimaryButton>
+          <PrimaryButton onClick={onOpenCart}><ShoppingBag size={19} />{t('cart')} · {cartQuantity}<span className="ml-auto">{formatPrice(cartTotal)}</span></PrimaryButton>
         </StickyActionFooter>
       )}
         {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
@@ -906,6 +949,7 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
   box: Box; locale: Locale; t: Translator; available: number; cartQuantity: number;
   onChangeQuantity: (quantity: number) => void; onOpen: () => void;
 }) {
+  const formatPrice = usePriceFormatter(locale);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
@@ -917,8 +961,8 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
           </span>
           <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />} className="mt-2">{formatBoxesLeft(available, locale)}</StatusBadge>
           <span className="mt-2 flex flex-wrap items-center gap-2">
-            <b className="text-base text-brand">{formatPrice(box.salePrice, locale)}</b>
-            <span className="text-[11px] text-ink-muted line-through">{formatPrice(box.originalPrice, locale)}</span>
+            <b className="text-base text-brand">{formatPrice(box.salePrice)}</b>
+            <span className="text-[11px] text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
             <StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge>
           </span>
         </span>
@@ -940,6 +984,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
   box: Box; locale: Locale; t: Translator; cartQuantity: number; available: number;
   onChangeQuantity: (quantity: number) => void; onClose: () => void;
 }) {
+  const formatPrice = usePriceFormatter(locale);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={box.name}>
@@ -959,9 +1004,9 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
           <div className="mt-4">
             <div data-testid="box-price-card" className="rounded-control bg-brand-pale p-4">
               <p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p>
-              <p className="mt-2 text-[25px] font-black tracking-[-0.04em] text-brand">{formatPrice(box.salePrice, locale)}</p>
+              <p className="mt-2 text-[25px] font-black tracking-[-0.04em] text-brand">{formatPrice(box.salePrice)}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice, locale)}</span>
+                <span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
                 <StatusBadge tone="accentSolid">−{discount}%</StatusBadge>
               </div>
             </div>
@@ -1053,6 +1098,7 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
   onChangeQuantity: (box: Box, quantity: number) => void; onClose: () => void; onPay: () => Promise<void>; paymentPending: boolean;
   onOpenOffer: () => void; onOpenOrderRules: () => void;
 }) {
+  const formatPrice = usePriceFormatter(locale);
   const lines = items.flatMap((item) => {
     const box = boxes.find((candidate) => candidate.id === item.boxId);
     return box ? [{ box, quantity: item.quantity }] : [];
@@ -1071,8 +1117,8 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
               <div key={box.id} className="rounded-control border border-border bg-panel p-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-black">{box.name}</p>
-                  <p className="mt-1 text-xs font-bold text-ink-muted">{formatPrice(box.salePrice, locale)} × {quantity}</p>
-                  <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity, locale)}</p>
+                  <p className="mt-1 text-xs font-bold text-ink-muted">{formatPrice(box.salePrice)} × {quantity}</p>
+                  <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity)}</p>
                 </div>
                 <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
                   <QuantityControl quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} label={t('quantity')}
@@ -1084,7 +1130,7 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
           </div>
         )}
         <div className="my-5 h-px bg-border" />
-        <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black">{formatPrice(total, locale)}</span></div>
+        <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black">{formatPrice(total)}</span></div>
         <PrimaryButton onClick={() => void onPay()} disabled={lines.length === 0 || paymentPending} className="mt-5">
           {paymentPending ? t('paymentProcessing') : t('checkoutCart')}<ChevronRight size={19} />
         </PrimaryButton>
