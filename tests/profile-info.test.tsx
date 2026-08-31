@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlganApp, { MINIMUM_SPLASH_MS } from '../app/app-client';
 import { useAppStore } from '../lib/store';
+import { acceptedLegalDocuments } from './test-state';
 
 describe('profile information sections', () => {
   beforeEach(() => {
@@ -10,6 +11,7 @@ describe('profile information sections', () => {
     useAppStore.setState({
       hydrated: true,
       onboardingDone: true,
+      legalAcceptance: acceptedLegalDocuments,
       profile: { firstName: 'Kimal', phone: '+77059768000' },
       locale: 'ru',
       currency: 'KZT',
@@ -74,7 +76,12 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getAllByRole('button', { name: 'Назад' })[0]!);
 
     fireEvent.click(screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' }));
-    expect(screen.getByRole('heading', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
+    const consentDialog = screen.getByRole('dialog', { name: 'Правовая информация' });
+    expect(within(consentDialog).getByRole('heading', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
+    expect(within(consentDialog).getByText('Kimal')).toBeInTheDocument();
+    expect(within(consentDialog).getByText('+77059768000')).toBeInTheDocument();
+    expect(within(consentDialog).getByText('1. Перечень персональных данных')).toBeInTheDocument();
+    expect(within(consentDialog).queryByText(/Документ готовится/)).not.toBeInTheDocument();
     fireEvent.click(screen.getAllByRole('button', { name: 'Назад' })[0]!);
 
     fireEvent.click(screen.getByRole('button', { name: 'Правила заказа, оплаты, самовывоза, отмены и возврата' }));
@@ -159,6 +166,7 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Сбросить демо-данные' }));
     fireEvent.click(within(screen.getByRole('dialog', { name: 'Сбросить демо-данные' })).getByRole('button', { name: 'Сбросить демо-данные' }));
     expect(useAppStore.getState().onboardingDone).toBe(false);
+    expect(useAppStore.getState().legalAcceptance).toBeUndefined();
   });
 
   it('shows localized help content in Kazakh', () => {

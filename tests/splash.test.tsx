@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlganApp, { MINIMUM_SPLASH_MS } from '../app/app-client';
 import { useAppStore } from '../lib/store';
+import { acceptedLegalDocuments } from './test-state';
 
 describe('startup splash', () => {
   beforeEach(() => {
@@ -10,6 +11,7 @@ describe('startup splash', () => {
     useAppStore.setState({
       hydrated: true,
       onboardingDone: false,
+      legalAcceptance: undefined,
       profile: { firstName: '' },
       locale: 'ru',
       tab: 'home',
@@ -48,7 +50,7 @@ describe('startup splash', () => {
   });
 
   it('syncs a Telegram avatar when user data becomes available on a retry', () => {
-    useAppStore.setState({ onboardingDone: true, profile: { firstName: 'Пользователь' } });
+    useAppStore.setState({ onboardingDone: true, legalAcceptance: acceptedLegalDocuments, profile: { firstName: 'Пользователь' } });
     render(<AlganApp />);
 
     act(() => vi.advanceTimersByTime(300));

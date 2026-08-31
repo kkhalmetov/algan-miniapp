@@ -17,6 +17,7 @@ vi.mock('@/components/location-map', () => ({
 import AlganApp, { MINIMUM_SPLASH_MS } from '../app/app-client';
 import { boxes } from '../lib/mock-data';
 import { useAppStore } from '../lib/store';
+import { acceptedLegalDocuments } from './test-state';
 
 describe('box types', () => {
   beforeEach(() => {
@@ -25,6 +26,7 @@ describe('box types', () => {
     useAppStore.setState({
       hydrated: true,
       onboardingDone: true,
+      legalAcceptance: acceptedLegalDocuments,
       profile: { firstName: 'Kimal', phone: '+77059768000' },
       locale: 'ru',
       tab: 'home',

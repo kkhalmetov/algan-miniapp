@@ -18,6 +18,10 @@ import {
 } from '@/components/ui-kit';
 import { authenticateTelegram } from '@/lib/api';
 import { fetchKztToRubRate, formatCurrency } from '@/lib/currency';
+import {
+  createLegalAcceptance, getLegalDocument, hasCurrentLegalAcceptance, isPublishedLegalDocument,
+  legalDocumentMeta, LEGAL_DOCUMENT_VERSION, LEGAL_EFFECTIVE_DATE,
+} from '@/lib/legal-documents';
 import { getRouteOptions, type RouteProvider } from '@/lib/maps';
 import { boxes, demoPastOrder, storeById, stores } from '@/lib/mock-data';
 import { createOrderId, createOrderQrPayload, createPickupCode, formatOrderId, formatPickupCode } from '@/lib/order-id';
@@ -35,6 +39,7 @@ const TELEGRAM_SYNC_DELAYS_MS = [0, 250, 750, 1500, 3000] as const;
 const SUPPORT_TELEGRAM_URL = 'https://t.me/kkhalmetov';
 type LegalDocument = 'terms' | 'personalDataConsent' | 'privacy' | 'orderRules' | 'publicOffer';
 type LegalInformationView = LegalDocument | 'contacts';
+type LegalSubject = { fullName: string; telegramId?: number; phone?: string };
 type PendingCartReplacement =
   | { kind: 'openStore'; storeId: string }
   | { kind: 'changeQuantity'; box: Box; quantity: number };
@@ -58,11 +63,12 @@ const availableQuantity = (box: Box, purchasedBoxQuantities: Record<string, numb
 
 export default function AlganApp() {
   const {
-    hydrated, onboardingDone, profile, locale, currency, tab, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
-    completeOnboarding, syncTelegramProfile, updatePhone, setLocale, setCurrency, setTab, toggleFavorite,
+    hydrated, onboardingDone, profile, legalAcceptance, locale, currency, tab, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
+    completeOnboarding, acceptLegalDocuments, syncTelegramProfile, updatePhone, setLocale, setCurrency, setTab, toggleFavorite,
     setCartItemQuantity, clearCart, completePurchase, resetDemo,
   } = useAppStore();
   const t = useCallback((key: CopyKey) => getCopy(locale)(key), [locale]);
+  const liveTelegramProfile = telegramProfile();
   const [phone, setPhone] = useState('+7');
   const [legal, setLegal] = useState<LegalDocument | null>(null);
   const [documentsOpen, setDocumentsOpen] = useState(false);
@@ -80,6 +86,14 @@ export default function AlganApp() {
   const [kztToRubRate, setKztToRubRate] = useState<number | null>(null);
   const [currencyRateError, setCurrencyRateError] = useState(false);
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
+  const legalSubject: LegalSubject = {
+    fullName: [
+      liveTelegramProfile.firstName || profile.firstName,
+      liveTelegramProfile.lastName || profile.lastName,
+    ].filter(Boolean).join(' ').trim() || t('fallbackUser'),
+    telegramId: liveTelegramProfile.telegramId ?? profile.telegramId,
+    phone: onboardingDone ? profile.phone : normalizeKazakhstanPhone(phone) ?? (phone.length > 2 ? phone : undefined),
+  };
 
   useEffect(() => {
     const splashTimer = window.setTimeout(() => setMinimumSplashElapsed(true), MINIMUM_SPLASH_MS);
@@ -167,13 +181,14 @@ export default function AlganApp() {
     if (!normalizedPhone) return;
     const tgProfile = telegramProfile();
     haptic('success');
-    completeOnboarding({
+    const nextProfile = {
       telegramId: tgProfile.telegramId,
       firstName: tgProfile.firstName.trim() || t('fallbackUser'),
       lastName: tgProfile.lastName.trim() || undefined,
       phone: normalizedPhone,
       photoUrl: tgProfile.photoUrl || undefined,
-    });
+    };
+    completeOnboarding(nextProfile, createLegalAcceptance(locale, nextProfile.telegramId));
   };
 
   const showStore = useCallback((storeId: string) => {
@@ -271,6 +286,23 @@ export default function AlganApp() {
   };
 
   if (!hydrated || !minimumSplashElapsed) return <Splash t={t} />;
+  if (onboardingDone && !hasCurrentLegalAcceptance(legalAcceptance, legalSubject.telegramId)) {
+    return (
+      <PhoneShell>
+        <LegalAcceptanceScreen
+          t={t}
+          locale={locale}
+          setLocale={setLocale}
+          openLegal={setLegal}
+          onAccept={() => {
+            acceptLegalDocuments(createLegalAcceptance(locale, legalSubject.telegramId));
+            haptic('success');
+          }}
+        />
+        {legal && <LegalModal type={legal} t={t} locale={locale} subject={legalSubject} onClose={() => setLegal(null)} />}
+      </PhoneShell>
+    );
+  }
   if (!onboardingDone) {
     return (
       <PhoneShell>
@@ -279,7 +311,7 @@ export default function AlganApp() {
           phone={phone} setPhone={setPhone}
           openLegal={setLegal} onContinue={finishOnboarding}
         />
-        {legal && <LegalModal type={legal} t={t} onClose={() => setLegal(null)} />}
+        {legal && <LegalModal type={legal} t={t} locale={locale} subject={legalSubject} onClose={() => setLegal(null)} />}
       </PhoneShell>
     );
   }
@@ -350,9 +382,9 @@ export default function AlganApp() {
           haptic('success');
         }} />
       )}
-      {documentsOpen && <DocumentsModal t={t} onClose={() => setDocumentsOpen(false)} />}
+      {documentsOpen && <DocumentsModal t={t} locale={locale} subject={legalSubject} onClose={() => setDocumentsOpen(false)} />}
       {helpOpen && <HelpModal t={t} onClose={() => setHelpOpen(false)} />}
-      {legal && <LegalModal type={legal} t={t} onClose={() => setLegal(null)} />}
+      {legal && <LegalModal type={legal} t={t} locale={locale} subject={legalSubject} onClose={() => setLegal(null)} />}
       {pendingCartReplacement && (
         <CartReplacementDialog
           t={t}
@@ -447,16 +479,53 @@ function Onboarding(props: OnboardingProps) {
         <TextField label={t('phone')} required value={phone} onValueChange={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
 
         <PrimaryButton type="submit" disabled={!canContinue} className="mt-7">{t('continue')}<ChevronRight size={19} /></PrimaryButton>
-        <p className="mt-4 text-center text-xs leading-5 text-ink-muted">
-          {t('onboardingLegalPrefix')}
-          <TextLinkButton onClick={() => openLegal('terms')}>{t('onboardingTermsLink')}</TextLinkButton>
-          {t('onboardingLegalAfterTerms')}
-          <TextLinkButton onClick={() => openLegal('personalDataConsent')}>{t('onboardingConsentLink')}</TextLinkButton>
-          {t('onboardingLegalAfterConsent')}
-          <TextLinkButton onClick={() => openLegal('privacy')}>{t('onboardingPrivacyLink')}</TextLinkButton>
-          {t('onboardingLegalSuffix')}
-        </p>
+        <LegalAcceptanceSentence t={t} openLegal={openLegal} className="mt-4" />
       </form>
+    </div>
+  );
+}
+
+function LegalAcceptanceSentence({ t, openLegal, className = '', prefix }: {
+  t: Translator;
+  openLegal: (type: LegalDocument) => void;
+  className?: string;
+  prefix?: string;
+}) {
+  return (
+    <p className={`${className} text-center text-xs leading-5 text-ink-muted`}>
+      {prefix ?? t('onboardingLegalPrefix')}
+      <TextLinkButton onClick={() => openLegal('terms')}>{t('onboardingTermsLink')}</TextLinkButton>
+      {t('onboardingLegalAfterTerms')}
+      <TextLinkButton onClick={() => openLegal('personalDataConsent')}>{t('onboardingConsentLink')}</TextLinkButton>
+      {t('onboardingLegalAfterConsent')}
+      <TextLinkButton onClick={() => openLegal('privacy')}>{t('onboardingPrivacyLink')}</TextLinkButton>
+      {t('onboardingLegalSuffix')}
+    </p>
+  );
+}
+
+function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccept }: {
+  t: Translator;
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
+  openLegal: (type: LegalDocument) => void;
+  onAccept: () => void;
+}) {
+  return (
+    <div className="flex min-h-dvh flex-col sm:min-h-[780px]">
+      <div className="bg-brand px-page-wide pb-6 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
+        <div className="flex items-start justify-between gap-4">
+          <AlganLogo light />
+          <LanguagePill locale={locale} setLocale={setLocale} dark />
+        </div>
+      </div>
+      <div className="flex flex-1 flex-col px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8">
+        <div className="grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand"><FileCheck2 size={25} /></div>
+        <PageTitle className="mt-5">{t('legalUpdateTitle')}</PageTitle>
+        <p className="mt-3 text-sm leading-6 text-ink-secondary">{t('legalUpdateText')}</p>
+        <LegalAcceptanceSentence t={t} openLegal={openLegal} className="mt-6" prefix={t('legalUpdateAcceptancePrefix')} />
+        <PrimaryButton onClick={onAccept} className="mt-auto">{t('acceptAndContinue')}<ChevronRight size={19} /></PrimaryButton>
+      </div>
     </div>
   );
 }
@@ -1191,7 +1260,7 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
   );
 }
 
-function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) {
+function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale: Locale; subject: LegalSubject; onClose: () => void }) {
   const [selectedView, setSelectedView] = useState<LegalInformationView | null>(null);
   const documents: { type: LegalDocument; icon: React.ReactNode }[] = [
     { type: 'terms', icon: <Info size={18} /> },
@@ -1207,13 +1276,15 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('legal')}>
       <ModalBody className="max-h-[82dvh] overflow-y-auto">
-        <ModalHeader
-          title={title}
-          onBack={selectedView ? () => setSelectedView(null) : undefined}
-          backLabel={t('back')}
-          onClose={onClose}
-          closeLabel={t('close')}
-        />
+        <div className="sticky top-0 z-10 bg-surface pb-3">
+          <ModalHeader
+            title={title}
+            onBack={selectedView ? () => setSelectedView(null) : undefined}
+            backLabel={t('back')}
+            onClose={onClose}
+            closeLabel={t('close')}
+          />
+        </div>
         {selectedView === 'contacts' ? (
           <>
             <CompanyContacts t={t} />
@@ -1221,7 +1292,7 @@ function DocumentsModal({ t, onClose }: { t: Translator; onClose: () => void }) 
           </>
         ) : selectedView ? (
           <>
-            <LegalDocumentNotice t={t} />
+            <LegalDocumentView type={selectedView} t={t} locale={locale} subject={subject} />
             <PrimaryButton onClick={() => setSelectedView(null)} className="mt-5">{t('back')}</PrimaryButton>
           </>
         ) : (
@@ -1312,12 +1383,71 @@ function TelegramIcon() {
 function LegalDocumentNotice({ t }: { t: Translator }) {
   return <NoticeCard className="mt-5" tone="warning" icon={<Info size={20} />}>{t('placeholderLegal')}</NoticeCard>;
 }
-function LegalModal({ type, t, onClose }: { type: LegalDocument; t: Translator; onClose: () => void }) {
+
+function LegalDocumentView({ type, t, locale, subject }: {
+  type: LegalDocument;
+  t: Translator;
+  locale: Locale;
+  subject: LegalSubject;
+}) {
+  if (!isPublishedLegalDocument(type)) return <LegalDocumentNotice t={t} />;
+  const document = getLegalDocument(locale, type);
+  const meta = legalDocumentMeta[locale];
+  return (
+    <article className="mt-4 text-sm leading-6 text-ink-secondary" data-legal-document={type}>
+      <InsetSurface className="p-4">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
+          <dt className="font-black text-ink-muted">{meta.version}</dt><dd className="text-right font-bold text-ink">{LEGAL_DOCUMENT_VERSION}</dd>
+          <dt className="font-black text-ink-muted">{meta.effectiveDate}</dt><dd className="text-right font-bold text-ink">{LEGAL_EFFECTIVE_DATE}</dd>
+          <dt className="font-black text-ink-muted">{meta.operator}</dt><dd className="text-right font-bold text-ink">{t('companyName')}</dd>
+        </dl>
+      </InsetSurface>
+
+      {type === 'personalDataConsent' && (
+        <InsetSurface tone="brand" className="mt-3 p-4">
+          <h3 className="font-black text-brand">{meta.subject}</h3>
+          <dl className="mt-3 space-y-2 text-xs">
+            <div className="flex items-start justify-between gap-4"><dt className="font-bold text-ink-muted">{meta.fullName}</dt><dd className="text-right font-black text-ink">{subject.fullName}</dd></div>
+            <div className="flex items-start justify-between gap-4"><dt className="font-bold text-ink-muted">{meta.telegramId}</dt><dd className="text-right font-black text-ink">{subject.telegramId ?? meta.notProvided}</dd></div>
+            <div className="flex items-start justify-between gap-4"><dt className="font-bold text-ink-muted">{meta.phone}</dt><dd className="text-right font-black text-ink">{subject.phone ?? meta.notProvided}</dd></div>
+          </dl>
+        </InsetSurface>
+      )}
+
+      <div className="mt-5 space-y-3">
+        {document.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+      </div>
+      <div className="mt-6 space-y-7">
+        {document.sections.map((section) => (
+          <section key={section.heading}>
+            <h3 className="text-base font-black leading-6 text-ink">{section.heading}</h3>
+            {section.paragraphs && (
+              <div className="mt-3 space-y-3">{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
+            )}
+            {section.items && (
+              <ul className="mt-3 list-disc space-y-2 pl-5">{section.items.map((item) => <li key={item}>{item}</li>)}</ul>
+            )}
+          </section>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function LegalModal({ type, t, locale, subject, onClose }: {
+  type: LegalDocument;
+  t: Translator;
+  locale: Locale;
+  subject: LegalSubject;
+  onClose: () => void;
+}) {
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t(LEGAL_TITLE_KEYS[type])}>
-      <ModalBody>
-        <ModalHeader title={t(LEGAL_TITLE_KEYS[type])} onClose={onClose} closeLabel={t('close')} />
-        <LegalDocumentNotice t={t} />
+      <ModalBody className="max-h-[90dvh] overflow-y-auto">
+        <div className="sticky top-0 z-10 bg-surface pb-3">
+          <ModalHeader title={t(LEGAL_TITLE_KEYS[type])} onClose={onClose} closeLabel={t('close')} />
+        </div>
+        <LegalDocumentView type={type} t={t} locale={locale} subject={subject} />
         <PrimaryButton onClick={onClose} className="mt-5">{t('back')}</PrimaryButton>
       </ModalBody>
     </DialogLayer>

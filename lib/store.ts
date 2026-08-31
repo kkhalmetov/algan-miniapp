@@ -4,12 +4,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { boxes } from './mock-data';
 import { normalizePickupCode } from './order-id';
-import type { CartItem, Currency, Locale, Order, Tab, UserLocation, UserProfile } from './types';
+import type { CartItem, Currency, LegalAcceptance, Locale, Order, Tab, UserLocation, UserProfile } from './types';
 
 interface AppState {
   hydrated: boolean;
   onboardingDone: boolean;
   profile: UserProfile;
+  legalAcceptance?: LegalAcceptance;
   location?: UserLocation;
   locale: Locale;
   currency: Currency;
@@ -20,7 +21,8 @@ interface AppState {
   cartItems: CartItem[];
   purchasedBoxQuantities: Record<string, number>;
   setHydrated: (value: boolean) => void;
-  completeOnboarding: (profile: UserProfile) => void;
+  completeOnboarding: (profile: UserProfile, legalAcceptance: LegalAcceptance) => void;
+  acceptLegalDocuments: (legalAcceptance: LegalAcceptance) => void;
   syncTelegramProfile: (profile: Pick<UserProfile, 'telegramId' | 'firstName' | 'lastName' | 'photoUrl'>) => void;
   updatePhone: (phone: string) => void;
   setLocation: (location: UserLocation) => void;
@@ -72,6 +74,7 @@ export const useAppStore = create<AppState>()(
       hydrated: false,
       onboardingDone: false,
       profile: { firstName: '' },
+      legalAcceptance: undefined,
       locale: 'kk',
       currency: 'KZT',
       tab: 'home',
@@ -80,7 +83,8 @@ export const useAppStore = create<AppState>()(
       cartItems: [],
       purchasedBoxQuantities: {},
       setHydrated: (hydrated) => set({ hydrated }),
-      completeOnboarding: (profile) => set({ profile, onboardingDone: true }),
+      completeOnboarding: (profile, legalAcceptance) => set({ profile, legalAcceptance, onboardingDone: true }),
+      acceptLegalDocuments: (legalAcceptance) => set({ legalAcceptance }),
       syncTelegramProfile: (telegramProfile) => set((state) => {
         const isSameTelegramUser = Boolean(
           telegramProfile.telegramId && state.profile.telegramId === telegramProfile.telegramId,
@@ -129,16 +133,16 @@ export const useAppStore = create<AppState>()(
         };
       }),
       resetDemo: () => set({
-        onboardingDone: false, profile: { firstName: '' }, location: undefined, favoriteStoreIds: [], orders: [],
+        onboardingDone: false, profile: { firstName: '' }, legalAcceptance: undefined, location: undefined, favoriteStoreIds: [], orders: [],
         cartStoreId: undefined, cartItems: [], purchasedBoxQuantities: {}, tab: 'home',
       }),
     }),
     {
       name: 'algan-miniapp',
-      version: 2,
+      version: 3,
       migrate: (persistedState) => migratePersistedState(persistedState) as never,
-      partialize: ({ onboardingDone, profile, location, locale, currency, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities }) => ({
-        onboardingDone, profile, location, locale, currency, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
+      partialize: ({ onboardingDone, profile, legalAcceptance, location, locale, currency, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities }) => ({
+        onboardingDone, profile, legalAcceptance, location, locale, currency, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
       }),
       onRehydrateStorage: () => (state) => state?.setHydrated(true),
     },

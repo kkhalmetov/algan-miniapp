@@ -1,7 +1,9 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlganApp, { MINIMUM_SPLASH_MS } from '../app/app-client';
+import { LEGAL_DOCUMENT_VERSION } from '../lib/legal-documents';
 import { useAppStore } from '../lib/store';
+import { acceptedLegalDocuments } from './test-state';
 
 describe('onboarding legal consent', () => {
   beforeEach(() => {
@@ -10,6 +12,7 @@ describe('onboarding legal consent', () => {
     useAppStore.setState({
       hydrated: true,
       onboardingDone: false,
+      legalAcceptance: undefined,
       profile: { firstName: '' },
       locale: 'ru',
       tab: 'home',
@@ -39,6 +42,10 @@ describe('onboarding legal consent', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'согласие на сбор и обработку персональных данных' }));
     expect(screen.getByRole('dialog', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
+    expect(screen.getByText('Субъект персональных данных')).toBeInTheDocument();
+    expect(screen.getByText('Пользователь')).toBeInTheDocument();
+    expect(screen.getByText(/ИП «ALGAN», ИИН 030705500040/)).toBeInTheDocument();
+    expect(screen.queryByText(/Документ готовится/)).not.toBeInTheDocument();
   });
 
   it('allows continuing with a valid phone without separate checkboxes', () => {
@@ -52,5 +59,56 @@ describe('onboarding legal consent', () => {
 
     expect(useAppStore.getState().onboardingDone).toBe(true);
     expect(useAppStore.getState().profile.phone).toBe('+77059768000');
+    expect(useAppStore.getState().legalAcceptance).toMatchObject({
+      version: LEGAL_DOCUMENT_VERSION,
+      locale: 'ru',
+      method: 'continue_button',
+    });
+  });
+
+  it('personalizes the consent with Telegram identity', () => {
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed-data',
+        initDataUnsafe: { user: { id: 987654, first_name: 'Алия', last_name: 'Сейдахметова' } },
+        ready: () => undefined,
+        expand: () => undefined,
+      },
+    };
+    openOnboarding();
+    fireEvent.click(screen.getByRole('button', { name: 'согласие на сбор и обработку персональных данных' }));
+
+    expect(screen.getByText('Алия Сейдахметова')).toBeInTheDocument();
+    expect(screen.getByText('987654')).toBeInTheDocument();
+  });
+
+  it('renders the full privacy policy in Kazakh', () => {
+    useAppStore.setState({ locale: 'kk' });
+    openOnboarding();
+    fireEvent.click(screen.getByRole('button', { name: 'құпиялылық саясатымен' }));
+
+    expect(screen.getByRole('heading', { name: 'Құпиялылық саясаты' })).toBeInTheDocument();
+    expect(screen.getByText('1. Algan қандай деректерді алады')).toBeInTheDocument();
+    expect(screen.getByText('Нұсқа')).toBeInTheDocument();
+    expect(screen.queryByText(/Құжат дайындалып жатыр/)).not.toBeInTheDocument();
+  });
+
+  it('requires a one-time acceptance from an existing profile without clearing its data', () => {
+    useAppStore.setState({
+      onboardingDone: true,
+      legalAcceptance: { ...acceptedLegalDocuments, version: '0.9' },
+      profile: { firstName: 'Kimal', phone: '+77059768000' },
+      favoriteStoreIds: ['tatti'],
+    });
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+
+    expect(screen.getByRole('heading', { name: 'Обновлены юридические документы' })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Телефон/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Принять и продолжить' }));
+
+    expect(screen.getByText('Kimal!')).toBeInTheDocument();
+    expect(useAppStore.getState().favoriteStoreIds).toEqual(['tatti']);
+    expect(useAppStore.getState().legalAcceptance?.version).toBe(LEGAL_DOCUMENT_VERSION);
   });
 });

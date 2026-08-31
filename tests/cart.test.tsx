@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlganApp, { MINIMUM_SPLASH_MS } from '../app/app-client';
 import { useAppStore } from '../lib/store';
+import { acceptedLegalDocuments } from './test-state';
 
 describe('multi-box cart', () => {
   beforeEach(() => {
@@ -11,6 +12,7 @@ describe('multi-box cart', () => {
     useAppStore.setState({
       hydrated: true,
       onboardingDone: true,
+      legalAcceptance: acceptedLegalDocuments,
       profile: { firstName: 'Kimal', phone: '+77059768000' },
       locale: 'ru',
       tab: 'home',

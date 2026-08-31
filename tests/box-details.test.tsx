@@ -4,6 +4,7 @@ import AlganApp, { MINIMUM_SPLASH_MS } from '../app/app-client';
 import { storeMarkerHtml } from '../components/location-map';
 import { stores } from '../lib/mock-data';
 import { useAppStore } from '../lib/store';
+import { acceptedLegalDocuments } from './test-state';
 
 describe('store details presentation', () => {
   beforeEach(() => {
@@ -12,6 +13,7 @@ describe('store details presentation', () => {
     useAppStore.setState({
       hydrated: true,
       onboardingDone: true,
+      legalAcceptance: acceptedLegalDocuments,
       profile: { firstName: 'Kimal', phone: '+77059768000' },
       locale: 'ru',
       tab: 'home',

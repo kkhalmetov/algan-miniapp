@@ -10,6 +10,14 @@ export interface UserProfile {
   photoUrl?: string;
 }
 
+export interface LegalAcceptance {
+  version: string;
+  acceptedAt: string;
+  locale: Locale;
+  telegramId?: number;
+  method: 'continue_button';
+}
+
 export interface UserLocation {
   lat: number;
   lng: number;

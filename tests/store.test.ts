@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { migratePersistedState, useAppStore } from '../lib/store';
+import { acceptedLegalDocuments } from './test-state';
 
 describe('local MVP state', () => {
   beforeEach(() => {
     useAppStore.setState({
       onboardingDone: false,
+      legalAcceptance: undefined,
       profile: { firstName: '' },
       location: undefined,
       locale: 'ru',
@@ -29,9 +31,27 @@ describe('local MVP state', () => {
   });
 
   it('completes onboarding and saves an optional profile', () => {
-    useAppStore.getState().completeOnboarding({ firstName: 'Алия' });
+    useAppStore.getState().completeOnboarding({ firstName: 'Алия' }, acceptedLegalDocuments);
     expect(useAppStore.getState().onboardingDone).toBe(true);
     expect(useAppStore.getState().profile).toEqual({ firstName: 'Алия' });
+    expect(useAppStore.getState().legalAcceptance).toEqual(acceptedLegalDocuments);
+  });
+
+  it('saves a renewed legal acceptance without changing user data', () => {
+    useAppStore.setState({
+      onboardingDone: true,
+      profile: { firstName: 'Алия', phone: '+77059768000' },
+      favoriteStoreIds: ['tatti'],
+      legalAcceptance: undefined,
+    });
+    useAppStore.getState().acceptLegalDocuments(acceptedLegalDocuments);
+
+    expect(useAppStore.getState()).toMatchObject({
+      onboardingDone: true,
+      profile: { firstName: 'Алия', phone: '+77059768000' },
+      favoriteStoreIds: ['tatti'],
+      legalAcceptance: acceptedLegalDocuments,
+    });
   });
 
   it('toggles stores in favorites without duplicates', () => {
