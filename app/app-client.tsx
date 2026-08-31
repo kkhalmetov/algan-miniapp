@@ -1206,13 +1206,11 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
           <div className="mt-5 max-h-[48vh] space-y-3 overflow-y-auto pr-1">
             {lines.map(({ box, quantity }) => (
               <InsetSurface key={box.id} tone="panel" className="p-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <img src={box.image} alt={boxName(box, locale)} className="h-18 w-18 shrink-0 rounded-media object-cover" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-black">{boxName(box, locale)}</p>
-                    <p className="mt-1 text-xs font-bold text-ink-muted">{formatPrice(box.salePrice)} × {quantity}</p>
-                    <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity)}</p>
-                  </div>
+                <img src={box.image} alt={boxName(box, locale)} className="h-24 w-full rounded-media object-cover" />
+                <div className="mt-3 min-w-0">
+                  <p className="truncate text-sm font-black">{boxName(box, locale)}</p>
+                  <p className="mt-1 text-xs font-bold text-ink-muted">{formatPrice(box.salePrice)} × {quantity}</p>
+                  <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity)}</p>
                 </div>
                 <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
                   <QuantityControl quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} label={t('quantity')}

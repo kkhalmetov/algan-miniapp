@@ -61,7 +61,7 @@ describe('multi-box cart', () => {
     const cartDialog = screen.getByRole('dialog', { name: 'Корзина' });
     expect(within(cartDialog).getByRole('heading', { name: 'Корзина' })).toBeInTheDocument();
     expect(within(cartDialog).getByAltText('Surprise Tatti-box')).toHaveAttribute('src', '/images/bakery.jpg');
-    expect(within(cartDialog).getByAltText('Tatti-box')).toHaveClass('h-18', 'w-18', 'object-cover');
+    expect(within(cartDialog).getByAltText('Tatti-box')).toHaveClass('h-24', 'w-full', 'object-cover');
     expect(screen.getAllByText((content) => content.replace(/\s/g, '') === '7370₸').length).toBeGreaterThan(0);
     await act(async () => {
       const checkoutButton = screen.getByRole('button', { name: 'Оформить заказ' });
