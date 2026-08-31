@@ -77,6 +77,11 @@ describe('profile information sections', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' }));
     const consentDialog = screen.getByRole('dialog', { name: 'Правовая информация' });
+    const documentHeader = within(consentDialog).getByTestId('documents-modal-header');
+    const documentScroll = within(consentDialog).getByTestId('documents-modal-scroll');
+    expect(documentHeader).not.toContainElement(documentScroll);
+    expect(documentHeader.compareDocumentPosition(documentScroll) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(documentScroll).toHaveClass('overflow-y-auto');
     expect(within(consentDialog).getByRole('heading', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
     expect(within(consentDialog).getByText('Kimal')).toBeInTheDocument();
     expect(within(consentDialog).getByText('+77059768000')).toBeInTheDocument();

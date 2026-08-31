@@ -1287,8 +1287,8 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
 
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('legal')}>
-      <ModalBody className="max-h-[82dvh] overflow-y-auto">
-        <div className="sticky top-0 z-10 bg-surface pb-3">
+      <ModalBody className="flex max-h-[82dvh] min-h-0 flex-col overflow-hidden">
+        <div data-testid="documents-modal-header" className="shrink-0 bg-surface pb-3">
           <ModalHeader
             title={title}
             onBack={selectedView ? () => setSelectedView(null) : undefined}
@@ -1297,26 +1297,28 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
             closeLabel={t('close')}
           />
         </div>
-        {selectedView === 'contacts' ? (
-          <>
-            <CompanyContacts t={t} />
-            <PrimaryButton onClick={() => setSelectedView(null)} className="mt-5">{t('back')}</PrimaryButton>
-          </>
-        ) : selectedView ? (
-          <>
-            <LegalDocumentView type={selectedView} t={t} locale={locale} subject={subject} />
-            {!isPublishedLegalDocument(selectedView) && (
+        <div data-testid="documents-modal-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          {selectedView === 'contacts' ? (
+            <>
+              <CompanyContacts t={t} />
               <PrimaryButton onClick={() => setSelectedView(null)} className="mt-5">{t('back')}</PrimaryButton>
-            )}
-          </>
-        ) : (
-          <div className="mt-5 space-y-2">
-            {documents.map((document) => (
-              <ProfileRow key={document.type} icon={document.icon} label={t(LEGAL_TITLE_KEYS[document.type])} onClick={() => setSelectedView(document.type)} />
-            ))}
-            <ProfileRow icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setSelectedView('contacts')} />
-          </div>
-        )}
+            </>
+          ) : selectedView ? (
+            <>
+              <LegalDocumentView type={selectedView} t={t} locale={locale} subject={subject} />
+              {!isPublishedLegalDocument(selectedView) && (
+                <PrimaryButton onClick={() => setSelectedView(null)} className="mt-5">{t('back')}</PrimaryButton>
+              )}
+            </>
+          ) : (
+            <div className="mt-5 space-y-2">
+              {documents.map((document) => (
+                <ProfileRow key={document.type} icon={document.icon} label={t(LEGAL_TITLE_KEYS[document.type])} onClick={() => setSelectedView(document.type)} />
+              ))}
+              <ProfileRow icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setSelectedView('contacts')} />
+            </div>
+          )}
+        </div>
       </ModalBody>
     </DialogLayer>
   );
@@ -1457,12 +1459,14 @@ function LegalModal({ type, t, locale, subject, onClose }: {
 }) {
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t(LEGAL_TITLE_KEYS[type])}>
-      <ModalBody className="max-h-[90dvh] overflow-y-auto">
-        <div className="sticky top-0 z-10 bg-surface pb-3">
+      <ModalBody className="flex max-h-[90dvh] min-h-0 flex-col overflow-hidden">
+        <div data-testid="legal-modal-header" className="shrink-0 bg-surface pb-3">
           <ModalHeader title={t(LEGAL_TITLE_KEYS[type])} onClose={onClose} closeLabel={t('close')} />
         </div>
-        <LegalDocumentView type={type} t={t} locale={locale} subject={subject} />
-        {!isPublishedLegalDocument(type) && <PrimaryButton onClick={onClose} className="mt-5">{t('back')}</PrimaryButton>}
+        <div data-testid="legal-modal-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <LegalDocumentView type={type} t={t} locale={locale} subject={subject} />
+          {!isPublishedLegalDocument(type) && <PrimaryButton onClick={onClose} className="mt-5">{t('back')}</PrimaryButton>}
+        </div>
       </ModalBody>
     </DialogLayer>
   );

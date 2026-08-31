@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AlganApp, { MINIMUM_SPLASH_MS } from '../app/app-client';
 import { LEGAL_DOCUMENT_VERSION } from '../lib/legal-documents';
@@ -41,7 +41,12 @@ describe('onboarding legal consent', () => {
     expect(screen.getByRole('button', { name: 'политикой конфиденциальности' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'согласие на сбор и обработку персональных данных' }));
-    expect(screen.getByRole('dialog', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
+    const legalDialog = screen.getByRole('dialog', { name: 'Согласие на сбор и обработку персональных данных' });
+    const legalHeader = within(legalDialog).getByTestId('legal-modal-header');
+    const legalScroll = within(legalDialog).getByTestId('legal-modal-scroll');
+    expect(legalHeader).not.toContainElement(legalScroll);
+    expect(legalHeader.compareDocumentPosition(legalScroll) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(legalScroll).toHaveClass('overflow-y-auto');
     expect(screen.getByText('Субъект персональных данных')).toBeInTheDocument();
     expect(screen.getByText('Пользователь')).toBeInTheDocument();
     expect(screen.getByText(/ИП «ALGAN», ИИН 030705500040/)).toBeInTheDocument();
