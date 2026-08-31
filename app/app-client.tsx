@@ -1042,18 +1042,20 @@ function BoxOfferCard({ box, locale, t, available, onOpen }: {
   return (
     <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
       <CardPressable onClick={onOpen} className="relative" aria-label={`${t('details')} ${box.name}`}>
-        <span data-testid="box-card-image" className="block h-36 w-full overflow-hidden bg-canvas">
+        <span data-testid="box-card-image" className="relative block h-36 w-full overflow-hidden bg-canvas">
           <img src={box.image} alt={box.name} className="h-full w-full object-cover" />
+          <span className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center gap-2">
+            {box.type === 'SURPRISE' && <SurpriseBadge compact />}
+            <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />}>
+              {formatBoxesLeft(available, locale)}
+            </StatusBadge>
+          </span>
         </span>
         <span data-testid="box-card-content" className="block p-4">
           <span className="flex items-start justify-between gap-3">
-            <span className="flex min-w-0 flex-wrap items-center gap-2">
-              <span className="text-base font-black leading-5">{box.name}</span>
-              {box.type === 'SURPRISE' && <SurpriseBadge compact />}
-            </span>
+            <span className="min-w-0 text-base font-black leading-5">{box.name}</span>
             <DisclosureIndicator />
           </span>
-          <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />} className="mt-2">{formatBoxesLeft(available, locale)}</StatusBadge>
           <span className="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-[-0.02em] text-ink-secondary">
             <Clock3 size={14} className="shrink-0 text-brand" />
             <span className="whitespace-nowrap">{t('pickupTime')}: {box.pickupFrom}–{box.pickupTo}</span>
