@@ -105,7 +105,10 @@ describe('onboarding legal consent', () => {
 
     expect(screen.getByRole('heading', { name: 'Обновлены юридические документы' })).toBeInTheDocument();
     expect(screen.queryByLabelText(/Телефон/)).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Принять и продолжить' }));
+    const acceptButton = screen.getByRole('button', { name: 'Принять и продолжить' });
+    const legalText = screen.getByText((_, element) => element?.tagName === 'P' && element.textContent?.startsWith('Нажимая «Принять и продолжить»'));
+    expect(acceptButton.compareDocumentPosition(legalText) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(acceptButton);
 
     expect(screen.getByText('Kimal!')).toBeInTheDocument();
     expect(useAppStore.getState().favoriteStoreIds).toEqual(['tatti']);

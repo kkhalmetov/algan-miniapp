@@ -523,8 +523,8 @@ function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccept }: {
         <div className="grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand"><FileCheck2 size={25} /></div>
         <PageTitle className="mt-5">{t('legalUpdateTitle')}</PageTitle>
         <p className="mt-3 text-sm leading-6 text-ink-secondary">{t('legalUpdateText')}</p>
-        <LegalAcceptanceSentence t={t} openLegal={openLegal} className="mt-6" prefix={t('legalUpdateAcceptancePrefix')} />
         <PrimaryButton onClick={onAccept} className="mt-auto">{t('acceptAndContinue')}<ChevronRight size={19} /></PrimaryButton>
+        <LegalAcceptanceSentence t={t} openLegal={openLegal} className="mt-4" prefix={t('legalUpdateAcceptancePrefix')} />
       </div>
     </div>
   );
