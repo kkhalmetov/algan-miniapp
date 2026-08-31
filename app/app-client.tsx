@@ -1073,7 +1073,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
       <div data-testid="box-details-sheet" className="flex h-[80dvh] min-h-0 flex-col sm:h-[624px]">
         <div className="shrink-0 px-page pt-4">
           <SheetHandle />
-          <div className="mt-2 flex justify-end"><IconButton onClick={onClose} label={t('close')}><X size={18} /></IconButton></div>
+          <div className="flex justify-end"><IconButton onClick={onClose} label={t('close')}><X size={18} /></IconButton></div>
         </div>
 
         <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
