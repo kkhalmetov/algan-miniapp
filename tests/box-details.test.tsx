@@ -111,7 +111,10 @@ describe('store details presentation', () => {
     expect(within(scroll).queryByTestId('box-appearance-notice')).not.toBeInTheDocument();
     expect(within(scroll).getByText('Содержит аллергены')).toBeInTheDocument();
     expect(within(scroll).getByText('Глютен, молоко, яйца')).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Добавить в корзину Surprise Tatti-box' }).closest('footer')).toBeInTheDocument();
+    const addToCartButton = within(dialog).getByRole('button', { name: 'Добавить в корзину Surprise Tatti-box' });
+    expect(addToCartButton.closest('footer')).toBeInTheDocument();
+    expect(addToCartButton).toHaveClass('text-sm', 'whitespace-normal');
+    expect(addToCartButton).not.toHaveStyle({ fontSize: '12px' });
     expect(within(dialog).getByRole('group', { name: 'Количество' })).toHaveTextContent('1');
   });
 
