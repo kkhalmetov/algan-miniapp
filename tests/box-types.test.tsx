@@ -64,7 +64,7 @@ describe('box types', () => {
     useAppStore.setState({ locale: 'kk' });
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
-    fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery пр\. Тауке хана, 47/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery Тәуке хан даңғылы, 47/ }));
     const storeDialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
     expect(within(storeDialog).getByText('Сыртқы көрінісі өзгеше болуы мүмкін')).toBeInTheDocument();
     expect(within(storeDialog).getByText('Бокстың және өнімдердің нақты сыртқы көрінісі суреттен өзгеше болуы мүмкін.')).toBeInTheDocument();

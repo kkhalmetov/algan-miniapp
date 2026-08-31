@@ -54,8 +54,8 @@ export default function LocationMap({ lat, lng, stores = [], interactiveMarker =
         const storeIcon = L.divIcon({
           className: 'algan-store-marker',
           html: storeMarkerHtml(store.logo),
-          iconSize: [42, 42],
-          iconAnchor: [21, 21],
+          iconSize: [44, 44],
+          iconAnchor: [22, 22],
         });
         const marker = L.marker([store.lat, store.lng], { icon: storeIcon, title: store.name }).addTo(map!);
         marker.on('click', () => onSelectStore?.(store.id));

@@ -30,14 +30,14 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - `IconButton`: 44 × 44 px touch target with muted, dark, brand and accent variants; an accessible label is mandatory.
 - `QuantityControl`: one add/stepper pattern with compact visuals and 44 px increment/decrement touch targets.
 - `TextField`: shared label, required marker, border, focus ring and placeholder treatment.
-- `ModalBody`, `ModalHeader` and `SheetHandle`: consistent safe-area spacing, navigation, close controls and sheet affordance.
+- `ModalBody`, `ModalHeader`, `SheetHeader` and `SheetHandle`: consistent safe-area spacing, navigation, close controls and sheet affordance. Product sheets use `SheetHeader` instead of composing the handle and header locally.
 - `DialogLayer`: shared modal backdrop, dismissal target, elevation and full-screen/sheet/center modes.
 - `ConfirmationDialog`: one confirmation pattern for ordinary and destructive actions; native browser confirmation windows are not used.
 - `AccordionItem`: shared disclosure row for FAQ and future expandable content.
 - `BottomNavigation` and `BottomNavigationItem`: canonical application navigation, active pill and label treatment.
 - `FullScreenFeedback`: canonical success/error layout for transactional outcomes.
 - `CardPressable`: shared keyboard-focus treatment for interactive regions inside clipped cards.
-- `BrandHeader`, `TopAppBar`, `PageSection`, `ScreenBody`, `PageTitle`, `ContentTitle`, `SectionTitle`: one hierarchy for screen chrome, gutters and headings.
+- `BrandHeader`, `TopAppBar`, `PageSection`, `ScreenBody`, `PageTitle`, `ContentTitle`, `CardTitle`, `SectionTitle`: one hierarchy for screen chrome, gutters and headings. `ContentTitle` may render the screen-level `h1`; cards use `CardTitle` as `h2`.
 - `ListRow`, `LinkRow`: shared button/link rows with icon container, optional supporting text, panel/soft surfaces and trailing action.
 - `InsetSurface`, `NoticeCard`, `DetailRow`: canonical inset surfaces, semantic notices and labelled detail rows.
 - `MediaBadge`, `DisclosureIndicator`: shared logo/avatar containers and affordances for tappable content.
@@ -50,7 +50,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - Sheets and modals: surface background, `rounded-sheet` top corners, dimmed brand-deep overlay.
 - Inputs: 52 px height, panel background, border token, brand focus ring.
 - Primary, secondary and destructive page actions: 56 px height; compact embedded actions: 44 px height.
-- Navigation: surface background, border token, brand-soft selected pill, muted inactive icons.
+- Navigation: surface background, border token, brand-soft selected pill, muted inactive icons and 10 px labels sized to keep full RU/KK names visible.
 
 ## Typography and spacing
 
@@ -59,7 +59,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - Page title: 30 px via `PageTitle` / `text-page-title`.
 - Section title: 18 px via `SectionTitle` / `text-section-title`.
 - Body: 14–15 px, line height 1.5–1.7.
-- Supporting text: 11–13 px using `ink-muted` or `ink-subtle`.
+- Supporting text: 11–13 px using `ink-muted` or `ink-subtle`; every secondary text token maintains at least WCAG AA `4.5:1` contrast on canonical light surfaces.
 - Use the 4 px spacing rhythm. Primary horizontal page padding is 20–24 px.
 
 ## Composition rules
@@ -78,11 +78,13 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - Never communicate state by color alone; pair color with text or an icon.
 - Use a maximum of one strong brand action per surface.
 - Keep touch targets at least 44 px and provide accessible labels for icon-only controls.
+- Third-party compact controls use the same 44 px target; unavoidable inline attribution links keep the WCAG 24 px minimum.
 - Product photography and partner logos keep their original colors; design tokens control their containers.
 - Use native button, link and input semantics. Selected controls expose `aria-pressed` or `aria-current`; modal surfaces expose dialog semantics.
 - Dialogs keep keyboard focus inside the active layer without changing the viewport scroll position, close with Escape and restore prior focus.
 - Loading controls expose `aria-busy`; empty states omit unused supporting text instead of rendering blank layout space.
 - The document language follows the selected RU/KK locale, with Kazakh as the initial language.
+- Catalog copy is localized through `lib/catalog-localization.ts`; visible addresses, box names, contents and allergens never read source-language fields directly.
 - Motion respects `prefers-reduced-motion`.
 
 ## Governance

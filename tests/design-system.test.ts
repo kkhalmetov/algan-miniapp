@@ -84,6 +84,8 @@ describe('Algan design system', () => {
     expect(app).not.toContain('window.confirm');
     expect(app).not.toContain('description=""');
     expect(app).not.toContain('role="dialog"');
+    expect(app).not.toContain('<SheetHandle');
+    expect(app).not.toContain('text-white/65');
   });
 
   it('uses the primary Kazakh document language and keeps it synchronized at runtime', () => {
@@ -106,5 +108,42 @@ describe('Algan design system', () => {
     expect(css).toContain('--color-surface: #fffdf8');
     expect(runtime).toContain("BRAND_COLOR = '#1f5c49'");
     expect(runtime).toContain("APP_SURFACE_COLOR = '#fffdf8'");
+  });
+
+  it('does not reset component typography with a global font shorthand', () => {
+    const css = readFileSync(resolve(root, 'app/globals.css'), 'utf8');
+
+    expect(css).not.toMatch(/button\s*,\s*input\s*\{\s*font\s*:/);
+    expect(css).toContain('button, input, textarea, select { font-family: inherit; }');
+  });
+
+  it('keeps third-party map controls within the shared touch-target rules', () => {
+    const css = readFileSync(resolve(root, 'app/globals.css'), 'utf8');
+    const map = readFileSync(resolve(root, 'components/location-map.tsx'), 'utf8');
+
+    expect(css).toMatch(/\.leaflet-control-zoom a\s*\{[^}]*width:\s*44px\s*!important;[^}]*height:\s*44px\s*!important;/);
+    expect(css).toMatch(/\.leaflet-control-attribution a\s*\{[^}]*min-height:\s*24px;/);
+    expect(css).toMatch(/\.algan-store-marker span\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;/);
+    expect(map).toContain('iconSize: [44, 44]');
+  });
+
+  it('keeps secondary text tokens readable on interface surfaces', () => {
+    const css = readFileSync(resolve(root, 'app/globals.css'), 'utf8');
+    const color = (token: string) => css.match(new RegExp(`${token}:\\s*(#[0-9a-f]{6})`, 'i'))?.[1] ?? '';
+    const luminance = (hex: string) => {
+      const channels = hex.match(/[0-9a-f]{2}/gi)?.map((value) => Number.parseInt(value, 16) / 255) ?? [];
+      const linear = channels.map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+      return 0.2126 * linear[0]! + 0.7152 * linear[1]! + 0.0722 * linear[2]!;
+    };
+    const contrast = (foreground: string, background: string) => {
+      const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+      return (values[0]! + 0.05) / (values[1]! + 0.05);
+    };
+    const foregroundTokens = ['--color-ink-secondary', '--color-ink-muted', '--color-ink-subtle'];
+    const surfaceTokens = ['--color-surface', '--color-panel', '--color-surface-soft', '--color-surface-muted', '--color-brand-pale'];
+
+    for (const foreground of foregroundTokens) {
+      for (const surface of surfaceTokens) expect(contrast(color(foreground), color(surface))).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });

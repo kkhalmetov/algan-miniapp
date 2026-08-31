@@ -3,20 +3,21 @@
 
 import {
   AlertTriangle, Building2, Check, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, Heart, Home, Image as ImageIcon, Info, Languages, Mail, Map as MapIcon,
-  MapPin, Package, PackageCheck, Phone, Settings2, ShoppingBag, Sparkles, X,
+  MapPin, Package, PackageCheck, Phone, Settings2, ShoppingBag, Sparkles,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import {
-  AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, ConfirmationDialog, DangerButton, DialogLayer,
+  AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
-  MediaBadge, ModalBody, ModalHeader, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, QuantityStepper, ScreenBody,
-  SecondaryButton, SectionTitle, SegmentedControl, SheetHandle, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
+  MediaBadge, ModalBody, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, QuantityStepper, ScreenBody,
+  SecondaryButton, SectionTitle, SegmentedControl, SheetHeader, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
   TextLinkButton, TopAppBar,
 } from '@/components/ui-kit';
 import { authenticateTelegram } from '@/lib/api';
+import { boxAllergens, boxContentName, boxName, storeAddress } from '@/lib/catalog-localization';
 import { fetchKztToRubRate, formatCurrency } from '@/lib/currency';
 import {
   createLegalAcceptance, getLegalDocument, hasCurrentLegalAcceptance, isPublishedLegalDocument,
@@ -323,13 +324,13 @@ export default function AlganApp() {
         <main className={`hide-scrollbar min-h-0 flex-1 overflow-x-hidden overscroll-contain ${tab === 'map' ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
           {tab === 'home' && (
             <HomeTab
-              t={t} profile={profile} openProfile={() => { setTab('profile'); haptic('tap'); }}
+              t={t} locale={locale} profile={profile} openProfile={() => { setTab('profile'); haptic('tap'); }}
               favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openStore={openStore}
             />
           )}
           {tab === 'map' && <MapTab openStore={openStore} />}
           {tab === 'favorites' && (
-            <FavoritesTab t={t} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openStore={openStore} />
+            <FavoritesTab t={t} locale={locale} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openStore={openStore} />
           )}
           {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} />}
           {tab === 'profile' && (
@@ -419,7 +420,7 @@ function CartReplacementDialog({ t, onCancel, onConfirm }: {
 
 function Splash({ t }: { t: Translator }) {
   return (
-    <main className="grid min-h-dvh place-items-center overflow-hidden bg-brand px-6 text-white" aria-label={`Algan — ${t('loading')}`}>
+    <main className="grid min-h-dvh place-items-center overflow-hidden bg-brand px-page-wide text-white" aria-label={`Algan — ${t('loading')}`}>
       <div className="flex flex-col items-center">
         <AlganLogo
           light
@@ -542,8 +543,8 @@ function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; set
   );
 }
 
-function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, openStore }: {
-  t: Translator; profile: UserProfile; openProfile: () => void; favoriteStoreIds: string[];
+function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, toggleFavorite, openStore }: {
+  t: Translator; locale: Locale; profile: UserProfile; openProfile: () => void; favoriteStoreIds: string[];
   toggleFavorite: (id: string) => void; openStore: (storeId: string) => void;
 }) {
   return (
@@ -563,7 +564,7 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
             const storeBoxes = boxes.filter((item) => item.storeId === store.id);
             const box = storeBoxes[0];
             const isHalal = storeBoxes.length > 0 && storeBoxes.every((item) => item.isHalal);
-            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} isHalal={isHalal} t={t} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
+            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} isHalal={isHalal} t={t} locale={locale} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
           })}
         </div>
       </ScreenBody>
@@ -571,7 +572,8 @@ function HomeTab({ t, profile, openProfile, favoriteStoreIds, toggleFavorite, op
   );
 }
 
-function StoreCard({ store, fallbackImage, isHalal, t, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; isHalal: boolean; t: Translator; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
+function StoreCard({ store, fallbackImage, isHalal, t, locale, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; isHalal: boolean; t: Translator; locale: Locale; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
+  const address = storeAddress(store, locale);
   return (
     <SurfaceCard className="overflow-hidden">
       <CardPressable onClick={onOpen} className="relative h-44 overflow-hidden" aria-label={`${t('details')}: ${store.name}`}>
@@ -582,12 +584,12 @@ function StoreCard({ store, fallbackImage, isHalal, t, favorite, toggleFavorite,
       </CardPressable>
       <div className="p-4">
         <div className="flex items-start gap-3">
-          <CardPressable onClick={onOpen} className="min-w-0 flex-1 rounded-control" aria-label={`${store.name} ${store.address}`}>
+          <CardPressable onClick={onOpen} className="min-w-0 flex-1 rounded-control" aria-label={`${store.name} ${address}`}>
             <span className="flex min-w-0 items-center gap-2">
-              <h3 className="truncate text-lg font-black tracking-[-0.03em]">{store.name}</h3>
+              <CardTitle>{store.name}</CardTitle>
               {isHalal && <img src="/images/halal-logo.svg" alt={t('halal')} className="h-6 w-6 shrink-0 object-contain" />}
             </span>
-            <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-ink-muted"><MapPin size={14} />{store.address}</p>
+            <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-ink-muted"><MapPin size={14} />{address}</p>
           </CardPressable>
           <IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={favorite} tone={favorite ? 'accent' : 'muted'}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></IconButton>
         </div>
@@ -615,7 +617,7 @@ function MapTab({ openStore }: { openStore: (storeId: string) => void }) {
   );
 }
 
-function FavoritesTab({ t, favoriteStoreIds, toggleFavorite, openStore }: { t: Translator; favoriteStoreIds: string[]; toggleFavorite: (id: string) => void; openStore: (storeId: string) => void }) {
+function FavoritesTab({ t, locale, favoriteStoreIds, toggleFavorite, openStore }: { t: Translator; locale: Locale; favoriteStoreIds: string[]; toggleFavorite: (id: string) => void; openStore: (storeId: string) => void }) {
   const favoriteStores = stores.filter((store) => favoriteStoreIds.includes(store.id));
   return (
     <PageSection title={t('favorites')}>
@@ -627,7 +629,7 @@ function FavoritesTab({ t, favoriteStoreIds, toggleFavorite, openStore }: { t: T
             const storeBoxes = boxes.filter((item) => item.storeId === store.id);
             const box = storeBoxes[0];
             const isHalal = storeBoxes.length > 0 && storeBoxes.every((item) => item.isHalal);
-            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} isHalal={isHalal} t={t} favorite toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
+            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} isHalal={isHalal} t={t} locale={locale} favorite toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
           })}
         </div>
       )}
@@ -696,7 +698,7 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
                       const box = boxes.find((candidate) => candidate.id === item.boxId);
                       return (
                         <span key={item.boxId} className="flex items-center justify-between gap-3 text-xs">
-                          <span className="truncate font-bold">{box?.name}</span>
+                          <span className="truncate font-bold">{box ? boxName(box, locale) : ''}</span>
                           <span className="shrink-0 text-right">
                             <span className="font-black text-ink-secondary">{formatPrice(item.unitPrice)}</span>
                             <span className="ml-1 font-semibold text-ink-muted">× {item.quantity}</span>
@@ -764,7 +766,7 @@ function OrderQr({ order, t }: { order: Order; t: Translator }) {
 function PickupCodePanel({ pickupCode, label, className }: { pickupCode: string; label: string; className?: string }) {
   return (
     <InsetSurface tone="brandSolid" className={`p-4 text-center ${className ?? ''}`}>
-      <p className="text-xs font-bold text-white/65">{label}</p>
+      <p className="text-xs font-bold text-white/70">{label}</p>
       <p className="mt-1 text-3xl font-black tracking-[0.12em]">{formatPickupCode(pickupCode)}</p>
     </InsetSurface>
   );
@@ -778,7 +780,7 @@ function OrderItemsList({ order, locale }: { order: Order; locale: Locale }) {
         const box = boxes.find((candidate) => candidate.id === item.boxId);
         return (
           <InsetSurface key={item.boxId} className="flex items-start justify-between gap-4 px-4 py-3">
-            <div className="min-w-0"><p className="text-sm font-black">{box?.name}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</p></div>
+            <div className="min-w-0"><p className="text-sm font-black">{box ? boxName(box, locale) : ''}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</p></div>
             <b className="shrink-0 text-sm text-brand">{formatPrice(item.unitPrice * item.quantity)}</b>
           </InsetSurface>
         );
@@ -796,12 +798,7 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('orders')}>
       <ModalBody className="max-h-[90dvh] overflow-y-auto">
-        <SheetHandle />
-        {order.status === 'paid' ? (
-          <div className="mt-3 flex justify-end"><IconButton onClick={onClose} label={t('close')}><X size={18} /></IconButton></div>
-        ) : (
-          <div className="mt-5"><ModalHeader title={store?.name ?? t('orders')} onClose={onClose} closeLabel={t('close')} /></div>
-        )}
+        <SheetHeader title={order.status === 'collected' ? store?.name ?? t('orders') : undefined} onClose={onClose} closeLabel={t('close')} compact={order.status === 'paid'} />
         {order.status === 'paid' && (
           <>
             <div className="mt-4"><OrderQr order={order} t={t} /></div>
@@ -834,7 +831,7 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
       <BrandHeader>
         <div className="mt-2 flex items-center gap-4">
           <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} />
-          <div><ContentTitle className="text-white">{profile.firstName} {profile.lastName}</ContentTitle><p className="mt-1 text-sm text-white/65">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
+          <div><ContentTitle as="h1" className="text-white">{profile.firstName} {profile.lastName}</ContentTitle><p className="mt-1 text-sm text-white/70">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
         </div>
       </BrandHeader>
 
@@ -901,7 +898,7 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
           event.preventDefault();
           if (normalizedPhone) onSave(normalizedPhone);
         }}>
-          <ModalHeader title={t('changePhone')} onClose={onClose} closeLabel={t('close')} />
+          <SheetHeader title={t('changePhone')} onClose={onClose} closeLabel={t('close')} />
           <TextField label={t('phone')} required value={value} onValueChange={(phone) => setValue(formatKazakhstanPhoneInput(phone))}
             placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
           <PrimaryButton type="submit" disabled={!normalizedPhone} className="mt-6">{t('savePhone')}<Check size={19} /></PrimaryButton>
@@ -953,7 +950,7 @@ function SettingsModal({ t, locale, setLocale, phone, onEditPhone, onClose }: {
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('settings')}>
       <ModalBody>
-        <ModalHeader title={t('settings')} onClose={onClose} closeLabel={t('close')} />
+        <SheetHeader title={t('settings')} onClose={onClose} closeLabel={t('close')} />
         <div className="mt-5 space-y-2">
           <ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={phone ? formatKazakhstanPhoneInput(phone) : undefined} onClick={onEditPhone} />
           <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
@@ -979,6 +976,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
   const cartQuantity = cartLines.reduce((sum, line) => sum + line.quantity, 0);
   const cartTotal = cartLines.reduce((sum, line) => sum + line.box.salePrice * line.quantity, 0);
   const [routePickerOpen, setRoutePickerOpen] = useState(false);
+  const address = storeAddress(store, locale);
 
   return (
     <DialogLayer variant="full" onClose={onClose} closeLabel={t('close')} ariaLabel={store.name}>
@@ -1003,7 +1001,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
             {isHalal && <img src="/images/halal-logo.svg" alt={t('halal')} className="h-8 w-8 shrink-0 object-contain" />}
           </div>
           <SurfaceCard className="mt-5 p-4">
-            <DetailRow icon={<MapPin size={19} />} label={t('addressLabel')} value={store.address} />
+            <DetailRow icon={<MapPin size={19} />} label={t('addressLabel')} value={address} />
             <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">
               {t('buildRoute')}
             </SecondaryButton>
@@ -1039,11 +1037,12 @@ function BoxOfferCard({ box, locale, t, available, onOpen }: {
 }) {
   const formatPrice = usePriceFormatter(locale);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
+  const name = boxName(box, locale);
   return (
     <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
-      <CardPressable onClick={onOpen} className="relative" aria-label={`${t('details')} ${box.name}`}>
+      <CardPressable onClick={onOpen} className="relative" aria-label={`${t('details')} ${name}`}>
         <span data-testid="box-card-image" className="relative block h-36 w-full overflow-hidden bg-canvas">
-          <img src={box.image} alt={box.name} className="h-full w-full object-cover" />
+          <img src={box.image} alt={name} className="h-full w-full object-cover" />
           <span className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center gap-2">
             {box.type === 'SURPRISE' && <SurpriseBadge compact />}
             <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />}>
@@ -1052,7 +1051,7 @@ function BoxOfferCard({ box, locale, t, available, onOpen }: {
           </span>
         </span>
         <span data-testid="box-card-content" className="relative block p-4">
-          <span className="block min-w-0 pr-12 text-base font-black leading-5">{box.name}</span>
+          <span className="block min-w-0 pr-12 text-base font-black leading-5">{name}</span>
           <DisclosureIndicator className="absolute right-4 top-4" />
           <span className="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-[-0.02em] text-ink-secondary">
             <Clock3 size={14} className="shrink-0 text-brand" />
@@ -1075,23 +1074,22 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
 }) {
   const formatPrice = usePriceFormatter(locale);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
+  const name = boxName(box, locale);
+  const allergens = boxAllergens(box, locale);
   const [selectedQuantity, setSelectedQuantity] = useState(() =>
     Math.min(Math.max(cartQuantity, 1), Math.max(available, 1)),
   );
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={box.name}>
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={name}>
       <div data-testid="box-details-sheet" className="flex h-[85dvh] min-h-0 flex-col sm:h-[664px]">
-        <div data-testid="box-details-header" className="shrink-0 px-page pb-3 pt-4">
-          <SheetHandle />
-          <div className="mt-2 flex justify-end"><IconButton onClick={onClose} label={t('close')}><X size={18} /></IconButton></div>
-        </div>
+        <SheetHeader data-testid="box-details-header" className="px-page pb-5 pt-4" compact onClose={onClose} closeLabel={t('close')} />
 
         <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <div data-testid="box-details-cover" className="h-48 w-full overflow-hidden bg-canvas">
-            <img src={box.image} alt={box.name} className="h-full w-full object-cover" />
+            <img src={box.image} alt={name} className="h-full w-full object-cover" />
           </div>
           <div className="px-page-wide pb-6 pt-4">
-          <PageTitle>{box.name}</PageTitle>
+          <PageTitle>{name}</PageTitle>
           {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}
           <div className="mt-2">
             <StatusBadge data-testid="box-stock" tone={available > 0 ? 'accent' : 'danger'} size="lg" icon={<Package size={15} />}>{formatBoxesLeft(available, locale)}</StatusBadge>
@@ -1122,7 +1120,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
                 {box.contents?.map((item) => (
                   <li key={item.contentName}>
                     <InsetSurface className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                      <span className="font-bold text-ink">{item.contentName}</span>
+                      <span className="font-bold text-ink">{boxContentName(item, locale)}</span>
                       <span className="shrink-0 font-black text-brand">× {item.quantity}</span>
                     </InsetSurface>
                   </li>
@@ -1130,8 +1128,8 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
               </ul>
             </>
           )}
-          <NoticeCard className="mt-4" tone="allergen" icon={<AlertTriangle size={19} />} title={box.allergens ? t('containsAllergens') : t('allergens')}>
-            {box.allergens ?? t('allergensUnknown')}
+          <NoticeCard className="mt-4" tone="allergen" icon={<AlertTriangle size={19} />} title={allergens ? t('containsAllergens') : t('allergens')}>
+            {allergens ?? t('allergensUnknown')}
           </NoticeCard>
           </div>
         </div>
@@ -1144,7 +1142,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
                 onChangeQuantity(selectedQuantity);
                 onClose();
               }}
-                aria-label={`${t('addToCartFull')} ${box.name}`}>
+                aria-label={`${t('addToCartFull')} ${name}`}>
                 <span>{t('addToCartFull')}</span>
               </PrimaryButton>
             </div>
@@ -1169,8 +1167,7 @@ function RoutePicker({ lat, lng, t, onClose }: {
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('chooseMap')} className="z-[1200]">
       <div className="px-page pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
-        <SheetHandle />
-        <div className="mt-4"><ModalHeader title={t('chooseMap')} onClose={onClose} closeLabel={t('close')} /></div>
+        <SheetHeader title={t('chooseMap')} onClose={onClose} closeLabel={t('close')} />
         <div className="mt-4 space-y-2">
           {options.map((option) => (
             <ListRow
@@ -1202,8 +1199,7 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('cart')}>
       <ModalBody>
-        <SheetHandle />
-        <div className="mt-5"><ModalHeader title={t('cart')} onClose={onClose} closeLabel={t('close')} /></div>
+        <SheetHeader title={t('cart')} onClose={onClose} closeLabel={t('close')} />
         {lines.length === 0 ? (
           <EmptyState icon={<ShoppingBag size={32} />} title={t('cartEmpty')} />
         ) : (
@@ -1211,16 +1207,16 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
             {lines.map(({ box, quantity }) => (
               <InsetSurface key={box.id} tone="panel" className="p-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <img src={box.image} alt={box.name} className="h-18 w-18 shrink-0 rounded-media object-cover" />
+                  <img src={box.image} alt={boxName(box, locale)} className="h-18 w-18 shrink-0 rounded-media object-cover" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-black">{box.name}</p>
+                    <p className="truncate text-sm font-black">{boxName(box, locale)}</p>
                     <p className="mt-1 text-xs font-bold text-ink-muted">{formatPrice(box.salePrice)} × {quantity}</p>
                     <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity)}</p>
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
                   <QuantityControl quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} label={t('quantity')}
-                    addLabel={`${t('addToCart')} ${box.name}`} addText={t('addToCart')} onChange={(next) => onChangeQuantity(box, next)} />
+                    addLabel={`${t('addToCart')} ${boxName(box, locale)}`} addText={t('addToCart')} onChange={(next) => onChangeQuantity(box, next)} />
                   <TertiaryButton tone="danger" onClick={() => onChangeQuantity(box, 0)}>{t('removeFromCart')}</TertiaryButton>
                 </div>
               </InsetSurface>
@@ -1295,15 +1291,15 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('legal')}>
       <ModalBody className="flex max-h-[82dvh] min-h-0 flex-col overflow-hidden">
-        <div data-testid="documents-modal-header" className="shrink-0 bg-surface pb-3">
-          <ModalHeader
-            title={title}
-            onBack={selectedView ? () => setSelectedView(null) : undefined}
-            backLabel={t('back')}
-            onClose={onClose}
-            closeLabel={t('close')}
-          />
-        </div>
+        <SheetHeader
+          data-testid="documents-modal-header"
+          className="pb-3"
+          title={title}
+          onBack={selectedView ? () => setSelectedView(null) : undefined}
+          backLabel={t('back')}
+          onClose={onClose}
+          closeLabel={t('close')}
+        />
         <div data-testid="documents-modal-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {selectedView === 'contacts' ? (
             <>
@@ -1360,15 +1356,14 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('support')}>
       <ModalBody className="max-h-[82dvh] overflow-y-auto">
-        <div className="sticky top-0 z-10 bg-surface pb-3">
-          <ModalHeader
-            title={title}
-            onBack={view !== 'menu' ? () => setView('menu') : undefined}
-            backLabel={t('back')}
-            onClose={onClose}
-            closeLabel={t('close')}
-          />
-        </div>
+        <SheetHeader
+          className="sticky top-0 z-10 pb-3"
+          title={title}
+          onBack={view !== 'menu' ? () => setView('menu') : undefined}
+          backLabel={t('back')}
+          onClose={onClose}
+          closeLabel={t('close')}
+        />
 
         {view === 'menu' && (
           <div className="mt-2 space-y-2">
@@ -1467,9 +1462,7 @@ function LegalModal({ type, t, locale, subject, onClose }: {
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t(LEGAL_TITLE_KEYS[type])}>
       <ModalBody className="flex max-h-[90dvh] min-h-0 flex-col overflow-hidden">
-        <div data-testid="legal-modal-header" className="shrink-0 bg-surface pb-3">
-          <ModalHeader title={t(LEGAL_TITLE_KEYS[type])} onClose={onClose} closeLabel={t('close')} />
-        </div>
+        <SheetHeader data-testid="legal-modal-header" className="pb-3" title={t(LEGAL_TITLE_KEYS[type])} onClose={onClose} closeLabel={t('close')} />
         <div data-testid="legal-modal-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <LegalDocumentView type={type} t={t} locale={locale} subject={subject} />
           {!isPublishedLegalDocument(type) && <PrimaryButton onClick={onClose} className="mt-5">{t('back')}</PrimaryButton>}

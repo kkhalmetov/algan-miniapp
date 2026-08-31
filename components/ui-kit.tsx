@@ -24,8 +24,12 @@ export function SectionTitle({ className, ...props }: HTMLAttributes<HTMLHeading
   return <h2 className={cx('text-section-title text-ink', className)} {...props} />;
 }
 
-export function ContentTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cx('text-2xl font-black tracking-[-0.04em] text-ink', className)} {...props} />;
+export function ContentTitle({ as: Component = 'h2', className, ...props }: HTMLAttributes<HTMLHeadingElement> & { as?: 'h1' | 'h2' }) {
+  return <Component className={cx('text-2xl font-black tracking-[-0.04em] text-ink', className)} {...props} />;
+}
+
+export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+  return <h2 className={cx('truncate text-lg font-black tracking-[-0.03em] text-ink', className)} {...props} />;
 }
 
 export function PageSection({ title, children, className }: {
@@ -227,6 +231,39 @@ export function ModalHeader({
 
 export function SheetHandle() {
   return <div aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-border-strong" />;
+}
+
+export function SheetHeader({
+  title,
+  onBack,
+  backLabel,
+  onClose,
+  closeLabel,
+  compact = false,
+  className,
+  ...props
+}: Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
+  title?: ReactNode;
+  onBack?: () => void;
+  backLabel?: string;
+  onClose: () => void;
+  closeLabel: string;
+  compact?: boolean;
+}) {
+  return (
+    <div className={cx('shrink-0 bg-surface', className)} {...props}>
+      <SheetHandle />
+      <div className={compact ? 'mt-2' : 'mt-4'}>
+        {title !== undefined ? (
+          <ModalHeader title={title} onBack={onBack} backLabel={backLabel} onClose={onClose} closeLabel={closeLabel} />
+        ) : (
+          <div className="flex min-h-11 justify-end">
+            <IconButton onClick={onClose} label={closeLabel}><X size={18} /></IconButton>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function ModalBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
@@ -592,7 +629,7 @@ export function BottomNavigationItem({ active, icon, label, ...props }: ButtonHT
       type="button"
       aria-current={active ? 'page' : undefined}
       className={cx(
-        'flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[9px] font-extrabold tracking-[-0.02em] transition',
+        'flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-extrabold tracking-[-0.02em] transition',
         active ? 'text-brand' : 'text-ink-subtle',
       )}
       {...props}

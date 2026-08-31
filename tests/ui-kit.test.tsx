@@ -1,9 +1,9 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, ConfirmationDialog, DangerButton, DialogLayer,
+  AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, MediaBadge,
-  ModalBody, ModalHeader, NoticeCard, PageSection, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton,
+  ModalBody, ModalHeader, NoticeCard, PageSection, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SheetHeader,
   SegmentedControl, StatusBadge, StickyActionFooter, TextField, TextLinkButton, TertiaryButton, TopAppBar,
 } from '../components/ui-kit';
 
@@ -42,6 +42,23 @@ describe('Algan UI kit', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
     expect(onBack).toHaveBeenCalledOnce();
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('provides one sheet header with handle, title navigation and close-only mode', () => {
+    const onBack = vi.fn();
+    const onClose = vi.fn();
+    const { rerender } = render(<SheetHeader title="Документы" onBack={onBack} backLabel="Назад" onClose={onClose} closeLabel="Закрыть" />);
+
+    expect(screen.getByRole('heading', { name: 'Документы' })).toBeInTheDocument();
+    expect(document.querySelector('[aria-hidden="true"]')).toHaveClass('w-10', 'bg-border-strong');
+    fireEvent.click(screen.getByRole('button', { name: 'Назад' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
+    expect(onBack).toHaveBeenCalledOnce();
+    expect(onClose).toHaveBeenCalledOnce();
+
+    rerender(<SheetHeader compact onClose={onClose} closeLabel="Закрыть" />);
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Закрыть' })).toBeInTheDocument();
   });
 
   it('exposes selected state for segmented controls', () => {
@@ -127,6 +144,7 @@ describe('Algan UI kit', () => {
 
     expect(screen.getByRole('navigation')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Главная' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: 'Главная' })).toHaveClass('text-[10px]');
     expect(screen.getByRole('heading', { name: 'Ошибка' })).toHaveClass('text-page-title');
     expect(screen.getByText('!')).toHaveClass('bg-danger-soft');
   });
@@ -164,7 +182,8 @@ describe('Algan UI kit', () => {
   it('shares screen spacing, information surfaces and disclosure affordances', () => {
     render(
       <ScreenBody>
-        <ContentTitle>Параметры</ContentTitle>
+        <ContentTitle as="h1">Параметры</ContentTitle>
+        <CardTitle>Заведение</CardTitle>
         <InsetSurface data-testid="inset" className="p-4">
           <DetailRow icon="i" label="Адрес" value="Шымкент" />
         </InsetSurface>
@@ -175,6 +194,8 @@ describe('Algan UI kit', () => {
     );
 
     expect(screen.getByText('Параметры')).toHaveClass('text-2xl');
+    expect(screen.getByRole('heading', { name: 'Параметры', level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Заведение', level: 2 })).toHaveClass('text-lg');
     expect(screen.getByTestId('inset')).toHaveClass('rounded-control', 'bg-surface-soft');
     expect(screen.getByText('Адрес')).toHaveClass('text-ink-muted');
     expect(screen.getByText('logo')).toHaveClass('h-12', 'w-12');

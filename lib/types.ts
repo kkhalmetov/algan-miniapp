@@ -31,6 +31,7 @@ export interface Store {
   coverImage?: string;
   type: 'bakery' | 'cafe' | 'market' | 'dessert';
   address: string;
+  addressKk?: string;
   lat: number;
   lng: number;
   rating: number;
@@ -40,6 +41,7 @@ export type BoxType = 'SURPRISE' | 'DEFINED';
 
 export interface BoxContent {
   contentName: string;
+  contentNameKk?: string;
   quantity: number;
 }
 
@@ -48,6 +50,7 @@ export interface Box {
   storeId: string;
   type: BoxType;
   name: string;
+  nameKk?: string;
   description: string;
   contents?: BoxContent[];
   originalPrice: number;
@@ -57,6 +60,7 @@ export interface Box {
   pickupTo: string;
   image: string;
   allergens?: string;
+  allergensKk?: string;
   isHalal: boolean;
   distanceKm: number;
 }

@@ -50,9 +50,9 @@
   --color-border-strong: #b9c5bf;
 
   --color-ink: #173c31;
-  --color-ink-secondary: #617169;
-  --color-ink-muted: #74817b;
-  --color-ink-subtle: #89958f;
+  --color-ink-secondary: #465a51;
+  --color-ink-muted: #56675f;
+  --color-ink-subtle: #5f6f67;
 
   --color-warning-surface: #fff3c9;
   --color-warning-ink: #765f17;
@@ -114,7 +114,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-button, input { font: inherit; }
+button, input, textarea, select { font-family: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 
@@ -177,8 +177,8 @@ button:disabled { cursor: not-allowed; }
 
 .algan-store-marker span {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   place-items: center;
   overflow: hidden;
   border: 3px solid var(--color-brand);
@@ -203,6 +203,12 @@ button:disabled { cursor: not-allowed; }
   background: rgba(255, 255, 255, .82) !important;
 }
 
+.leaflet-control-attribution a {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+}
+
 .leaflet-control-zoom {
   overflow: hidden;
   border: 0 !important;
@@ -211,6 +217,9 @@ button:disabled { cursor: not-allowed; }
 }
 
 .leaflet-control-zoom a {
+  width: 44px !important;
+  height: 44px !important;
+  line-height: 44px !important;
   border: 0 !important;
   color: var(--color-brand) !important;
 }
