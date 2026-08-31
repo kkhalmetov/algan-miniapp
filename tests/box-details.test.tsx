@@ -88,6 +88,8 @@ describe('store details presentation', () => {
 
   it('opens a box with its full catalog information', () => {
     openFirstStore();
+    const storeDialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
+    expect(within(storeDialog).queryByRole('button', { name: /^Добавить / })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Подробнее Surprise Tatti-box' }));
 
     const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });

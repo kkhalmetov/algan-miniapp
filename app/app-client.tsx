@@ -348,7 +348,7 @@ export default function AlganApp() {
         <StoreDetails store={storeById(selectedStoreId)} locale={locale} t={t}
           isFavorite={favoriteStoreIds.includes(selectedStoreId)} toggleFavorite={() => toggleFavorite(selectedStoreId)}
           cartItems={cartItems} purchasedBoxQuantities={purchasedBoxQuantities}
-          onChangeQuantity={changeCartQuantity} onOpenBox={openBox} onOpenCart={() => setCartOpen(true)}
+          onOpenBox={openBox} onOpenCart={() => setCartOpen(true)}
           onClose={() => { setSelectedBox(null); setSelectedStoreId(null); }} />
       )}
       {selectedBox && (
@@ -959,11 +959,10 @@ function SettingsModal({ t, locale, setLocale, phone, onEditPhone, onClose }: {
   );
 }
 
-function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems, purchasedBoxQuantities, onChangeQuantity, onOpenBox, onOpenCart, onClose }: {
+function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems, purchasedBoxQuantities, onOpenBox, onOpenCart, onClose }: {
   store: Store; locale: Locale; t: Translator; isFavorite: boolean; toggleFavorite: () => void;
   cartItems: CartItem[]; purchasedBoxQuantities: Record<string, number>;
-  onChangeQuantity: (box: Box, quantity: number) => void; onOpenBox: (box: Box) => void;
-  onOpenCart: () => void; onClose: () => void;
+  onOpenBox: (box: Box) => void; onOpenCart: () => void; onClose: () => void;
 }) {
   const formatPrice = usePriceFormatter(locale);
   const storeBoxes = boxes.filter((box) => box.storeId === store.id);
@@ -1013,8 +1012,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
             {storeBoxes.map((box) => (
               <BoxOfferCard key={box.id} box={box} locale={locale} t={t}
                 available={availableQuantity(box, purchasedBoxQuantities)}
-                cartQuantity={cartItems.find((item) => item.boxId === box.id)?.quantity ?? 0}
-                onChangeQuantity={(quantity) => onChangeQuantity(box, quantity)} onOpen={() => onOpenBox(box)} />
+                onOpen={() => onOpenBox(box)} />
             ))}
           </div>
         </div>
@@ -1030,9 +1028,8 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
   );
 }
 
-function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantity, onOpen }: {
-  box: Box; locale: Locale; t: Translator; available: number; cartQuantity: number;
-  onChangeQuantity: (quantity: number) => void; onOpen: () => void;
+function BoxOfferCard({ box, locale, t, available, onOpen }: {
+  box: Box; locale: Locale; t: Translator; available: number; onOpen: () => void;
 }) {
   const formatPrice = usePriceFormatter(locale);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
@@ -1058,12 +1055,6 @@ function BoxOfferCard({ box, locale, t, available, cartQuantity, onChangeQuantit
         </span>
         <DisclosureIndicator className="absolute right-3 top-3" />
       </CardPressable>
-      {(available > 0 || cartQuantity > 0) && (
-        <div className="border-t border-border px-3 py-3">
-          <QuantityControl quantity={cartQuantity} max={available} label={t('quantity')}
-            addLabel={`${t('addToCart')} ${box.name}`} addText={t('addToCart')} onChange={onChangeQuantity} />
-        </div>
-      )}
     </SurfaceCard>
   );
 }

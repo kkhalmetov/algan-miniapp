@@ -36,18 +36,24 @@ describe('multi-box cart', () => {
     fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery пр\. Тауке хана, 47/ }));
   };
 
+  const addBoxFromDetails = (name: string, quantity = 1) => {
+    fireEvent.click(screen.getByRole('button', { name: `Подробнее ${name}` }));
+    const dialog = screen.getByRole('dialog', { name });
+    for (let index = 1; index < quantity; index += 1) {
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Количество +' }));
+    }
+    fireEvent.click(within(dialog).getByRole('button', { name: `Добавить в корзину ${name}` }));
+  };
+
   it('adds different box types and creates one grouped order', async () => {
     openTatti();
-    fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Добавить Tatti-box' }));
+    addBoxFromDetails('Surprise Tatti-box', 2);
+    addBoxFromDetails('Tatti-box');
 
     expect(useAppStore.getState().cartItems).toEqual([
-      { boxId: 'bakery-surprise', quantity: 1 },
+      { boxId: 'bakery-surprise', quantity: 2 },
       { boxId: 'tatti-defined', quantity: 1 },
     ]);
-    fireEvent.click(screen.getAllByRole('button', { name: 'Количество +' })[0]!);
-    expect(useAppStore.getState().cartItems[0]).toEqual({ boxId: 'bakery-surprise', quantity: 2 });
-
     fireEvent.click(screen.getByRole('button', { name: /Корзина · 3/ }));
     expect(screen.getByText('Корзина')).toBeInTheDocument();
     expect(screen.getAllByText((content) => content.replace(/\s/g, '') === '7370₸').length).toBeGreaterThan(0);
@@ -76,7 +82,7 @@ describe('multi-box cart', () => {
   it('keeps the cart after a failed payment and creates the order after returning to checkout', async () => {
     window.history.replaceState({}, '', '/?mockPayment=failed');
     openTatti();
-    fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
+    addBoxFromDetails('Surprise Tatti-box');
     fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
 
     await act(async () => {
@@ -107,7 +113,7 @@ describe('multi-box cart', () => {
   it('returns from a failed payment to the preserved cart', async () => {
     window.history.replaceState({}, '', '/?mockPayment=failed');
     openTatti();
-    fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
+    addBoxFromDetails('Surprise Tatti-box');
     fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
 
     await act(async () => {
@@ -125,14 +131,16 @@ describe('multi-box cart', () => {
     openTatti();
     const familyCard = screen.getByText('Семейный Tatti-box').closest('article');
     expect(familyCard).not.toBeNull();
-    fireEvent.click(within(familyCard!).getByRole('button', { name: 'Добавить Семейный Tatti-box' }));
-    expect(within(familyCard!).getByRole('button', { name: 'Количество +' })).toBeDisabled();
+    fireEvent.click(within(familyCard!).getByRole('button', { name: 'Подробнее Семейный Tatti-box' }));
+    const familyDialog = screen.getByRole('dialog', { name: 'Семейный Tatti-box' });
+    expect(within(familyDialog).getByRole('button', { name: 'Количество +' })).toBeDisabled();
+    fireEvent.click(within(familyDialog).getByRole('button', { name: 'Добавить в корзину Семейный Tatti-box' }));
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'tatti-family', quantity: 1 }]);
   });
 
   it('links the checkout consent to the public offer and order rules mocks', () => {
     openTatti();
-    fireEvent.click(screen.getByRole('button', { name: 'Добавить Surprise Tatti-box' }));
+    addBoxFromDetails('Surprise Tatti-box');
     fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
 
     expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Нажимая «Оформить заказ», вы автоматически принимаете публичную оферту и правила заказа, оплаты, самовывоза, отмены и возврата')).toBeInTheDocument();
