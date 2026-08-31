@@ -1042,15 +1042,15 @@ function BoxOfferCard({ box, locale, t, available, onOpen }: {
   return (
     <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
       <CardPressable onClick={onOpen} className="relative" aria-label={`${t('details')} ${box.name}`}>
-        <span data-testid="box-card-image" className="relative block h-36 w-full overflow-hidden bg-canvas">
+        <span data-testid="box-card-image" className="block h-36 w-full overflow-hidden bg-canvas">
           <img src={box.image} alt={box.name} className="h-full w-full object-cover" />
-          {box.type === 'SURPRISE' && (
-            <span className="absolute bottom-3 left-3"><SurpriseBadge compact /></span>
-          )}
         </span>
         <span data-testid="box-card-content" className="block p-4">
           <span className="flex items-start justify-between gap-3">
-            <span className="min-w-0 text-base font-black leading-5">{box.name}</span>
+            <span className="flex min-w-0 flex-wrap items-center gap-2">
+              <span className="text-base font-black leading-5">{box.name}</span>
+              {box.type === 'SURPRISE' && <SurpriseBadge compact />}
+            </span>
             <DisclosureIndicator />
           </span>
           <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />} className="mt-2">{formatBoxesLeft(available, locale)}</StatusBadge>
