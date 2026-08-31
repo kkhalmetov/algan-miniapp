@@ -1080,7 +1080,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
   );
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={box.name}>
-      <div data-testid="box-details-sheet" className="flex h-[80dvh] min-h-0 flex-col sm:h-[624px]">
+      <div data-testid="box-details-sheet" className="flex h-[85dvh] min-h-0 flex-col sm:h-[664px]">
         <div className="shrink-0 px-page pt-4">
           <SheetHandle />
           <div className="mt-2 flex justify-end"><IconButton onClick={onClose} label={t('close')}><X size={18} /></IconButton></div>

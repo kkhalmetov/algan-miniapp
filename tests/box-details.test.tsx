@@ -106,7 +106,7 @@ describe('store details presentation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Подробнее Surprise Tatti-box' }));
 
     const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
-    expect(within(dialog).getByTestId('box-details-sheet')).toHaveClass('h-[80dvh]');
+    expect(within(dialog).getByTestId('box-details-sheet')).toHaveClass('h-[85dvh]');
     expect(within(dialog).getByRole('button', { name: 'Закрыть' })).toBeInTheDocument();
     expect(within(dialog).queryByText('Tatti Bakery')).not.toBeInTheDocument();
     const scroll = within(dialog).getByTestId('box-details-scroll');
