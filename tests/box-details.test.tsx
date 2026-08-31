@@ -107,6 +107,7 @@ describe('store details presentation', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
     expect(within(dialog).getByTestId('box-details-sheet')).toHaveClass('h-[85dvh]');
+    expect(within(dialog).getByTestId('box-details-header')).toHaveClass('pb-3');
     expect(within(dialog).getByRole('button', { name: 'Закрыть' })).toBeInTheDocument();
     expect(within(dialog).queryByText('Tatti Bakery')).not.toBeInTheDocument();
     const scroll = within(dialog).getByTestId('box-details-scroll');
