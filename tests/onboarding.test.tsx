@@ -46,6 +46,7 @@ describe('onboarding legal consent', () => {
     expect(screen.getByText('Пользователь')).toBeInTheDocument();
     expect(screen.getByText(/ИП «ALGAN», ИИН 030705500040/)).toBeInTheDocument();
     expect(screen.queryByText(/Документ готовится/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Назад' })).not.toBeInTheDocument();
   });
 
   it('allows continuing with a valid phone without separate checkboxes', () => {

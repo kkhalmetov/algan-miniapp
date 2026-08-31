@@ -1293,7 +1293,9 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
         ) : selectedView ? (
           <>
             <LegalDocumentView type={selectedView} t={t} locale={locale} subject={subject} />
-            <PrimaryButton onClick={() => setSelectedView(null)} className="mt-5">{t('back')}</PrimaryButton>
+            {!isPublishedLegalDocument(selectedView) && (
+              <PrimaryButton onClick={() => setSelectedView(null)} className="mt-5">{t('back')}</PrimaryButton>
+            )}
           </>
         ) : (
           <div className="mt-5 space-y-2">
@@ -1448,7 +1450,7 @@ function LegalModal({ type, t, locale, subject, onClose }: {
           <ModalHeader title={t(LEGAL_TITLE_KEYS[type])} onClose={onClose} closeLabel={t('close')} />
         </div>
         <LegalDocumentView type={type} t={t} locale={locale} subject={subject} />
-        <PrimaryButton onClick={onClose} className="mt-5">{t('back')}</PrimaryButton>
+        {!isPublishedLegalDocument(type) && <PrimaryButton onClick={onClose} className="mt-5">{t('back')}</PrimaryButton>}
       </ModalBody>
     </DialogLayer>
   );
