@@ -58,7 +58,9 @@ describe('orders tab', () => {
     expect(screen.getByText('Номер заказа: 12345678').closest('button')).toBeNull();
     fireEvent.click(screen.getByText('Номер заказа: 12345678'));
     expect(screen.queryByTitle('QR-код')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Получить заказ' })).toBeInTheDocument();
+    const receiveOrderButton = screen.getByRole('button', { name: 'Получить заказ' });
+    expect(receiveOrderButton).toBeInTheDocument();
+    expect(receiveOrderButton.querySelector('svg')).not.toBeInTheDocument();
     expect(screen.queryByText('Кофе & булочки')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 87654321')).not.toBeInTheDocument();
 
@@ -95,7 +97,9 @@ describe('orders tab', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Построить маршрут' }));
+    const buildRouteButton = screen.getByRole('button', { name: 'Построить маршрут' });
+    expect(buildRouteButton.querySelector('svg')).not.toBeInTheDocument();
+    fireEvent.click(buildRouteButton);
 
     const dialog = screen.getByRole('dialog', { name: 'Выберите карту' });
     expect(within(dialog).getByText('2GIS')).toBeInTheDocument();

@@ -3,7 +3,7 @@
 
 import {
   AlertTriangle, Building2, Check, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, Heart, Home, Image as ImageIcon, Info, Languages, Mail, Map as MapIcon,
-  MapPin, Package, PackageCheck, Phone, QrCode, Route, Settings2, ShoppingBag, Sparkles, X,
+  MapPin, Package, PackageCheck, Phone, Settings2, ShoppingBag, Sparkles, X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -478,7 +478,7 @@ function Onboarding(props: OnboardingProps) {
 
         <TextField label={t('phone')} required value={phone} onValueChange={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
 
-        <PrimaryButton type="submit" disabled={!canContinue} className="mt-7">{t('continue')}<ChevronRight size={19} /></PrimaryButton>
+        <PrimaryButton type="submit" disabled={!canContinue} className="mt-7">{t('continue')}</PrimaryButton>
         <LegalAcceptanceSentence t={t} openLegal={openLegal} className="mt-4" />
       </form>
     </div>
@@ -528,7 +528,7 @@ function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccept }: {
           <ProfileRow icon={<FileCheck2 size={18} />} label={t('personalDataConsentTitle')} onClick={() => openLegal('personalDataConsent')} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('privacyTitle')} onClick={() => openLegal('privacy')} />
         </div>
-        <PrimaryButton onClick={onAccept} className="mt-auto">{t('acceptAndContinue')}<ChevronRight size={19} /></PrimaryButton>
+        <PrimaryButton onClick={onAccept} className="mt-auto">{t('acceptAndContinue')}</PrimaryButton>
       </div>
     </div>
   );
@@ -726,12 +726,12 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
                 <div className="w-full p-4 text-left">{summary}</div>
                 {view === 'active' && (
                   <CardActionButton onClick={() => { setSelectedOrder(order); haptic('tap'); }}>
-                    <QrCode size={18} />{t('showQr')}
+                    {t('showQr')}
                   </CardActionButton>
                 )}
                 {view === 'active' && store && (
                   <CardActionButton onClick={() => { setRouteStore(store); haptic('tap'); }}>
-                    <Route size={18} />{t('buildRoute')}
+                    {t('buildRoute')}
                   </CardActionButton>
                 )}
               </SurfaceCard>
@@ -1005,7 +1005,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
           <SurfaceCard className="mt-5 p-4">
             <DetailRow icon={<MapPin size={19} />} label={t('addressLabel')} value={store.address} />
             <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">
-              <Route size={18} />{t('buildRoute')}
+              {t('buildRoute')}
             </SecondaryButton>
           </SurfaceCard>
           <NoticeCard data-testid="store-appearance-notice" className="mt-4" icon={<ImageIcon size={18} />} title={t('appearanceMayDifferTitle')}>
@@ -1023,7 +1023,9 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
       </div>
       {cartQuantity > 0 && (
         <StickyActionFooter>
-          <PrimaryButton onClick={onOpenCart}><ShoppingBag size={19} />{t('cart')} · {cartQuantity}<span className="ml-auto">{formatPrice(cartTotal)}</span></PrimaryButton>
+          <PrimaryButton onClick={onOpenCart} aria-label={`${t('cart')}, ${formatPrice(cartTotal)}`}>
+            {t('cart')}<span className="ml-auto">{formatPrice(cartTotal)}</span>
+          </PrimaryButton>
         </StickyActionFooter>
       )}
         {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
@@ -1218,7 +1220,7 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
         <div className="my-5 h-px bg-border" />
         <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black" aria-live="polite">{formatPrice(total)}</span></div>
         <PrimaryButton onClick={() => void onPay()} disabled={lines.length === 0 || paymentPending} aria-busy={paymentPending} className="mt-5">
-          {paymentPending ? t('paymentProcessing') : t('checkoutCart')}<ChevronRight size={19} />
+          {paymentPending ? t('paymentProcessing') : t('checkoutCart')}
         </PrimaryButton>
         <p className="mt-3 text-center text-xs leading-5 text-ink-muted">
           {t('checkoutOfferPrefix')}{' '}
@@ -1261,7 +1263,7 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
         <div className="mt-5"><OrderQr order={order} t={t} /></div>
         <PickupCodePanel pickupCode={order.pickupCode} label={t('pickupCode')} className="mx-auto mt-4 w-full max-w-[320px] p-3" />
         <p className="mt-4 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
-        <PrimaryButton onClick={onDone} className="mt-6 shrink-0">{t('toOrders')}<ChevronRight size={19} /></PrimaryButton>
+        <PrimaryButton onClick={onDone} className="mt-6 shrink-0">{t('toOrders')}</PrimaryButton>
       </FullScreenFeedback>
     </DialogLayer>
   );

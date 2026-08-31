@@ -144,7 +144,9 @@ describe('store details presentation', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null);
     openFirstStore();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Построить маршрут' }));
+    const buildRouteButton = screen.getByRole('button', { name: 'Построить маршрут' });
+    expect(buildRouteButton.querySelector('svg')).not.toBeInTheDocument();
+    fireEvent.click(buildRouteButton);
     const picker = screen.getByRole('dialog', { name: 'Выберите карту' });
     expect(within(picker).queryByText('пр. Тауке хана, 47')).not.toBeInTheDocument();
     expect(within(picker).queryByText('Маршрут будет построен от вашего местоположения.')).not.toBeInTheDocument();

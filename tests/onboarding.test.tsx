@@ -58,6 +58,7 @@ describe('onboarding legal consent', () => {
     openOnboarding();
     const continueButton = screen.getByRole('button', { name: /Продолжить/i });
     expect(continueButton).toBeDisabled();
+    expect(continueButton.querySelector('svg')).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/Телефон/), { target: { value: '+7 705 976 80 00' } });
     expect(continueButton).toBeEnabled();
@@ -120,6 +121,7 @@ describe('onboarding legal consent', () => {
     expect(terms.compareDocumentPosition(consent) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(consent.compareDocumentPosition(privacy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const acceptButton = screen.getByRole('button', { name: 'Принять и продолжить' });
+    expect(acceptButton.querySelector('svg')).not.toBeInTheDocument();
     expect(screen.queryByText((_, element) => element?.tagName === 'P' && element.textContent?.startsWith('Нажимая «Принять и продолжить»'))).not.toBeInTheDocument();
     expect(privacy.compareDocumentPosition(acceptButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fireEvent.click(acceptButton);

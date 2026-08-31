@@ -54,14 +54,20 @@ describe('multi-box cart', () => {
       { boxId: 'bakery-surprise', quantity: 2 },
       { boxId: 'tatti-defined', quantity: 1 },
     ]);
-    fireEvent.click(screen.getByRole('button', { name: /Корзина · 3/ }));
-    expect(screen.getByText('Корзина')).toBeInTheDocument();
+    const cartButton = screen.getByRole('button', { name: /^Корзина/ });
+    expect(cartButton).not.toHaveTextContent('·');
+    expect(cartButton.querySelector('svg')).not.toBeInTheDocument();
+    fireEvent.click(cartButton);
+    expect(screen.getByRole('heading', { name: 'Корзина' })).toBeInTheDocument();
     expect(screen.getAllByText((content) => content.replace(/\s/g, '') === '7370₸').length).toBeGreaterThan(0);
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Оформить заказ/ }));
+      const checkoutButton = screen.getByRole('button', { name: 'Оформить заказ' });
+      expect(checkoutButton.querySelector('svg')).not.toBeInTheDocument();
+      fireEvent.click(checkoutButton);
     });
 
     expect(screen.getByText('Заказ оформлен!')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Посмотреть заказ' }).querySelector('svg')).not.toBeInTheDocument();
     expect(screen.getByText('Покажите QR-код или код получения сотруднику заведения при получении заказа.')).toBeInTheDocument();
     const successDialog = screen.getByRole('dialog');
     expect(within(successDialog).queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
@@ -83,7 +89,7 @@ describe('multi-box cart', () => {
     window.history.replaceState({}, '', '/?mockPayment=failed');
     openTatti();
     addBoxFromDetails('Surprise Tatti-box');
-    fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Корзина/ }));
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Оформить заказ/ }));
@@ -114,7 +120,7 @@ describe('multi-box cart', () => {
     window.history.replaceState({}, '', '/?mockPayment=failed');
     openTatti();
     addBoxFromDetails('Surprise Tatti-box');
-    fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Корзина/ }));
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Оформить заказ/ }));
@@ -141,7 +147,7 @@ describe('multi-box cart', () => {
   it('links the checkout consent to the public offer and order rules mocks', () => {
     openTatti();
     addBoxFromDetails('Surprise Tatti-box');
-    fireEvent.click(screen.getByRole('button', { name: /Корзина · 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Корзина/ }));
 
     expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Нажимая «Оформить заказ», вы автоматически принимаете публичную оферту и правила заказа, оплаты, самовывоза, отмены и возврата')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'публичную оферту' }));
