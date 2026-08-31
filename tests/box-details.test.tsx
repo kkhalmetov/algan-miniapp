@@ -81,8 +81,12 @@ describe('store details presentation', () => {
     const boxImage = within(firstBoxCard).getByTestId('box-card-image');
     const boxContent = within(firstBoxCard).getByTestId('box-card-content');
     expect(within(boxImage).getByAltText('Surprise Tatti-box')).toHaveAttribute('src', '/images/bakery.jpg');
+    expect(within(boxImage).getByText('SURPRISE')).toBeInTheDocument();
+    expect(within(boxContent).queryByText('SURPRISE')).not.toBeInTheDocument();
     expect(boxImage.compareDocumentPosition(boxContent) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(boxImage).toHaveClass('h-36', 'w-full');
+    const regularBoxCard = within(scroll).getByRole('button', { name: 'Подробнее Tatti-box' });
+    expect(within(regularBoxCard).queryByText('SURPRISE')).not.toBeInTheDocument();
     expect(within(scroll).getByText('Время выдачи: 19:30–20:30')).toHaveClass('whitespace-nowrap');
     expect(within(scroll).getByText('Время выдачи: 18:30–19:30')).toBeInTheDocument();
     const appearanceNotice = within(scroll).getByTestId('store-appearance-notice');
