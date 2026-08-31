@@ -123,6 +123,8 @@ describe('store details presentation', () => {
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Добавить в корзину Surprise Tatti-box' }));
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 2 }]);
+    expect(screen.queryByRole('dialog', { name: 'Surprise Tatti-box' })).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Tatti Bakery' })).toBeInTheDocument();
   });
 
   it('toggles favorite and closes from the persistent header', () => {

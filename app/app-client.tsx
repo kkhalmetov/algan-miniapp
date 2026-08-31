@@ -1133,13 +1133,15 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
         </div>
         {(available > 0 || cartQuantity > 0) && (
           <StickyActionFooter>
-            <div className="grid grid-cols-[8.5rem_minmax(0,1fr)] items-center gap-3">
+            <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-center gap-3">
               <QuantityStepper quantity={selectedQuantity} min={1} max={Math.max(available, cartQuantity)}
                 label={t('quantity')} onChange={setSelectedQuantity} />
-              <PrimaryButton size="md" onClick={() => onChangeQuantity(selectedQuantity)}
+              <PrimaryButton size="md" className="whitespace-nowrap" style={{ paddingInline: 6, fontSize: 12 }} onClick={() => {
+                onChangeQuantity(selectedQuantity);
+                onClose();
+              }}
                 aria-label={`${t('addToCartFull')} ${box.name}`}>
-                <ShoppingBag size={17} />
-                <span className="truncate">{t('addToCartFull')}</span>
+                {t('addToCartFull')}
               </PrimaryButton>
             </div>
           </StickyActionFooter>
