@@ -90,6 +90,7 @@ describe('store details presentation', () => {
     const regularBoxCard = within(scroll).getByRole('button', { name: 'Подробнее Tatti-box' });
     expect(within(regularBoxCard).queryByText('SURPRISE')).not.toBeInTheDocument();
     expect(within(within(regularBoxCard).getByTestId('box-card-image')).getByText('Осталось 3 бокса')).toBeInTheDocument();
+    expect(within(regularBoxCard).getByTestId('box-card-content')).toHaveClass('relative');
     expect(within(scroll).getByText('Время выдачи: 19:30–20:30')).toHaveClass('whitespace-nowrap');
     expect(within(scroll).getByText('Время выдачи: 18:30–19:30')).toBeInTheDocument();
     const appearanceNotice = within(scroll).getByTestId('store-appearance-notice');

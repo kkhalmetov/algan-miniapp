@@ -1051,11 +1051,9 @@ function BoxOfferCard({ box, locale, t, available, onOpen }: {
             </StatusBadge>
           </span>
         </span>
-        <span data-testid="box-card-content" className="block p-4">
-          <span className="flex items-start justify-between gap-3">
-            <span className="min-w-0 text-base font-black leading-5">{box.name}</span>
-            <DisclosureIndicator />
-          </span>
+        <span data-testid="box-card-content" className="relative block p-4">
+          <span className="block min-w-0 pr-12 text-base font-black leading-5">{box.name}</span>
+          <DisclosureIndicator className="absolute right-4 top-4" />
           <span className="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-[-0.02em] text-ink-secondary">
             <Clock3 size={14} className="shrink-0 text-brand" />
             <span className="whitespace-nowrap">{t('pickupTime')}: {box.pickupFrom}–{box.pickupTo}</span>
