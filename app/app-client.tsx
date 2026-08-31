@@ -1087,6 +1087,9 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
         </div>
 
         <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div data-testid="box-details-cover" className="h-48 w-full overflow-hidden bg-canvas">
+            <img src={box.image} alt={box.name} className="h-full w-full object-cover" />
+          </div>
           <div className="px-page-wide pb-6 pt-4">
           <PageTitle>{box.name}</PageTitle>
           {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}

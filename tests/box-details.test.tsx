@@ -102,7 +102,10 @@ describe('store details presentation', () => {
     expect(within(dialog).getByRole('button', { name: 'Закрыть' })).toBeInTheDocument();
     expect(within(dialog).queryByText('Tatti Bakery')).not.toBeInTheDocument();
     const scroll = within(dialog).getByTestId('box-details-scroll');
-    expect(within(dialog).queryByTestId('box-details-cover')).not.toBeInTheDocument();
+    const cover = within(scroll).getByTestId('box-details-cover');
+    expect(within(cover).getByAltText('Surprise Tatti-box')).toHaveAttribute('src', '/images/bakery.jpg');
+    expect(cover).toHaveClass('h-48', 'w-full');
+    expect(cover.compareDocumentPosition(within(scroll).getByRole('heading', { name: 'Surprise Tatti-box' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(scroll).getByText('SURPRISE')).toBeInTheDocument();
     expect(within(scroll).getByRole('heading', { name: 'Что может быть внутри' })).toBeInTheDocument();
     expect(within(scroll).getByText('Круассаны, слойки, булочки, багеты и другая выпечка.')).toBeInTheDocument();
