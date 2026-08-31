@@ -109,7 +109,20 @@ describe('store details presentation', () => {
     expect(within(scroll).queryByTestId('box-appearance-notice')).not.toBeInTheDocument();
     expect(within(scroll).getByText('Содержит аллергены')).toBeInTheDocument();
     expect(within(scroll).getByText('Глютен, молоко, яйца')).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Добавить Surprise Tatti-box' }).closest('footer')).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Добавить в корзину Surprise Tatti-box' }).closest('footer')).toBeInTheDocument();
+    expect(within(dialog).getByRole('group', { name: 'Количество' })).toHaveTextContent('1');
+  });
+
+  it('selects a quantity before adding it to the cart from box details', () => {
+    openFirstStore();
+    fireEvent.click(screen.getByRole('button', { name: 'Подробнее Surprise Tatti-box' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Количество +' }));
+    expect(useAppStore.getState().cartItems).toEqual([]);
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Добавить в корзину Surprise Tatti-box' }));
+    expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 2 }]);
   });
 
   it('toggles favorite and closes from the persistent header', () => {

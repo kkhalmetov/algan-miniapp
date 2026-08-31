@@ -481,9 +481,19 @@ export function QuantityControl({ quantity, max, label, addLabel, addText, onCha
     return <PrimaryButton size="md" onClick={() => onChange(1)} aria-label={addLabel}>{addText}</PrimaryButton>;
   }
 
+  return <QuantityStepper quantity={quantity} min={0} max={max} label={label} onChange={onChange} />;
+}
+
+export function QuantityStepper({ quantity, min = 1, max, label, onChange }: {
+  quantity: number;
+  min?: number;
+  max: number;
+  label: string;
+  onChange: (quantity: number) => void;
+}) {
   return (
     <div className="flex min-h-12 items-center justify-between rounded-control bg-brand-soft px-1.5" role="group" aria-label={label}>
-      <button type="button" onClick={() => onChange(quantity - 1)} aria-label={`${label} −`} className="grid h-11 w-11 shrink-0 place-items-center">
+      <button type="button" onClick={() => onChange(quantity - 1)} aria-label={`${label} −`} disabled={quantity <= min} className="grid h-11 w-11 shrink-0 place-items-center disabled:opacity-45">
         <span className="grid h-8 w-8 place-items-center rounded-full bg-surface-muted text-ink transition active:scale-95"><Minus size={16} /></span>
       </button>
       <span className="text-base font-black text-brand" aria-live="polite" aria-atomic="true">{quantity}</span>

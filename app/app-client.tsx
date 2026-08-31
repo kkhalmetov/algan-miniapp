@@ -12,7 +12,7 @@ import LocationMap from '@/components/location-map';
 import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
-  MediaBadge, ModalBody, ModalHeader, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, ScreenBody,
+  MediaBadge, ModalBody, ModalHeader, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, QuantityStepper, ScreenBody,
   SecondaryButton, SectionTitle, SegmentedControl, SheetHandle, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
   TextLinkButton, TopAppBar,
 } from '@/components/ui-kit';
@@ -1074,6 +1074,9 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
 }) {
   const formatPrice = usePriceFormatter(locale);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
+  const [selectedQuantity, setSelectedQuantity] = useState(() =>
+    Math.min(Math.max(cartQuantity, 1), Math.max(available, 1)),
+  );
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={box.name}>
       <div data-testid="box-details-sheet" className="flex h-[80dvh] min-h-0 flex-col sm:h-[624px]">
@@ -1130,8 +1133,15 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
         </div>
         {(available > 0 || cartQuantity > 0) && (
           <StickyActionFooter>
-            <QuantityControl quantity={cartQuantity} max={available} label={t('quantity')}
-              addLabel={`${t('addToCart')} ${box.name}`} addText={t('addToCart')} onChange={onChangeQuantity} />
+            <div className="grid grid-cols-[8.5rem_minmax(0,1fr)] items-center gap-3">
+              <QuantityStepper quantity={selectedQuantity} min={1} max={Math.max(available, cartQuantity)}
+                label={t('quantity')} onChange={setSelectedQuantity} />
+              <PrimaryButton size="md" onClick={() => onChangeQuantity(selectedQuantity)}
+                aria-label={`${t('addToCartFull')} ${box.name}`}>
+                <ShoppingBag size={17} />
+                <span className="truncate">{t('addToCartFull')}</span>
+              </PrimaryButton>
+            </div>
           </StickyActionFooter>
         )}
       </div>
