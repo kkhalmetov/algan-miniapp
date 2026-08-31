@@ -110,10 +110,18 @@ describe('onboarding legal consent', () => {
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
     expect(screen.getByRole('heading', { name: 'Обновлены юридические документы' })).toBeInTheDocument();
+    const updateText = screen.getByText('Ознакомьтесь с новой редакцией документов Algan.');
+    expect(screen.queryByText(/Повторно вводить номер телефона/)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Телефон/)).not.toBeInTheDocument();
+    const terms = screen.getByRole('button', { name: 'Условия использования' });
+    const consent = screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' });
+    const privacy = screen.getByRole('button', { name: 'Политика конфиденциальности' });
+    expect(updateText.compareDocumentPosition(terms) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(terms.compareDocumentPosition(consent) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(consent.compareDocumentPosition(privacy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const acceptButton = screen.getByRole('button', { name: 'Принять и продолжить' });
-    const legalText = screen.getByText((_, element) => element?.tagName === 'P' && element.textContent?.startsWith('Нажимая «Принять и продолжить»'));
-    expect(acceptButton.compareDocumentPosition(legalText) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByText((_, element) => element?.tagName === 'P' && element.textContent?.startsWith('Нажимая «Принять и продолжить»'))).not.toBeInTheDocument();
+    expect(privacy.compareDocumentPosition(acceptButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fireEvent.click(acceptButton);
 
     expect(screen.getByText('Kimal!')).toBeInTheDocument();
