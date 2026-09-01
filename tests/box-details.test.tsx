@@ -80,7 +80,10 @@ describe('store details presentation', () => {
     const firstBoxCard = within(scroll).getByRole('button', { name: 'Подробнее Surprise Tatti-box' });
     const boxImage = within(firstBoxCard).getByTestId('box-card-image');
     const boxContent = within(firstBoxCard).getByTestId('box-card-content');
-    expect(within(boxImage).getByAltText('Surprise Tatti-box')).toHaveAttribute('src', '/images/bakery.jpg');
+    const boxPhoto = within(boxImage).getByAltText('Surprise Tatti-box');
+    expect(firstBoxCard).toHaveClass('group');
+    expect(boxPhoto).toHaveAttribute('src', '/images/bakery.jpg');
+    expect(boxPhoto).toHaveClass('transition', 'duration-500', 'group-hover:scale-105');
     expect(within(boxImage).getByText('SURPRISE')).toBeInTheDocument();
     expect(within(boxImage).getByText('Осталось 4 бокса')).toBeInTheDocument();
     expect(within(boxContent).queryByText('SURPRISE')).not.toBeInTheDocument();

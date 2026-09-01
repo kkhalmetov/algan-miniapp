@@ -1046,9 +1046,9 @@ function BoxOfferCard({ box, locale, t, available, onOpen }: {
   const name = boxName(box, locale);
   return (
     <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
-      <CardPressable onClick={onOpen} className="relative" aria-label={`${t('details')} ${name}`}>
+      <CardPressable onClick={onOpen} className="group relative" aria-label={`${t('details')} ${name}`}>
         <span data-testid="box-card-image" className="relative block h-36 w-full overflow-hidden bg-canvas">
-          <img src={box.image} alt={name} className="h-full w-full object-cover" />
+          <img src={box.image} alt={name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
           <span className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center gap-2">
             {box.type === 'SURPRISE' && <SurpriseBadge compact />}
             <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />}>
