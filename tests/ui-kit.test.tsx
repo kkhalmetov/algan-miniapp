@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
-  ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, MediaBadge,
+  ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, MediaBadge, MediaSheetHeader,
   ModalBody, ModalHeader, NoticeCard, PageSection, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SheetHeader,
   SegmentedControl, StatusBadge, StickyActionFooter, TextField, TextLinkButton, TertiaryButton, TopAppBar,
 } from '../components/ui-kit';
@@ -59,6 +59,16 @@ describe('Algan UI kit', () => {
     rerender(<SheetHeader compact onClose={onClose} closeLabel="Закрыть" />);
     expect(screen.queryByRole('heading')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Закрыть' })).toBeInTheDocument();
+  });
+
+  it('provides one media sheet header with a contrasting handle and close action', () => {
+    const onClose = vi.fn();
+    render(<MediaSheetHeader data-testid="media-header" onClose={onClose} closeLabel="Закрыть"><span aria-label="Бокс" /></MediaSheetHeader>);
+
+    expect(screen.getByTestId('media-header')).toHaveClass('h-[220px]', 'overflow-hidden');
+    expect(document.querySelector('[aria-hidden="true"].w-10')).toHaveClass('bg-white/85', 'shadow-control');
+    fireEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
+    expect(onClose).toHaveBeenCalledOnce();
   });
 
   it('exposes selected state for segmented controls', () => {

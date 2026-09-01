@@ -106,15 +106,17 @@ describe('store details presentation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Подробнее Surprise Tatti-box' }));
 
     const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
-    expect(within(dialog).getByTestId('box-details-sheet')).toHaveClass('h-[85dvh]');
-    expect(within(dialog).getByTestId('box-details-header')).toHaveClass('pb-5');
-    expect(within(dialog).getByRole('button', { name: 'Закрыть' })).toBeInTheDocument();
+    expect(within(dialog).getByTestId('box-details-sheet')).toHaveClass('h-[90dvh]', 'sm:h-[700px]');
     expect(within(dialog).queryByText('Tatti Bakery')).not.toBeInTheDocument();
     const scroll = within(dialog).getByTestId('box-details-scroll');
     const cover = within(scroll).getByTestId('box-details-cover');
+    const content = within(scroll).getByTestId('box-details-content');
+    const close = within(dialog).getByRole('button', { name: 'Закрыть' });
+    expect(cover).toContainElement(close);
     expect(within(cover).getByAltText('Surprise Tatti-box')).toHaveAttribute('src', '/images/bakery.jpg');
-    expect(cover).toHaveClass('h-48', 'w-full');
-    expect(cover.compareDocumentPosition(within(scroll).getByRole('heading', { name: 'Surprise Tatti-box' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(cover).toHaveClass('h-[220px]', 'w-full', 'relative');
+    expect(content).toHaveClass('-mt-5', 'rounded-t-card', 'bg-surface');
+    expect(cover.compareDocumentPosition(content) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(scroll).getByText('SURPRISE')).toBeInTheDocument();
     expect(within(scroll).getByRole('heading', { name: 'Что может быть внутри' })).toBeInTheDocument();
     expect(within(scroll).getByText('Круассаны, слойки, булочки, багеты и другая выпечка.')).toBeInTheDocument();
@@ -123,7 +125,9 @@ describe('store details presentation', () => {
     expect(within(surpriseNotice).getByText('Точный набор заранее неизвестен и формируется заведением в день получения.')).toBeInTheDocument();
     expect(surpriseNotice).not.toHaveTextContent(/остат/i);
     expect(within(scroll).getByTestId('box-stock')).toHaveTextContent('Осталось 4 бокса');
-    expect(within(within(scroll).getByTestId('box-price-card')).getByText('−60%')).toBeInTheDocument();
+    const commerceSummary = within(scroll).getByTestId('box-commerce-summary');
+    expect(within(commerceSummary).getByTestId('box-price-card')).toHaveTextContent('2 490 ₸');
+    expect(within(commerceSummary).getByText('−60%')).toBeInTheDocument();
     expect(within(scroll).getByTestId('box-pickup-time')).toHaveTextContent('Время выдачи19:30–20:30');
     expect(within(scroll).queryByTestId('box-appearance-notice')).not.toBeInTheDocument();
     expect(within(scroll).getByText('Содержит аллергены')).toBeInTheDocument();
@@ -133,6 +137,19 @@ describe('store details presentation', () => {
     expect(addToCartButton).toHaveClass('text-sm', 'whitespace-normal');
     expect(addToCartButton).not.toHaveStyle({ fontSize: '12px' });
     expect(within(dialog).getByRole('group', { name: 'Количество' })).toHaveTextContent('1');
+  });
+
+  it('uses one compact visible composition list for a defined box', () => {
+    openFirstStore();
+    fireEvent.click(screen.getByRole('button', { name: 'Подробнее Tatti-box' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Tatti-box' });
+    const contents = within(dialog).getByTestId('box-contents');
+    expect(contents).toHaveClass('overflow-hidden', 'border', 'bg-panel');
+    expect(within(contents).getAllByRole('listitem')).toHaveLength(3);
+    expect(within(contents).getByText('Булочка с корицей')).toBeInTheDocument();
+    expect(within(contents).getAllByText('× 1')).toHaveLength(2);
+    expect(within(dialog).queryByText('Состав — сюрприз')).not.toBeInTheDocument();
   });
 
   it('selects a quantity before adding it to the cart from box details', () => {

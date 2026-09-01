@@ -229,8 +229,8 @@ export function ModalHeader({
   );
 }
 
-export function SheetHandle() {
-  return <div aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-border-strong" />;
+export function SheetHandle({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div aria-hidden="true" className={cx('mx-auto h-1.5 w-10 rounded-full bg-border-strong', className)} {...props} />;
 }
 
 export function SheetHeader({
@@ -262,6 +262,27 @@ export function SheetHeader({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+export function MediaSheetHeader({ children, onClose, closeLabel, className, ...props }: HTMLAttributes<HTMLDivElement> & {
+  children: ReactNode;
+  onClose: () => void;
+  closeLabel: string;
+}) {
+  return (
+    <div className={cx('relative h-[220px] w-full shrink-0 overflow-hidden bg-canvas sm:h-60', className)} {...props}>
+      {children}
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-brand-deep/30 to-transparent" />
+      <SheetHandle className="absolute left-1/2 top-3 z-20 -translate-x-1/2 bg-white/85 shadow-control" />
+      <IconButton
+        onClick={onClose}
+        label={closeLabel}
+        className="absolute right-page top-4 z-20 bg-surface/95 shadow-control backdrop-blur-md"
+      >
+        <X size={18} />
+      </IconButton>
     </div>
   );
 }

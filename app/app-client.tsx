@@ -12,7 +12,7 @@ import LocationMap from '@/components/location-map';
 import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
-  MediaBadge, ModalBody, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, QuantityStepper, ScreenBody,
+  MediaBadge, MediaSheetHeader, ModalBody, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, QuantityStepper, ScreenBody,
   SecondaryButton, SectionTitle, SegmentedControl, SheetHeader, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
   TextLinkButton, TopAppBar,
 } from '@/components/ui-kit';
@@ -1081,56 +1081,61 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
   );
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={name}>
-      <div data-testid="box-details-sheet" className="flex h-[85dvh] min-h-0 flex-col sm:h-[664px]">
-        <SheetHeader data-testid="box-details-header" className="px-page pb-5 pt-4" compact onClose={onClose} closeLabel={t('close')} />
-
+      <div data-testid="box-details-sheet" className="flex h-[90dvh] min-h-0 flex-col sm:h-[700px]">
         <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <div data-testid="box-details-cover" className="h-48 w-full overflow-hidden bg-canvas">
+          <MediaSheetHeader data-testid="box-details-cover" onClose={onClose} closeLabel={t('close')}>
             <img src={box.image} alt={name} className="h-full w-full object-cover" />
-          </div>
-          <div className="px-page-wide pb-6 pt-4">
-          <PageTitle>{name}</PageTitle>
-          {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}
-          <div className="mt-2">
-            <StatusBadge data-testid="box-stock" tone={available > 0 ? 'accent' : 'danger'} size="lg" icon={<Package size={15} />}>{formatBoxesLeft(available, locale)}</StatusBadge>
-          </div>
-          <div className="mt-4">
-            <InsetSurface data-testid="box-price-card" tone="brand" className="p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p>
-              <p className="mt-2 text-[25px] font-black tracking-[-0.04em] text-brand">{formatPrice(box.salePrice)}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
-                <StatusBadge tone="accentSolid">−{discount}%</StatusBadge>
+          </MediaSheetHeader>
+          <div data-testid="box-details-content" className="relative z-10 -mt-5 rounded-t-card bg-surface px-page-wide pb-6 pt-5">
+            <PageTitle>{name}</PageTitle>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {box.type === 'SURPRISE' && <SurpriseBadge />}
+              <StatusBadge data-testid="box-stock" tone={available > 0 ? 'accent' : 'danger'} size="lg" icon={<Package size={15} />}>
+                {formatBoxesLeft(available, locale)}
+              </StatusBadge>
+            </div>
+
+            <InsetSurface data-testid="box-commerce-summary" tone="panel" className="mt-5 overflow-hidden p-0">
+              <div className="grid grid-cols-[minmax(0,1fr)_7.5rem]">
+                <div data-testid="box-price-card" className="min-w-0 p-3.5">
+                  <p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p>
+                  <p className="mt-2 whitespace-nowrap text-[25px] font-black tracking-[-0.04em] text-brand">{formatPrice(box.salePrice)}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
+                    <StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge>
+                  </div>
+                </div>
+                <div data-testid="box-pickup-time" className="min-w-0 border-l border-border p-3.5">
+                  <p className="whitespace-nowrap text-[11px] font-black uppercase tracking-[0.05em] text-ink-secondary">{t('pickupTime')}</p>
+                  <p className="mt-3 whitespace-nowrap text-[13px] font-black tracking-[-0.025em] text-brand">{box.pickupFrom}–{box.pickupTo}</p>
+                </div>
               </div>
             </InsetSurface>
-          </div>
-          <DetailRow data-testid="box-pickup-time" className="mt-4" icon={<Clock3 size={18} />} label={t('pickupTime')} value={`${box.pickupFrom}–${box.pickupTo}`} />
-          {box.type === 'SURPRISE' ? (
-            <>
-              <SectionTitle className="mt-6">{t('surprisePossibleTitle')}</SectionTitle>
-              <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprisePossibleContents')}</p>
-              <NoticeCard data-testid="surprise-composition-notice" className="mt-4" icon={<Sparkles size={18} />} title={t('surpriseNoticeTitle')}>
-                {t('surprise')}
-              </NoticeCard>
-            </>
-          ) : (
-            <>
-              <SectionTitle className="mt-6">{t('composition')}</SectionTitle>
-              <ul className="mt-3 space-y-2" data-testid="box-contents">
-                {box.contents?.map((item) => (
-                  <li key={item.contentName}>
-                    <InsetSurface className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+
+            {box.type === 'SURPRISE' ? (
+              <>
+                <SectionTitle className="mt-6">{t('surprisePossibleTitle')}</SectionTitle>
+                <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprisePossibleContents')}</p>
+                <NoticeCard data-testid="surprise-composition-notice" className="mt-4" icon={<Sparkles size={18} />} title={t('surpriseNoticeTitle')}>
+                  {t('surprise')}
+                </NoticeCard>
+              </>
+            ) : (
+              <>
+                <SectionTitle className="mt-6">{t('composition')}</SectionTitle>
+                <ul className="mt-3 overflow-hidden rounded-control border border-border bg-panel" data-testid="box-contents">
+                  {box.contents?.map((item, index) => (
+                    <li key={item.contentName} className={`flex items-center justify-between gap-4 px-4 py-3.5 text-sm ${index > 0 ? 'border-t border-border' : ''}`}>
                       <span className="font-bold text-ink">{boxContentName(item, locale)}</span>
-                      <span className="shrink-0 font-black text-brand">× {item.quantity}</span>
-                    </InsetSurface>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          <NoticeCard className="mt-4" tone="allergen" icon={<AlertTriangle size={19} />} title={allergens ? t('containsAllergens') : t('allergens')}>
-            {allergens ?? t('allergensUnknown')}
-          </NoticeCard>
+                      <span className="shrink-0 rounded-full bg-brand-pale px-2.5 py-1 text-xs font-black text-brand">× {item.quantity}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <NoticeCard className="mt-4" tone="allergen" icon={<AlertTriangle size={19} />} title={allergens ? t('containsAllergens') : t('allergens')}>
+              {allergens ?? t('allergensUnknown')}
+            </NoticeCard>
           </div>
         </div>
         {(available > 0 || cartQuantity > 0) && (

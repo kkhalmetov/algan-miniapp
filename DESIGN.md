@@ -30,7 +30,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - `IconButton`: 44 × 44 px touch target with muted, dark, brand and accent variants; an accessible label is mandatory.
 - `QuantityControl`: one add/stepper pattern with compact visuals and 44 px increment/decrement touch targets.
 - `TextField`: shared label, required marker, border, focus ring and placeholder treatment.
-- `ModalBody`, `ModalHeader`, `SheetHeader` and `SheetHandle`: consistent safe-area spacing, navigation, close controls and sheet affordance. Product sheets use `SheetHeader` instead of composing the handle and header locally.
+- `ModalBody`, `ModalHeader`, `SheetHeader`, `MediaSheetHeader` and `SheetHandle`: consistent safe-area spacing, navigation, close controls and sheet affordance. Product sheets that start with photography use `MediaSheetHeader` for the contrasting handle and overlaid close action.
 - `DialogLayer`: shared modal backdrop, dismissal target, elevation and full-screen/sheet/center modes.
 - `ConfirmationDialog`: one confirmation pattern for ordinary and destructive actions; native browser confirmation windows are not used.
 - `AccordionItem`: shared disclosure row for FAQ and future expandable content.
@@ -48,6 +48,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - `CardActionButton` and `StickyActionFooter`: shared actions attached to cards and fixed content surfaces.
 - Cards: panel background, border token, `rounded-card`, card shadow only when separation from the surface is needed.
 - Sheets and modals: surface background, `rounded-sheet` top corners, dimmed brand-deep overlay.
+- Product detail sheet: 90% mobile height, edge-to-edge media hero, overlaid handle/close action, overlapping surface content and a persistent purchase footer.
 - Inputs: 52 px height, panel background, border token, brand focus ring.
 - Primary, secondary and destructive page actions: 56 px height; compact embedded actions: 44 px height.
 - Navigation: surface background, border token, brand-soft selected pill, muted inactive icons and 10 px labels sized to keep full RU/KK names visible.
