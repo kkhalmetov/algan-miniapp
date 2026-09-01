@@ -36,6 +36,8 @@ describe('mock customer catalog', () => {
     expect(ru('buy')).not.toBe(kk('buy'));
     expect(ru('orders')).toBe('Заказы');
     expect(kk('orders')).toBe('Тапсырыстар');
+    expect(kk('favoritesNav')).toBe('Таңдаулылар');
+    expect(kk('ordersNav')).toBe('Тапсырыстар');
     expect(ru('legal')).toBe('Правовая информация');
     expect(kk('legal')).toBe('Құқықтық ақпарат');
     expect(ru('support')).toBe('Помощь и поддержка');

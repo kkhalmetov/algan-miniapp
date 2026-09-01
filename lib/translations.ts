@@ -59,7 +59,7 @@ const copy = {
     continue: 'Жалғастыру', chooseLocation: 'Бокстарды қайдан іздейміз?', locationHelp: 'Картаға белгі қойыңыз немесе мекенжайды табыңыз.',
     addressPlaceholder: 'Шымкенттегі көше немесе орын', search: 'Табу', currentLocation: 'Менің геолокациям',
     confirmLocation: 'Мекенжайды растау', demoAddress: 'Шымкент орталығы', home: 'Басты бет', map: 'Карта',
-    favorites: 'Таңдаулылар', favoritesNav: 'Таңдаулы', ordersNav: 'Тапсырыс', profile: 'Профиль', greeting: 'Қайырлы күн', location: 'Сіздің мекенжайыңыз',
+    favorites: 'Таңдаулылар', favoritesNav: 'Таңдаулылар', ordersNav: 'Тапсырыстар', profile: 'Профиль', greeting: 'Қайырлы күн', location: 'Сіздің мекенжайыңыз',
     impactTitle: 'Сізге дәмді — ғаламшарға жеңіл', impactText: 'Әр сақталған бокс тағам қалдықтарын азайтады.',
     nearby: 'Қолжетімді мекемелер', all: 'Барлығы', bakery: 'Наубайханалар', cafe: 'Кофеханалар', market: 'Дүкендер',
     left: 'қалды', pickup: 'Алу', pickupTime: 'Алу уақыты', from: 'бастап', details: 'Толығырақ', buy: 'Боксты сатып алу',

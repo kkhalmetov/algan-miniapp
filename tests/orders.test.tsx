@@ -143,9 +143,9 @@ describe('orders tab', () => {
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
     const navigation = screen.getByRole('navigation');
-    expect(within(navigation).getByRole('button', { name: 'Таңдаулы' })).toHaveTextContent('Таңдаулы');
-    expect(within(navigation).getByRole('button', { name: 'Тапсырыс' })).toHaveTextContent('Тапсырыс');
-    fireEvent.click(within(navigation).getByRole('button', { name: 'Тапсырыс' }));
+    expect(within(navigation).getByRole('button', { name: 'Таңдаулылар' })).toHaveTextContent('Таңдаулылар');
+    expect(within(navigation).getByRole('button', { name: 'Тапсырыстар' })).toHaveTextContent('Тапсырыстар');
+    fireEvent.click(within(navigation).getByRole('button', { name: 'Тапсырыстар' }));
     expect(screen.getByRole('heading', { name: 'Тапсырыстар' })).toBeInTheDocument();
     expect(screen.getByText('25 тамыз 2026 ж.')).toBeInTheDocument();
   });
