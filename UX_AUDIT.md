@@ -33,6 +33,12 @@ The audit covers onboarding, startup, home, map, favorites, active and past orde
 | Text on brand surfaces | Profile and pickup-code supporting text at 65% white measured about 4.36:1 | Supporting text on brand surfaces now uses at least 70% white for AA contrast |
 | Heading hierarchy | Profile started at `h2` and store cards skipped from the page heading to `h3` | Profile exposes one `h1`; store cards use the shared `CardTitle` at `h2` |
 | Catalog localization | Kazakh UI still displayed Russian addresses, box names, contents and allergens | A typed catalog-localization layer now serves full KK copy with source-language fallback for backend compatibility |
+| Demo identity | A profile created in Russian kept showing «Пользователь» after switching to Kazakh | Browser fallback identity now follows the active language on home, profile and avatar surfaces |
+| Order dates | Some mobile WebViews rendered Kazakh dates as `2026 M08 28` | A deterministic Shymkent date formatter supplies complete RU/KK month names |
+| Landmarks | The phone shell nested one `main` landmark inside another | The shell is structural; onboarding and application content each expose exactly one main landmark |
+| Avatar styling | User avatars repeated a feature-local 48/64 px circle recipe | `AvatarFrame` owns both sizes, fallback color and typography |
+| Modal gutters | The route picker used a narrower gutter than other sheets | All sheet bodies use `ModalBody` and the documented 24 px modal gutter |
+| Notice semantics | Standalone informational cards skipped directly from `h1` to `h3` | `NoticeCard` keeps one visual recipe while choosing `h2` for standalone blocks and `h3` for nested notices |
 
 ## Governance
 

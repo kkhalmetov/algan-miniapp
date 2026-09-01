@@ -40,7 +40,8 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - `BrandHeader`, `TopAppBar`, `PageSection`, `ScreenBody`, `PageTitle`, `ContentTitle`, `CardTitle`, `SectionTitle`: one hierarchy for screen chrome, gutters and headings. `ContentTitle` may render the screen-level `h1`; cards use `CardTitle` as `h2`.
 - `ListRow`, `LinkRow`: shared button/link rows with icon container, optional supporting text, panel/soft surfaces and trailing action.
 - `InsetSurface`, `NoticeCard`, `DetailRow`: canonical inset surfaces, semantic notices and labelled detail rows.
-- `MediaBadge`, `DisclosureIndicator`: shared logo/avatar containers and affordances for tappable content.
+- `MediaBadge`, `DisclosureIndicator`: shared store-logo containers and affordances for tappable content.
+- `AvatarFrame`: shared 48/64 px Telegram avatar and localized initial fallback treatment.
 - `SegmentedControl`: shared two-state selector with pressed-state semantics.
 - `EmptyState`: shared illustration container, title and supporting copy.
 - `IconBadge`: shared contextual icon container for informational cards.
@@ -85,6 +86,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - Dialogs keep keyboard focus inside the active layer without changing the viewport scroll position, close with Escape and restore prior focus.
 - Loading controls expose `aria-busy`; empty states omit unused supporting text instead of rendering blank layout space.
 - The document language follows the selected RU/KK locale, with Kazakh as the initial language.
+- Browser fallback identity and order dates follow the selected locale; order dates use the Shymkent time zone and bundled month names instead of platform-dependent locale output.
 - Catalog copy is localized through `lib/catalog-localization.ts`; visible addresses, box names, contents and allergens never read source-language fields directly.
 - Motion respects `prefers-reduced-motion`.
 

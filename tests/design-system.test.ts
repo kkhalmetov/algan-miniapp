@@ -86,6 +86,10 @@ describe('Algan design system', () => {
     expect(app).not.toContain('role="dialog"');
     expect(app).not.toContain('<SheetHandle');
     expect(app).not.toContain('text-white/65');
+    expect(app).not.toContain('new Intl.DateTimeFormat');
+    expect(app).not.toContain('grid shrink-0 place-items-center overflow-hidden rounded-full bg-highlight');
+    expect(app).not.toContain('px-page pb-[max(1.25rem,env(safe-area-inset-bottom))]');
+    expect(app).toContain('<AvatarFrame');
   });
 
   it('uses the primary Kazakh document language and keeps it synchronized at runtime', () => {

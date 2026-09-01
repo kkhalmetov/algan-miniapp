@@ -10,7 +10,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { AlganLogo } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import {
-  AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
+  AccordionItem, AvatarFrame, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
   MediaBadge, MediaSheetHeader, ModalBody, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, QuantityStepper, ScreenBody,
   SecondaryButton, SectionTitle, SegmentedControl, SheetHeader, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
@@ -28,6 +28,7 @@ import { boxes, demoPastOrder, storeById, stores } from '@/lib/mock-data';
 import { createOrderId, createOrderQrPayload, createPickupCode, formatOrderId, formatPickupCode } from '@/lib/order-id';
 import { processPayment } from '@/lib/payment';
 import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phone';
+import { formatOrderDate } from '@/lib/date';
 import { formatBoxesLeft } from '@/lib/stock';
 import { useAppStore } from '@/lib/store';
 import { getCopy, type CopyKey } from '@/lib/translations';
@@ -47,6 +48,12 @@ type PendingCartReplacement =
 const LEGAL_TITLE_KEYS: Record<LegalDocument, CopyKey> = {
   terms: 'termsTitle', personalDataConsent: 'personalDataConsentTitle', privacy: 'privacyTitle',
   orderRules: 'orderRulesTitle', publicOffer: 'publicOfferTitle',
+};
+const DEMO_FALLBACK_NAMES = new Set(['Пользователь', 'Қолданушы']);
+
+const localizedFirstName = (profile: UserProfile, t: Translator) => {
+  const firstName = profile.firstName.trim();
+  return !firstName || DEMO_FALLBACK_NAMES.has(firstName) ? t('fallbackUser') : firstName;
 };
 
 export const avatarRetryUrl = (url: string, attempt: number) =>
@@ -438,11 +445,11 @@ function Splash({ t }: { t: Translator }) {
 
 function PhoneShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="min-h-dvh bg-canvas text-ink sm:grid sm:place-items-center sm:px-8 sm:py-6">
-      <section className="relative mx-auto min-h-dvh w-full max-w-[460px] overflow-hidden bg-surface sm:min-h-[780px] sm:rounded-shell sm:shadow-shell">
+    <div className="min-h-dvh bg-canvas text-ink sm:grid sm:place-items-center sm:px-8 sm:py-6">
+      <div className="relative mx-auto min-h-dvh w-full max-w-[460px] overflow-hidden bg-surface sm:min-h-[780px] sm:rounded-shell sm:shadow-shell">
         {children}
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
 
@@ -458,7 +465,7 @@ function Onboarding(props: OnboardingProps) {
   const { t, locale, setLocale, phone, setPhone, openLegal, onContinue } = props;
   const canContinue = Boolean(normalizeKazakhstanPhone(phone));
   return (
-    <div className="flex min-h-dvh flex-col sm:min-h-[780px]">
+    <main className="flex min-h-dvh flex-col sm:min-h-[780px]">
       <div className="relative overflow-hidden bg-brand px-page-wide pb-9 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
         <div className="absolute -right-8 -top-6 h-40 w-40 rounded-full bg-warning-ink/20" />
         <div className="absolute -bottom-14 -left-8 h-36 w-36 rounded-full border-[28px] border-highlight/20" />
@@ -482,7 +489,7 @@ function Onboarding(props: OnboardingProps) {
         <PrimaryButton type="submit" disabled={!canContinue} className="mt-7">{t('continue')}</PrimaryButton>
         <LegalAcceptanceSentence t={t} openLegal={openLegal} className="mt-4" />
       </form>
-    </div>
+    </main>
   );
 }
 
@@ -513,7 +520,7 @@ function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccept }: {
   onAccept: () => void;
 }) {
   return (
-    <div className="flex min-h-dvh flex-col sm:min-h-[780px]">
+    <main className="flex min-h-dvh flex-col sm:min-h-[780px]">
       <div className="bg-brand px-page-wide pb-6 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
         <div className="flex items-start justify-between gap-4">
           <AlganLogo light />
@@ -531,7 +538,7 @@ function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccept }: {
         </div>
         <PrimaryButton onClick={onAccept} className="mt-auto">{t('acceptAndContinue')}</PrimaryButton>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -547,13 +554,14 @@ function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, toggleFavo
   t: Translator; locale: Locale; profile: UserProfile; openProfile: () => void; favoriteStoreIds: string[];
   toggleFavorite: (id: string) => void; openStore: (storeId: string) => void;
 }) {
+  const firstName = localizedFirstName(profile, t);
   return (
     <>
       <BrandHeader>
         <div className="mt-2 flex items-center justify-between gap-4">
-          <div className="min-w-0"><p className="text-sm text-white/70">{t('greeting')},</p><PageTitle className="mt-0.5 truncate text-white">{profile.firstName}!</PageTitle></div>
+          <div className="min-w-0"><p className="text-sm text-white/70">{t('greeting')},</p><PageTitle className="mt-0.5 truncate text-white">{firstName}!</PageTitle></div>
           <button type="button" onClick={openProfile} aria-label={t('profile')} className="shrink-0 rounded-full outline-none transition active:scale-95 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
-            <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} compact />
+            <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} fallbackName={firstName} compact />
           </button>
         </div>
       </BrandHeader>
@@ -683,9 +691,7 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
         <div className="mt-5 space-y-3">
           {visibleOrders.map((order) => {
             const store = stores.find((item) => item.id === order.storeId);
-            const orderDate = new Intl.DateTimeFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ', {
-              day: 'numeric', month: 'long', year: 'numeric',
-            }).format(new Date(order.createdAt));
+            const orderDate = formatOrderDate(order.createdAt, locale);
             const pickupWindow = orderPickupWindow(order);
             const summary = (
               <>
@@ -792,9 +798,7 @@ function OrderItemsList({ order, locale }: { order: Order; locale: Locale }) {
 function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Locale; t: Translator; onClose: () => void }) {
   const formatPrice = usePriceFormatter(locale);
   const store = stores.find((item) => item.id === order.storeId);
-  const orderDate = new Intl.DateTimeFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ', {
-    day: 'numeric', month: 'long', year: 'numeric',
-  }).format(new Date(order.createdAt));
+  const orderDate = formatOrderDate(order.createdAt, locale);
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('orders')}>
       <ModalBody className="max-h-[90dvh] overflow-y-auto">
@@ -825,13 +829,15 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
   onToggleCurrency: () => void; openSettings: () => void; openHelp: () => void; openDocuments: () => void; resetDemo: () => void;
 }) {
   const telegramUsername = telegramProfile().username.trim().replace(/^@/, '');
+  const firstName = localizedFirstName(profile, t);
+  const fullName = [firstName, DEMO_FALLBACK_NAMES.has(profile.firstName.trim()) ? undefined : profile.lastName].filter(Boolean).join(' ');
   const [resetConfirmationOpen, setResetConfirmationOpen] = useState(false);
   return (
     <section className="pb-8">
       <BrandHeader>
         <div className="mt-2 flex items-center gap-4">
-          <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} />
-          <div><ContentTitle as="h1" className="text-white">{profile.firstName} {profile.lastName}</ContentTitle><p className="mt-1 text-sm text-white/70">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
+          <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} fallbackName={firstName} />
+          <div><ContentTitle as="h1" className="text-white">{fullName}</ContentTitle><p className="mt-1 text-sm text-white/70">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
         </div>
       </BrandHeader>
 
@@ -863,10 +869,10 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
   );
 }
 
-function ProfileAvatar({ profile, compact = false }: { profile: UserProfile; compact?: boolean }) {
+function ProfileAvatar({ profile, fallbackName, compact = false }: { profile: UserProfile; fallbackName: string; compact?: boolean }) {
   const [imageFailed, setImageFailed] = useState(false);
   const [reloadAttempt, setReloadAttempt] = useState(0);
-  const initial = profile.firstName.trim().charAt(0).toUpperCase() || 'A';
+  const initial = fallbackName.trim().charAt(0).toUpperCase() || 'A';
   const photoSource = profile.photoUrl
     ? reloadAttempt === 0 ? profile.photoUrl : avatarRetryUrl(profile.photoUrl, reloadAttempt)
     : undefined;
@@ -877,11 +883,11 @@ function ProfileAvatar({ profile, compact = false }: { profile: UserProfile; com
   };
 
   return (
-    <div className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-highlight font-black text-ink ${compact ? 'h-12 w-12 text-lg' : 'h-16 w-16 text-2xl'}`}>
+    <AvatarFrame size={compact ? 'sm' : 'lg'}>
       {photoSource && !imageFailed
         ? <img src={photoSource} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={retryImage} />
         : initial}
-    </div>
+    </AvatarFrame>
   );
 }
 
@@ -1006,7 +1012,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
               {t('buildRoute')}
             </SecondaryButton>
           </SurfaceCard>
-          <NoticeCard data-testid="store-appearance-notice" className="mt-4" icon={<ImageIcon size={18} />} title={t('appearanceMayDifferTitle')}>
+          <NoticeCard data-testid="store-appearance-notice" className="mt-4" icon={<ImageIcon size={18} />} title={t('appearanceMayDifferTitle')} titleAs="h2">
             {t('appearanceMayDifferText')}
           </NoticeCard>
 
@@ -1133,7 +1139,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
                 </ul>
               </>
             )}
-            <NoticeCard className="mt-4" tone="allergen" icon={<AlertTriangle size={19} />} title={allergens ? t('containsAllergens') : t('allergens')}>
+            <NoticeCard className="mt-4" tone="allergen" icon={<AlertTriangle size={19} />} title={allergens ? t('containsAllergens') : t('allergens')} titleAs="h2">
               {allergens ?? t('allergensUnknown')}
             </NoticeCard>
           </div>
@@ -1171,7 +1177,7 @@ function RoutePicker({ lat, lng, t, onClose }: {
   const options = getRouteOptions(lat, lng);
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('chooseMap')} className="z-[1200]">
-      <div className="px-page pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
+      <ModalBody className="pt-4">
         <SheetHeader title={t('chooseMap')} onClose={onClose} closeLabel={t('close')} />
         <div className="mt-4 space-y-2">
           {options.map((option) => (
@@ -1185,7 +1191,7 @@ function RoutePicker({ lat, lng, t, onClose }: {
             />
           ))}
         </div>
-      </div>
+      </ModalBody>
     </DialogLayer>
   );
 }

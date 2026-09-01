@@ -34,6 +34,7 @@ describe('onboarding legal consent', () => {
   it('replaces checkboxes with three linked legal documents', () => {
     openOnboarding();
 
+    expect(screen.getAllByRole('main')).toHaveLength(1);
     expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
     expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Нажимая «Продолжить», вы автоматически принимаете условия использования, даёте согласие на сбор и обработку персональных данных и подтверждаете ознакомление с политикой конфиденциальности')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'условия использования' })).toBeInTheDocument();

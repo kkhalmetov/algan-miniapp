@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, MediaBadge, MediaSheetHeader,
-  ModalBody, ModalHeader, NoticeCard, PageSection, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SheetHeader,
+  AvatarFrame, ModalBody, ModalHeader, NoticeCard, PageSection, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SheetHeader,
   SegmentedControl, StatusBadge, StickyActionFooter, TextField, TextLinkButton, TertiaryButton, TopAppBar,
 } from '../components/ui-kit';
 
@@ -20,7 +20,7 @@ describe('Algan UI kit', () => {
     const button = screen.getByRole('button', { name: 'Продолжить' });
 
     expect(button).toBeDisabled();
-    expect(button).toHaveClass('min-h-14', 'bg-brand');
+    expect(button).toHaveClass('min-h-14', 'bg-brand', 'text-center', 'leading-5');
     expect(screen.getByRole('button', { name: 'Маршрут' })).toHaveClass('min-h-14', 'bg-brand-pale');
     expect(screen.getByRole('button', { name: 'Выйти' })).toHaveClass('min-h-14', 'bg-danger-soft');
     expect(screen.getByRole('button', { name: 'Удалить' })).toHaveClass('min-h-11', 'text-danger');
@@ -199,7 +199,7 @@ describe('Algan UI kit', () => {
         </InsetSurface>
         <MediaBadge>logo</MediaBadge>
         <DisclosureIndicator />
-        <NoticeCard icon="!" title="Важно">Описание</NoticeCard>
+        <NoticeCard icon="!" title="Важно" titleAs="h2">Описание</NoticeCard>
       </ScreenBody>,
     );
 
@@ -210,6 +210,15 @@ describe('Algan UI kit', () => {
     expect(screen.getByText('Адрес')).toHaveClass('text-ink-muted');
     expect(screen.getByText('logo')).toHaveClass('h-12', 'w-12');
     expect(screen.getByText('Описание')).toHaveClass('text-ink-secondary');
+    expect(screen.getByRole('heading', { name: 'Важно', level: 2 })).toBeInTheDocument();
+  });
+
+  it('shares user avatar sizing and fallback treatment', () => {
+    const { rerender } = render(<AvatarFrame>Қ</AvatarFrame>);
+    expect(screen.getByText('Қ')).toHaveClass('h-12', 'w-12', 'bg-highlight');
+
+    rerender(<AvatarFrame size="lg">K</AvatarFrame>);
+    expect(screen.getByText('K')).toHaveClass('h-16', 'w-16', 'text-2xl');
   });
 
   it('shares compact branded app bars', () => {

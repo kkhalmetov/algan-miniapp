@@ -185,4 +185,14 @@ describe('profile information sections', () => {
     expect(screen.getByText(/Төлемнен кейін тапсырыс/)).toBeInTheDocument();
   });
 
+  it('localizes the browser fallback identity after switching languages', () => {
+    useAppStore.setState({ profile: { firstName: 'Пользователь', phone: '+77059768000' }, locale: 'kk', tab: 'home' });
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+
+    expect(screen.getByRole('heading', { name: 'Қолданушы!' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Профиль' }));
+    expect(screen.getByRole('heading', { name: 'Қолданушы' })).toBeInTheDocument();
+  });
+
 });

@@ -8,7 +8,7 @@ export function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
-const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-4 font-black transition duration-150 active:scale-[.99] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
+const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-4 text-center font-black leading-5 transition duration-150 active:scale-[.99] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
 type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { size?: 'md' | 'lg' };
 const actionButtonSize = { md: 'min-h-11 text-sm', lg: 'min-h-14 text-[15px]' } as const;
 
@@ -394,6 +394,24 @@ export function MediaBadge({ children, size = 'md', className }: {
   );
 }
 
+export function AvatarFrame({ children, size = 'sm', className, ...props }: HTMLAttributes<HTMLDivElement> & {
+  children: ReactNode;
+  size?: 'sm' | 'lg';
+}) {
+  return (
+    <div
+      className={cx(
+        'grid shrink-0 place-items-center overflow-hidden rounded-full bg-highlight font-black text-ink',
+        size === 'lg' ? 'h-16 w-16 text-2xl' : 'h-12 w-12 text-lg',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function DisclosureIndicator({ className }: { className?: string }) {
   return (
     <span className={cx('grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-pale text-brand', className)} aria-hidden="true">
@@ -428,9 +446,10 @@ const noticeTextTone: Record<NoticeTone, { title: string; body: string; icon: 's
   allergen: { title: 'text-allergen-ink', body: 'text-allergen-body', icon: 'accent' },
 };
 
-export function NoticeCard({ icon, title, children, tone = 'brand', className, ...props }: Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
+export function NoticeCard({ icon, title, titleAs: Title = 'h3', children, tone = 'brand', className, ...props }: Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
   icon: ReactNode;
   title?: ReactNode;
+  titleAs?: 'h2' | 'h3' | 'p';
   children: ReactNode;
   tone?: NoticeTone;
 }) {
@@ -440,7 +459,7 @@ export function NoticeCard({ icon, title, children, tone = 'brand', className, .
       <div className="flex items-start gap-3">
         <IconBadge tone={styles.icon}>{icon}</IconBadge>
         <div className="min-w-0 text-sm leading-6">
-          {title && <h3 className={cx('font-black', styles.title)}>{title}</h3>}
+          {title && <Title className={cx('font-black', styles.title)}>{title}</Title>}
           <div className={cx(Boolean(title) && 'mt-1.5', styles.body)}>{children}</div>
         </div>
       </div>

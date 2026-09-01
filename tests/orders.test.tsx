@@ -41,6 +41,7 @@ describe('orders tab', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
+    expect(screen.getAllByRole('main')).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
     expect(screen.getByRole('heading', { name: 'Заказы' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Активные' })).toHaveAttribute('aria-pressed', 'true');
@@ -53,7 +54,7 @@ describe('orders tab', () => {
     expect(screen.getByText('Номер заказа: 12345678')).toBeInTheDocument();
     const pickupTime = screen.getByText(/Время выдачи:/);
     expect(pickupTime).toBeInTheDocument();
-    expect(within(pickupTime.parentElement!).getByText(/25 августа 2026/)).toBeInTheDocument();
+    expect(within(pickupTime.parentElement!).getByText('25 августа 2026 г.')).toBeInTheDocument();
     expect(screen.queryByText(/Забрать:/)).not.toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 12345678').closest('button')).toBeNull();
     fireEvent.click(screen.getByText('Номер заказа: 12345678'));
@@ -102,6 +103,7 @@ describe('orders tab', () => {
     fireEvent.click(buildRouteButton);
 
     const dialog = screen.getByRole('dialog', { name: 'Выберите карту' });
+    expect(dialog.querySelector('[data-dialog-variant] > div')).toHaveClass('px-page-wide');
     expect(within(dialog).getByText('2GIS')).toBeInTheDocument();
     expect(within(dialog).getByText('Яндекс Карты')).toBeInTheDocument();
     expect(within(dialog).getByText('Google Maps')).toBeInTheDocument();
@@ -145,5 +147,6 @@ describe('orders tab', () => {
     expect(within(navigation).getByRole('button', { name: 'Тапсырыс' })).toHaveTextContent('Тапсырыс');
     fireEvent.click(within(navigation).getByRole('button', { name: 'Тапсырыс' }));
     expect(screen.getByRole('heading', { name: 'Тапсырыстар' })).toBeInTheDocument();
+    expect(screen.getByText('25 тамыз 2026 ж.')).toBeInTheDocument();
   });
 });
