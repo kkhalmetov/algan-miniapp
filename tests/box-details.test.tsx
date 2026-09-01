@@ -115,7 +115,8 @@ describe('store details presentation', () => {
     expect(cover).toContainElement(close);
     expect(within(cover).getByAltText('Surprise Tatti-box')).toHaveAttribute('src', '/images/bakery.jpg');
     expect(cover).toHaveClass('h-[220px]', 'w-full', 'relative');
-    expect(content).toHaveClass('-mt-5', 'rounded-t-card', 'bg-surface');
+    expect(content).toHaveClass('-mt-5', 'bg-surface');
+    expect(content).not.toHaveClass('rounded-t-card');
     expect(cover.compareDocumentPosition(content) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(scroll).getByText('SURPRISE')).toBeInTheDocument();
     expect(within(scroll).getByRole('heading', { name: 'Что может быть внутри' })).toBeInTheDocument();

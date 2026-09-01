@@ -1086,7 +1086,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
           <MediaSheetHeader data-testid="box-details-cover" onClose={onClose} closeLabel={t('close')}>
             <img src={box.image} alt={name} className="h-full w-full object-cover" />
           </MediaSheetHeader>
-          <div data-testid="box-details-content" className="relative z-10 -mt-5 rounded-t-card bg-surface px-page-wide pb-6 pt-5">
+          <div data-testid="box-details-content" className="relative z-10 -mt-5 bg-surface px-page-wide pb-6 pt-5">
             <PageTitle>{name}</PageTitle>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {box.type === 'SURPRISE' && <SurpriseBadge />}
