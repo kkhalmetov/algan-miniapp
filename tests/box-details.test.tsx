@@ -42,7 +42,8 @@ describe('store details presentation', () => {
 
     expect(screen.getAllByRole('article')).toHaveLength(stores.length);
     stores.forEach((store) => {
-      expect(screen.getByAltText(`${store.name} logo`)).toHaveAttribute('src', store.logo);
+      const card = screen.getByRole('button', { name: `Подробнее: ${store.name}` });
+      expect(card.querySelector(`img[src="${store.logo}"]`)).toHaveAttribute('alt', '');
     });
     expect(screen.getAllByText('Tatti Bakery')).toHaveLength(1);
     expect(screen.queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
@@ -69,7 +70,7 @@ describe('store details presentation', () => {
     const cover = within(dialog).getByTestId('store-details-cover');
     expect(within(header).getByRole('button', { name: 'Назад' })).toBeInTheDocument();
     expect(within(header).getByRole('button', { name: 'Избранное' })).toHaveAttribute('aria-pressed', 'false');
-    expect(within(scroll).getByAltText('Tatti Bakery logo')).toHaveAttribute('src', stores[0]!.logo);
+    expect(scroll.querySelector(`img[src="${stores[0]!.logo}"]`)).toHaveAttribute('alt', '');
     expect(within(cover).queryByAltText('Halal')).not.toBeInTheDocument();
     expect(within(scroll).getByAltText('Halal')).toHaveAttribute('src', '/images/halal-logo.svg');
     expect(within(scroll).queryByText('Доступные боксы')).not.toBeInTheDocument();
@@ -83,7 +84,7 @@ describe('store details presentation', () => {
     const boxPhoto = within(boxImage).getByAltText('Surprise Tatti-box');
     expect(firstBoxCard).toHaveClass('group');
     expect(boxPhoto).toHaveAttribute('src', '/images/bakery.jpg');
-    expect(boxPhoto).toHaveClass('transition', 'duration-500', 'group-hover:scale-105');
+    expect(boxPhoto).toHaveClass('transition', 'duration-[var(--motion-slow)]', 'group-hover:scale-105');
     expect(within(boxImage).getByText('SURPRISE')).toBeInTheDocument();
     expect(within(boxImage).getByText('Осталось 4 бокса')).toBeInTheDocument();
     expect(within(boxContent).queryByText('SURPRISE')).not.toBeInTheDocument();
@@ -191,9 +192,9 @@ describe('store details presentation', () => {
     const picker = screen.getByRole('dialog', { name: 'Выберите карту' });
     expect(within(picker).queryByText('пр. Тауке хана, 47')).not.toBeInTheDocument();
     expect(within(picker).queryByText('Маршрут будет построен от вашего местоположения.')).not.toBeInTheDocument();
-    expect(within(picker).getByAltText('2GIS logo')).toHaveAttribute('src', '/images/map-providers/2gis.jpg');
-    expect(within(picker).getByAltText('Яндекс Карты logo')).toHaveAttribute('src', '/images/map-providers/yandex-maps.jpg');
-    expect(within(picker).getByAltText('Google Maps logo')).toHaveAttribute('src', '/images/map-providers/google-maps.jpg');
+    expect(within(picker).getByRole('button', { name: /2GIS/ }).querySelector('img')).toHaveAttribute('src', '/images/map-providers/2gis.jpg');
+    expect(within(picker).getByRole('button', { name: /Яндекс Карты/ }).querySelector('img')).toHaveAttribute('src', '/images/map-providers/yandex-maps.jpg');
+    expect(within(picker).getByRole('button', { name: /Google Maps/ }).querySelector('img')).toHaveAttribute('src', '/images/map-providers/google-maps.jpg');
     fireEvent.click(within(picker).getByRole('button', { name: /Google Maps/ }));
     expect(open).toHaveBeenCalledWith(expect.stringContaining('destination=42.3184%2C69.5907'), '_blank', 'noopener,noreferrer');
     open.mockRestore();

@@ -93,7 +93,10 @@
 
   --motion-fast: 160ms;
   --motion-medium: 220ms;
+  --motion-slow: 420ms;
   --ease-standard: cubic-bezier(.2, .8, .2, 1);
+  --default-transition-duration: var(--motion-fast);
+  --default-transition-timing-function: var(--ease-standard);
 }
 
 :root {

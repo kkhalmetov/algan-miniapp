@@ -13,7 +13,7 @@ import {
   AccordionItem, AvatarFrame, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
   MediaBadge, MediaSheetHeader, ModalBody, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, QuantityStepper, ScreenBody,
-  SecondaryButton, SectionTitle, SegmentedControl, SheetHeader, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
+  ScrollArea, SecondaryButton, SectionTitle, SegmentedControl, SheetHeader, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
   TextLinkButton, TopAppBar,
 } from '@/components/ui-kit';
 import { authenticateTelegram } from '@/lib/api';
@@ -585,9 +585,9 @@ function StoreCard({ store, fallbackImage, isHalal, t, locale, favorite, toggleF
   return (
     <SurfaceCard className="overflow-hidden">
       <CardPressable onClick={onOpen} className="relative h-44 overflow-hidden" aria-label={`${t('details')}: ${store.name}`}>
-        <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
+        <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover transition duration-[var(--motion-slow)] hover:scale-105" />
         <MediaBadge className="absolute bottom-3 left-3 border-3 border-panel">
-          <img src={store.logo} alt={`${store.name} logo`} className="h-9 w-9 object-contain" />
+          <img src={store.logo} alt="" className="h-9 w-9 object-contain" />
         </MediaBadge>
       </CardPressable>
       <div className="p-4">
@@ -801,8 +801,9 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
   const orderDate = formatOrderDate(order.createdAt, locale);
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('orders')}>
-      <ModalBody className="max-h-[90dvh] overflow-y-auto">
+      <ModalBody className="flex max-h-[90dvh] min-h-0 flex-col overflow-hidden">
         <SheetHeader title={order.status === 'collected' ? store?.name ?? t('orders') : undefined} onClose={onClose} closeLabel={t('close')} compact={order.status === 'paid'} />
+        <ScrollArea className="flex-1 pb-1">
         {order.status === 'paid' && (
           <>
             <div className="mt-4"><OrderQr order={order} t={t} /></div>
@@ -819,6 +820,7 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
             <p className="mt-3 text-sm font-bold text-ink-secondary">{orderDate}</p>
           </>
         )}
+        </ScrollArea>
       </ModalBody>
     </DialogLayer>
   );
@@ -914,12 +916,19 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
   );
 }
 
-function ProfileRow({ icon, label, value, onClick }: { icon: React.ReactNode; label: string; value?: string; onClick?: () => void }) {
+function ProfileRow({ icon, label, value, valueWrap = false, onClick }: {
+  icon: React.ReactNode;
+  label: string;
+  value?: string;
+  valueWrap?: boolean;
+  onClick?: () => void;
+}) {
   return (
     <ListRow
       icon={icon}
       title={label}
       subtitle={value}
+      subtitleWrap={valueWrap}
       onClick={onClick}
       disabled={!onClick}
       trailing={onClick ? <ChevronRight size={17} className="text-ink-subtle" /> : undefined}
@@ -994,11 +1003,11 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
         trailing={<IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={isFavorite} tone={isFavorite ? 'accent' : 'dark'}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></IconButton>}
       />
 
-      <div data-testid="store-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      <ScrollArea data-testid="store-details-scroll" className="flex-1">
         <div data-testid="store-details-cover" className="relative h-[240px] bg-canvas">
           <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover object-center" />
           <MediaBadge size="lg" className="absolute -bottom-8 left-page">
-            <img src={store.logo} alt={`${store.name} logo`} className="h-13 w-13 object-contain" />
+            <img src={store.logo} alt="" className="h-13 w-13 object-contain" />
           </MediaBadge>
         </div>
         <div className="px-page-wide pb-6 pt-11">
@@ -1024,7 +1033,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
             ))}
           </div>
         </div>
-      </div>
+      </ScrollArea>
       {cartQuantity > 0 && (
         <StickyActionFooter>
           <PrimaryButton onClick={onOpenCart} aria-label={`${t('cart')}, ${formatPrice(cartTotal)}`}>
@@ -1048,7 +1057,7 @@ function BoxOfferCard({ box, locale, t, available, onOpen }: {
     <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
       <CardPressable onClick={onOpen} className="group relative" aria-label={`${t('details')} ${name}`}>
         <span data-testid="box-card-image" className="relative block h-36 w-full overflow-hidden bg-canvas">
-          <img src={box.image} alt={name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+          <img src={box.image} alt={name} className="h-full w-full object-cover transition duration-[var(--motion-slow)] group-hover:scale-105" />
           <span className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center gap-2">
             {box.type === 'SURPRISE' && <SurpriseBadge compact />}
             <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />}>
@@ -1088,7 +1097,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={name}>
       <div data-testid="box-details-sheet" className="flex h-[90dvh] min-h-0 flex-col sm:h-[700px]">
-        <div data-testid="box-details-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <ScrollArea data-testid="box-details-scroll" className="flex-1">
           <MediaSheetHeader data-testid="box-details-cover" onClose={onClose} closeLabel={t('close')}>
             <img src={box.image} alt={name} className="h-full w-full object-cover" />
           </MediaSheetHeader>
@@ -1143,7 +1152,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
               {allergens ?? t('allergensUnknown')}
             </NoticeCard>
           </div>
-        </div>
+        </ScrollArea>
         {(available > 0 || cartQuantity > 0) && (
           <StickyActionFooter>
             <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-center gap-3">
@@ -1183,7 +1192,7 @@ function RoutePicker({ lat, lng, t, onClose }: {
           {options.map((option) => (
             <ListRow
               key={option.id}
-              icon={<img src={routeProviderLogo[option.id]} alt={`${option.label} logo`} className="h-9 w-9 rounded-xl object-cover" />}
+              icon={<img src={routeProviderLogo[option.id]} alt="" className="h-9 w-9 rounded-xl object-cover" />}
               title={option.label}
               tone="panel"
               trailing={<ChevronRight size={17} className="text-ink-subtle" />}
@@ -1209,12 +1218,13 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
   const total = lines.reduce((sum, line) => sum + line.box.salePrice * line.quantity, 0);
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('cart')}>
-      <ModalBody>
-        <SheetHeader title={t('cart')} onClose={onClose} closeLabel={t('close')} />
+      <ModalBody className="flex max-h-[92dvh] min-h-0 flex-col overflow-hidden">
+        <SheetHeader className="pb-3" title={t('cart')} onClose={onClose} closeLabel={t('close')} />
+        <ScrollArea data-testid="cart-scroll" className="flex-1 pb-1">
         {lines.length === 0 ? (
           <EmptyState icon={<ShoppingBag size={32} />} title={t('cartEmpty')} />
         ) : (
-          <div className="mt-5 max-h-[48vh] space-y-3 overflow-y-auto pr-1">
+          <div className="mt-2 space-y-3">
             {lines.map(({ box, quantity }) => (
               <InsetSurface key={box.id} tone="panel" className="p-3">
                 <div className="min-w-0">
@@ -1243,6 +1253,7 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
           <TextLinkButton onClick={onOpenOrderRules}>{t('checkoutRulesLink')}</TextLinkButton>
           {t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
         </p>
+        </ScrollArea>
       </ModalBody>
     </DialogLayer>
   );
@@ -1308,7 +1319,7 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
           onClose={onClose}
           closeLabel={t('close')}
         />
-        <div data-testid="documents-modal-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <ScrollArea data-testid="documents-modal-scroll" className="flex-1 pb-1">
           {selectedView === 'contacts' ? (
             <>
               <CompanyContacts t={t} />
@@ -1329,7 +1340,7 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
               <ProfileRow icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setSelectedView('contacts')} />
             </div>
           )}
-        </div>
+        </ScrollArea>
       </ModalBody>
     </DialogLayer>
   );
@@ -1363,9 +1374,9 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
 
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('support')}>
-      <ModalBody className="max-h-[82dvh] overflow-y-auto">
+      <ModalBody className="flex max-h-[82dvh] min-h-0 flex-col overflow-hidden">
         <SheetHeader
-          className="sticky top-0 z-10 pb-3"
+          className="pb-3"
           title={title}
           onBack={view !== 'menu' ? () => setView('menu') : undefined}
           backLabel={t('back')}
@@ -1373,26 +1384,27 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
           closeLabel={t('close')}
         />
 
-        {view === 'menu' && (
-          <div className="mt-2 space-y-2">
-            <ProfileRow icon={<CircleHelp size={18} />} label={t('faq')} onClick={() => setView('faq')} />
-            <ProfileRow icon={<TelegramIcon />} label={t('contactSupport')} value={t('workingHours')} onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
-          </div>
-        )}
+        <ScrollArea className="flex-1 pb-1">
+          {view === 'menu' && (
+            <div className="mt-2 space-y-2">
+              <ProfileRow icon={<CircleHelp size={18} />} label={t('faq')} onClick={() => setView('faq')} />
+              <ProfileRow icon={<TelegramIcon />} label={t('contactSupport')} value={t('workingHours')} valueWrap onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
+            </div>
+          )}
 
-        {view === 'faq' && (
-          <div className="mt-2 space-y-2">
-            {faqItems.map((item, index) => {
-              const expanded = openQuestion === index;
-              return (
-                <AccordionItem key={item.question} title={t(item.question)} expanded={expanded} onToggle={() => setOpenQuestion(expanded ? null : index)}>
-                  {t(item.answer)}
-                </AccordionItem>
-              );
-            })}
-          </div>
-        )}
-
+          {view === 'faq' && (
+            <div className="mt-2 space-y-2">
+              {faqItems.map((item, index) => {
+                const expanded = openQuestion === index;
+                return (
+                  <AccordionItem key={item.question} title={t(item.question)} expanded={expanded} onToggle={() => setOpenQuestion(expanded ? null : index)}>
+                    {t(item.answer)}
+                  </AccordionItem>
+                );
+              })}
+            </div>
+          )}
+        </ScrollArea>
       </ModalBody>
     </DialogLayer>
   );
@@ -1471,10 +1483,10 @@ function LegalModal({ type, t, locale, subject, onClose }: {
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t(LEGAL_TITLE_KEYS[type])}>
       <ModalBody className="flex max-h-[90dvh] min-h-0 flex-col overflow-hidden">
         <SheetHeader data-testid="legal-modal-header" className="pb-3" title={t(LEGAL_TITLE_KEYS[type])} onClose={onClose} closeLabel={t('close')} />
-        <div data-testid="legal-modal-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <ScrollArea data-testid="legal-modal-scroll" className="flex-1 pb-1">
           <LegalDocumentView type={type} t={t} locale={locale} subject={subject} />
           {!isPublishedLegalDocument(type) && <PrimaryButton onClick={onClose} className="mt-5">{t('back')}</PrimaryButton>}
-        </div>
+        </ScrollArea>
       </ModalBody>
     </DialogLayer>
   );

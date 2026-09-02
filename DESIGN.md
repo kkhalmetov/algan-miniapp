@@ -14,7 +14,7 @@ Algan uses a warm, friendly food-rescue visual language: deep green for trust, c
 - Layout: `page` (20 px) and `page-wide` (24 px) horizontal gutters; safe-area additions remain explicit because they are supplied by Telegram/the operating system.
 - Typography: `display`, `page-title`, and `section-title` encode size, weight, line height, and tracking as a unit.
 - Elevation: `shadow-card`, `shadow-floating`, `shadow-shell`, `shadow-action`, `shadow-sheet`, `shadow-marker`, `shadow-control`.
-- Motion: `motion-fast`, `motion-medium`, `ease-standard`; sheets, centered dialogs and full-screen layers use these shared timings.
+- Motion: `motion-fast`, `motion-medium`, `motion-slow`, `ease-standard`; control feedback, dialogs and media transitions use the shared scale.
 
 Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Components must use semantic utilities such as `bg-brand`, `text-ink-muted`, `border-border`, and `rounded-card`; new raw hex values are not allowed in application markup.
 
@@ -31,6 +31,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - `QuantityControl`: one add/stepper pattern with compact visuals and 44 px increment/decrement touch targets.
 - `TextField`: shared label, required marker, border, focus ring and placeholder treatment.
 - `ModalBody`, `ModalHeader`, `SheetHeader`, `MediaSheetHeader` and `SheetHandle`: consistent safe-area spacing, navigation, close controls and sheet affordance. Product sheets that start with photography use `MediaSheetHeader` for the contrasting handle and overlaid close action.
+- `ScrollArea`: the only feature-level vertical scrolling primitive; it owns overscroll containment and scrollbar-chrome suppression for sheets and detail views.
 - `DialogLayer`: shared modal backdrop, dismissal target, elevation and full-screen/sheet/center modes.
 - `ConfirmationDialog`: one confirmation pattern for ordinary and destructive actions; native browser confirmation windows are not used.
 - `AccordionItem`: shared disclosure row for FAQ and future expandable content.
@@ -38,7 +39,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - `FullScreenFeedback`: canonical success/error layout for transactional outcomes.
 - `CardPressable`: shared keyboard-focus treatment for interactive regions inside clipped cards.
 - `BrandHeader`, `TopAppBar`, `PageSection`, `ScreenBody`, `PageTitle`, `ContentTitle`, `CardTitle`, `SectionTitle`: one hierarchy for screen chrome, gutters and headings. `ContentTitle` may render the screen-level `h1`; cards use `CardTitle` as `h2`.
-- `ListRow`, `LinkRow`: shared button/link rows with icon container, optional supporting text, panel/soft surfaces and trailing action.
+- `ListRow`, `LinkRow`: shared button/link rows with icon container, optional supporting text, panel/soft surfaces and trailing action; `ListRow` can explicitly wrap long supporting copy instead of silently clipping it.
 - `InsetSurface`, `NoticeCard`, `DetailRow`: canonical inset surfaces, semantic notices and labelled detail rows.
 - `MediaBadge`, `DisclosureIndicator`: shared store-logo containers and affordances for tappable content.
 - `AvatarFrame`: shared 48/64 px Telegram avatar and localized initial fallback treatment.
@@ -84,6 +85,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - Product photography and partner logos keep their original colors; design tokens control their containers.
 - Use native button, link and input semantics. Selected controls expose `aria-pressed` or `aria-current`; modal surfaces expose dialog semantics.
 - Dialogs keep keyboard focus inside the active layer without changing the viewport scroll position, close with Escape and restore prior focus.
+- Dialogs make every background sibling inert while open, including when sheets are nested, so assistive technology cannot reach obscured controls.
 - Loading controls expose `aria-busy`; empty states omit unused supporting text instead of rendering blank layout space.
 - The document language follows the selected RU/KK locale, with Kazakh as the initial language.
 - Browser fallback identity and order dates follow the selected locale; order dates use the Shymkent time zone and bundled month names instead of platform-dependent locale output.

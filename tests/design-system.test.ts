@@ -41,6 +41,7 @@ describe('Algan design system', () => {
       '--shadow-floating',
       '--motion-fast',
       '--motion-medium',
+      '--motion-slow',
       '--ease-standard',
     ];
 
@@ -90,6 +91,8 @@ describe('Algan design system', () => {
     expect(app).not.toContain('grid shrink-0 place-items-center overflow-hidden rounded-full bg-highlight');
     expect(app).not.toContain('px-page pb-[max(1.25rem,env(safe-area-inset-bottom))]');
     expect(app).toContain('<AvatarFrame');
+    expect(app).toContain('<ScrollArea');
+    expect(app.match(/overflow-y-auto/g)).toHaveLength(1);
   });
 
   it('uses the primary Kazakh document language and keeps it synchronized at runtime', () => {
@@ -145,9 +148,19 @@ describe('Algan design system', () => {
     };
     const foregroundTokens = ['--color-ink-secondary', '--color-ink-muted', '--color-ink-subtle'];
     const surfaceTokens = ['--color-surface', '--color-panel', '--color-surface-soft', '--color-surface-muted', '--color-brand-pale'];
+    const semanticPairs = [
+      ['--color-accent-strong', '--color-accent-soft'],
+      ['--color-danger', '--color-danger-soft'],
+      ['--color-warning-ink', '--color-warning-surface'],
+      ['--color-allergen-ink', '--color-allergen-surface'],
+      ['--color-allergen-body', '--color-allergen-surface'],
+    ];
 
     for (const foreground of foregroundTokens) {
       for (const surface of surfaceTokens) expect(contrast(color(foreground), color(surface))).toBeGreaterThanOrEqual(4.5);
+    }
+    for (const [foreground, surface] of semanticPairs) {
+      expect(contrast(color(foreground), color(surface))).toBeGreaterThanOrEqual(4.5);
     }
   });
 });

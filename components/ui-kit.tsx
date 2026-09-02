@@ -8,7 +8,7 @@ export function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
-const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-4 text-center font-black leading-5 transition duration-150 active:scale-[.99] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
+const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-4 text-center font-black leading-5 transition active:scale-[.99] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
 type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { size?: 'md' | 'lg' };
 const actionButtonSize = { md: 'min-h-11 text-sm', lg: 'min-h-14 text-[15px]' } as const;
 
@@ -88,7 +88,7 @@ export function DangerButton({ className, type = 'button', size = 'lg', ...props
   return (
     <button
       type={type}
-      className={cx(actionButtonBase, actionButtonSize[size], 'bg-danger-soft text-danger', className)}
+      className={cx(actionButtonBase, actionButtonSize[size], 'bg-danger-soft text-danger hover:bg-danger/20', className)}
       {...props}
     />
   );
@@ -98,7 +98,7 @@ export function TextLinkButton({ className, type = 'button', ...props }: ButtonH
   return (
     <button
       type={type}
-      className={cx('font-extrabold text-brand underline decoration-border-strong underline-offset-2 transition hover:text-brand-hover', className)}
+      className={cx('inline-flex min-h-6 items-center align-baseline font-extrabold text-brand underline decoration-border-strong underline-offset-2 transition hover:text-brand-hover', className)}
       {...props}
     />
   );
@@ -112,7 +112,7 @@ export function PillButton({ className, type = 'button', tone = 'soft', ...props
       type={type}
       className={cx(
         'flex h-11 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-black transition active:scale-95',
-        tone === 'dark' ? 'bg-white/12 text-white' : 'bg-surface-soft text-brand',
+        tone === 'dark' ? 'bg-white/12 text-white hover:bg-white/18' : 'bg-surface-soft text-brand hover:bg-brand-pale',
         className,
       )}
       {...props}
@@ -127,8 +127,10 @@ export function TertiaryButton({ className, type = 'button', tone = 'brand', ...
     <button
       type={type}
       className={cx(
-        'inline-flex min-h-11 items-center justify-center rounded-control px-3 text-xs font-black transition active:bg-surface-muted',
-        tone === 'danger' ? 'text-danger' : 'text-brand',
+        'inline-flex min-h-11 items-center justify-center rounded-control px-3 text-xs font-black transition',
+        tone === 'danger'
+          ? 'text-danger hover:bg-danger-soft active:bg-danger-soft'
+          : 'text-brand hover:bg-brand-pale active:bg-brand-pale',
         className,
       )}
       {...props}
@@ -191,6 +193,7 @@ export function IconButton({
       aria-label={label}
       className={cx(
         'grid h-11 w-11 shrink-0 place-items-center rounded-full transition active:scale-95 disabled:opacity-45',
+        'hover:brightness-95',
         iconButtonTone[tone],
         className,
       )}
@@ -291,6 +294,10 @@ export function ModalBody({ className, ...props }: HTMLAttributes<HTMLDivElement
   return <div className={cx('px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5', className)} {...props} />;
 }
 
+export function ScrollArea({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={cx('hide-scrollbar min-h-0 overflow-y-auto overscroll-contain', className)} {...props} />;
+}
+
 export function SurfaceCard({ className, ...props }: HTMLAttributes<HTMLElement>) {
   return <article className={cx('rounded-card border border-border bg-panel shadow-card', className)} {...props} />;
 }
@@ -319,7 +326,7 @@ export function CardPressable({ className, type = 'button', ...props }: ButtonHT
     <button
       type={type}
       className={cx(
-        'block w-full text-left transition focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover',
+        'block w-full text-left transition hover:bg-surface-soft/50 focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover',
         className,
       )}
       {...props}
@@ -352,7 +359,7 @@ export function StatusBadge({ children, icon, tone = 'brand', size = 'md', class
   size?: StatusSize;
 }) {
   return (
-    <span className={cx('inline-flex items-center gap-1.5 rounded-full font-black', statusTone[tone], statusSize[size], className)} {...props}>
+    <span className={cx('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full font-black', statusTone[tone], statusSize[size], className)} {...props}>
       {icon}{children}
     </span>
   );
@@ -473,6 +480,7 @@ export function ListRow({
   subtitle,
   trailing,
   tone = 'soft',
+  subtitleWrap = false,
   className,
   type = 'button',
   ...props
@@ -482,13 +490,14 @@ export function ListRow({
   subtitle?: ReactNode;
   trailing?: ReactNode;
   tone?: 'soft' | 'panel';
+  subtitleWrap?: boolean;
 }) {
   return (
     <button
       type={type}
       className={cx(
         'flex min-h-17 w-full items-center gap-3 rounded-control p-4 text-left transition active:scale-[.99] disabled:opacity-100',
-        tone === 'panel' ? 'border border-border bg-panel' : 'bg-surface-soft',
+        tone === 'panel' ? 'border border-border bg-panel hover:bg-surface-soft' : 'bg-surface-soft hover:bg-surface-muted',
         className,
       )}
       {...props}
@@ -496,7 +505,11 @@ export function ListRow({
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-panel text-brand">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-black">{title}</span>
-        {subtitle && <span className="mt-0.5 block truncate text-xs text-ink-muted">{subtitle}</span>}
+        {subtitle && (
+          <span className={cx('mt-0.5 block text-xs text-ink-muted', subtitleWrap ? 'whitespace-normal leading-5' : 'truncate')}>
+            {subtitle}
+          </span>
+        )}
       </span>
       {trailing}
     </button>
@@ -513,7 +526,7 @@ export function LinkRow({ icon, title, subtitle, trailing, tone = 'soft', classN
   return (
     <a className={cx(
       'flex min-h-17 w-full items-center gap-3 rounded-control p-4 text-left text-ink transition active:scale-[.99]',
-      tone === 'panel' ? 'border border-border bg-panel' : 'bg-surface-soft',
+      tone === 'panel' ? 'border border-border bg-panel hover:bg-surface-soft' : 'bg-surface-soft hover:bg-surface-muted',
       className,
     )} {...props}>
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-panel text-brand">{icon}</span>
@@ -536,7 +549,7 @@ export function AccordionItem({ title, expanded, onToggle, children }: {
   const contentId = useId();
   return (
     <div className="overflow-hidden rounded-control bg-surface-soft">
-      <button id={buttonId} type="button" aria-expanded={expanded} aria-controls={contentId} onClick={onToggle} className="flex min-h-14 w-full items-center gap-3 p-4 text-left transition focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover">
+      <button id={buttonId} type="button" aria-expanded={expanded} aria-controls={contentId} onClick={onToggle} className="flex min-h-14 w-full items-center gap-3 p-4 text-left transition hover:bg-surface-muted focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover">
         <span className="min-w-0 flex-1 text-sm font-black leading-5">{title}</span>
         <ChevronDown size={18} className={cx('shrink-0 text-ink-subtle transition', expanded && 'rotate-180')} />
       </button>
@@ -622,7 +635,7 @@ export function SegmentedControl<T extends string>({
           onClick={() => onChange(item.value)}
           className={cx(
             'min-h-11 rounded-xl px-3 text-sm font-black transition',
-            value === item.value ? 'bg-panel text-brand shadow-sm' : 'text-ink-muted',
+            value === item.value ? 'bg-panel text-brand shadow-sm' : 'text-ink-muted hover:bg-surface-soft',
           )}
         >
           {item.label}
@@ -636,7 +649,7 @@ export function CardActionButton({ className, type = 'button', ...props }: Butto
   return (
     <button
       type={type}
-      className={cx('flex min-h-12 w-full items-center justify-center gap-2 border-t border-border px-4 text-sm font-black text-brand transition active:bg-brand-pale disabled:text-ink-subtle', className)}
+      className={cx('flex min-h-12 w-full items-center justify-center gap-2 border-t border-border px-4 text-sm font-black text-brand transition hover:bg-brand-pale active:bg-brand-pale disabled:text-ink-subtle', className)}
       {...props}
     />
   );
@@ -669,7 +682,7 @@ export function BottomNavigationItem({ active, icon, label, ...props }: ButtonHT
       type="button"
       aria-current={active ? 'page' : undefined}
       className={cx(
-        'flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-extrabold tracking-[-0.02em] transition',
+        'flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-extrabold tracking-[-0.02em] transition hover:bg-surface-soft',
         active ? 'text-brand' : 'text-ink-subtle',
       )}
       {...props}
@@ -690,7 +703,7 @@ export function FullScreenFeedback({ icon, title, description, children, centere
 }) {
   return (
     <div className={cx(
-      'flex min-h-dvh flex-col overflow-y-auto px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]',
+      'hide-scrollbar flex min-h-dvh flex-col overflow-y-auto overscroll-contain px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]',
       centered && 'justify-center',
     )}>
       <div className={cx(
@@ -714,6 +727,7 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
   className?: string;
 }) {
   const resolvedVariant = full ? 'full' : variant ?? 'sheet';
+  const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const onCloseRef = useRef(onClose);
 
@@ -723,6 +737,20 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
 
   useEffect(() => {
     const previouslyFocused = document.activeElement;
+    const overlay = overlayRef.current;
+    const siblings = overlay?.parentElement
+      ? Array.from(overlay.parentElement.children).filter((element): element is HTMLElement => element instanceof HTMLElement && element !== overlay)
+      : [];
+    const siblingState = siblings.map((element) => ({
+      element,
+      inert: element.hasAttribute('inert'),
+      ariaHidden: element.getAttribute('aria-hidden'),
+    }));
+    siblingState.forEach(({ element }) => {
+      element.inert = true;
+      element.setAttribute('inert', '');
+      element.setAttribute('aria-hidden', 'true');
+    });
     panelRef.current?.focus({ preventScroll: true });
     const handleDialogKeys = (event: KeyboardEvent) => {
       const dialogs = document.querySelectorAll('[role="dialog"]');
@@ -755,12 +783,19 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
     document.addEventListener('keydown', handleDialogKeys);
     return () => {
       document.removeEventListener('keydown', handleDialogKeys);
+      siblingState.forEach(({ element, inert, ariaHidden }) => {
+        element.inert = inert;
+        if (inert) element.setAttribute('inert', '');
+        else element.removeAttribute('inert');
+        if (ariaHidden === null) element.removeAttribute('aria-hidden');
+        else element.setAttribute('aria-hidden', ariaHidden);
+      });
       if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus({ preventScroll: true });
     };
   }, []);
 
   return (
-    <div className={cx(
+    <div ref={overlayRef} className={cx(
       'algan-dialog-backdrop absolute inset-0 z-[1000] flex overscroll-contain bg-brand-deep/40 backdrop-blur-[2px]',
       resolvedVariant === 'center' ? 'items-center p-page' : 'items-end',
       className,

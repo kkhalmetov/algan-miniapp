@@ -60,6 +60,7 @@ describe('multi-box cart', () => {
     fireEvent.click(cartButton);
     const cartDialog = screen.getByRole('dialog', { name: 'Корзина' });
     expect(within(cartDialog).getByRole('heading', { name: 'Корзина' })).toBeInTheDocument();
+    expect(within(cartDialog).getByTestId('cart-scroll')).toHaveClass('overflow-y-auto', 'overscroll-contain');
     expect(within(cartDialog).queryByRole('img')).not.toBeInTheDocument();
     expect(screen.getAllByText((content) => content.replace(/\s/g, '') === '7370₸').length).toBeGreaterThan(0);
     await act(async () => {

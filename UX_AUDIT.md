@@ -39,6 +39,13 @@ The audit covers onboarding, startup, home, map, favorites, active and past orde
 | Avatar styling | User avatars repeated a feature-local 48/64 px circle recipe | `AvatarFrame` owns both sizes, fallback color and typography |
 | Modal gutters | The route picker used a narrower gutter than other sheets | All sheet bodies use `ModalBody` and the documented 24 px modal gutter |
 | Notice semantics | Standalone informational cards skipped directly from `h1` to `h3` | `NoticeCard` keeps one visual recipe while choosing `h2` for standalone blocks and `h3` for nested notices |
+| Compact-height sheets | Cart legal copy could be clipped on 568 px-high screens | Cart content uses the shared scroll area; its header remains fixed and every line stays reachable |
+| Modal accessibility | Background screens remained discoverable to assistive technology behind `aria-modal` | `DialogLayer` now makes obscured siblings inert and restores their previous state for nested dialogs |
+| Scroll behavior | Detail, help, legal and cart flows repeated different overflow recipes and exposed inconsistent scrollbar chrome | `ScrollArea` owns vertical scrolling, overscroll containment and hidden scrollbar chrome |
+| Inline legal actions | Text links had a visual hit area below the 24 px compact-target minimum | `TextLinkButton` now guarantees a 24 px touch target without changing inline hierarchy |
+| Interactive feedback | Several secondary UI-kit controls had pressed feedback but no pointer-hover state | Shared pills, rows, icon controls, accordions, segments and card actions now expose consistent hover feedback |
+| Decorative media | Store and map-provider logos repeated adjacent visible labels to screen readers | Redundant logos now use empty alternative text while visible names remain the accessible label |
+| Supporting copy | Help working hours were truncated on a 320 px-wide screen | Rows can opt into wrapped supporting copy; complete working hours remain visible at compact widths |
 
 ## Governance
 

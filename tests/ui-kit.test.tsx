@@ -2,9 +2,9 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
-  ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, MediaBadge, MediaSheetHeader,
+  ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow, MediaBadge, MediaSheetHeader,
   AvatarFrame, ModalBody, ModalHeader, NoticeCard, PageSection, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SheetHeader,
-  SegmentedControl, StatusBadge, StickyActionFooter, TextField, TextLinkButton, TertiaryButton, TopAppBar,
+  ScrollArea, SegmentedControl, StatusBadge, StickyActionFooter, TextField, TextLinkButton, TertiaryButton, TopAppBar,
 } from '../components/ui-kit';
 
 describe('Algan UI kit', () => {
@@ -125,14 +125,19 @@ describe('Algan UI kit', () => {
     render(
       <ModalBody data-testid="modal-body">
         <TextLinkButton>Политика</TextLinkButton>
+        <ScrollArea data-testid="scroll-area">Содержимое</ScrollArea>
         <LinkRow tone="panel" href="mailto:test@example.com" icon="@" title="Email" subtitle="test@example.com" />
+        <ListRow icon="?" title="Поддержка" subtitle="Ежедневно с 09:00 до 21:00" subtitleWrap />
         <AccordionItem title="Вопрос" expanded onToggle={onToggle}>Ответ</AccordionItem>
       </ModalBody>,
     );
 
     expect(screen.getByTestId('modal-body')).toHaveClass('px-page-wide');
-    expect(screen.getByRole('button', { name: 'Политика' })).toHaveClass('underline');
+    expect(screen.getByRole('button', { name: 'Политика' })).toHaveClass('underline', 'min-h-6');
+    expect(screen.getByTestId('scroll-area')).toHaveClass('hide-scrollbar', 'overflow-y-auto', 'overscroll-contain');
     expect(screen.getByRole('link', { name: /Email/ })).toHaveClass('border-border', 'bg-panel');
+    expect(screen.getByText('Ежедневно с 09:00 до 21:00')).toHaveClass('whitespace-normal', 'leading-5');
+    expect(screen.getByText('Ежедневно с 09:00 до 21:00')).not.toHaveClass('truncate');
     const question = screen.getByRole('button', { name: 'Вопрос' });
     expect(question).toHaveAttribute('aria-controls');
     expect(screen.getByRole('region', { name: 'Вопрос' })).toHaveTextContent('Ответ');
@@ -246,6 +251,24 @@ describe('Algan UI kit', () => {
     expect(onClose).toHaveBeenCalledOnce();
     unmount();
     expect(document.body.style.overflow).toBe('');
+  });
+
+  it('makes content behind a dialog inert and restores it after closing', () => {
+    const { unmount } = render(
+      <div>
+        <button type="button" data-testid="background-action">Фоновое действие</button>
+        <DialogLayer onClose={vi.fn()} closeLabel="Закрыть" ariaLabel="Корзина">
+          <button type="button">Действие в окне</button>
+        </DialogLayer>
+      </div>,
+    );
+
+    const background = screen.getByTestId('background-action');
+    expect(background).toHaveAttribute('inert');
+    expect(background).toHaveAttribute('aria-hidden', 'true');
+    unmount();
+    expect(background).not.toHaveAttribute('inert');
+    expect(background).not.toHaveAttribute('aria-hidden');
   });
 
   it('provides one confirmation-dialog pattern for normal and destructive actions', () => {
