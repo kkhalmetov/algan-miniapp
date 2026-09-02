@@ -85,7 +85,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - Product photography and partner logos keep their original colors; design tokens control their containers.
 - Use native button, link and input semantics. Selected controls expose `aria-pressed` or `aria-current`; modal surfaces expose dialog semantics.
 - Dialogs keep keyboard focus inside the active layer without changing the viewport scroll position, close with Escape and restore prior focus.
-- Dialogs make every background sibling inert while open, including when sheets are nested, so assistive technology cannot reach obscured controls.
+- Dialogs make every background sibling inert while open, including when sheets are nested. Locks are reference-counted so simultaneous layer replacement cannot leave the application blocked.
 - Loading controls expose `aria-busy`; empty states omit unused supporting text instead of rendering blank layout space.
 - The document language follows the selected RU/KK locale, with Kazakh as the initial language.
 - Browser fallback identity and order dates follow the selected locale; order dates use the Shymkent time zone and bundled month names instead of platform-dependent locale output.

@@ -46,6 +46,7 @@ The audit covers onboarding, startup, home, map, favorites, active and past orde
 | Interactive feedback | Several secondary UI-kit controls had pressed feedback but no pointer-hover state | Shared pills, rows, icon controls, accordions, segments and card actions now expose consistent hover feedback |
 | Decorative media | Store and map-provider logos repeated adjacent visible labels to screen readers | Redundant logos now use empty alternative text while visible names remain the accessible label |
 | Supporting copy | Help working hours were truncated on a 320 px-wide screen | Rows can opt into wrapped supporting copy; complete working hours remain visible at compact widths |
+| Transaction transition | Closing store/cart layers while opening the successful-order screen could leave the app root inert | Dialog background locks are reference-counted, so replacing any number of nested sheets always restores interaction |
 
 ## Governance
 

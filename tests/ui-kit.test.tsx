@@ -271,6 +271,32 @@ describe('Algan UI kit', () => {
     expect(background).not.toHaveAttribute('aria-hidden');
   });
 
+  it('releases layered dialog locks when multiple sheets are replaced at once', () => {
+    const { rerender } = render(
+      <>
+        <button type="button" data-testid="app-action">Приложение</button>
+        <DialogLayer onClose={vi.fn()} closeLabel="Закрыть" ariaLabel="Заведение">Заведение</DialogLayer>
+        <DialogLayer onClose={vi.fn()} closeLabel="Закрыть" ariaLabel="Корзина">Корзина</DialogLayer>
+      </>,
+    );
+
+    const appAction = screen.getByTestId('app-action');
+    expect(appAction).toHaveAttribute('inert');
+
+    rerender(
+      <>
+        <button type="button" data-testid="app-action">Приложение</button>
+        <DialogLayer onClose={vi.fn()} closeLabel="Закрыть" ariaLabel="Заказ оформлен">Заказ оформлен</DialogLayer>
+      </>,
+    );
+    expect(screen.getByTestId('app-action')).toHaveAttribute('inert');
+    expect(screen.getByRole('dialog', { name: 'Заказ оформлен' })).not.toHaveAttribute('inert');
+
+    rerender(<button type="button" data-testid="app-action">Приложение</button>);
+    expect(screen.getByTestId('app-action')).not.toHaveAttribute('inert');
+    expect(screen.getByTestId('app-action')).not.toHaveAttribute('aria-hidden');
+  });
+
   it('provides one confirmation-dialog pattern for normal and destructive actions', () => {
     const onCancel = vi.fn();
     const onConfirm = vi.fn();

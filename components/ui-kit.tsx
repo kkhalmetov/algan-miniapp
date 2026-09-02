@@ -8,6 +8,43 @@ export function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
+type InertLock = {
+  count: number;
+  inert: boolean;
+  ariaHidden: string | null;
+};
+
+const inertLocks = new WeakMap<HTMLElement, InertLock>();
+
+function lockElement(element: HTMLElement) {
+  const existing = inertLocks.get(element);
+  if (existing) {
+    existing.count += 1;
+    return;
+  }
+  inertLocks.set(element, {
+    count: 1,
+    inert: element.hasAttribute('inert'),
+    ariaHidden: element.getAttribute('aria-hidden'),
+  });
+  element.inert = true;
+  element.setAttribute('inert', '');
+  element.setAttribute('aria-hidden', 'true');
+}
+
+function unlockElement(element: HTMLElement) {
+  const lock = inertLocks.get(element);
+  if (!lock) return;
+  lock.count -= 1;
+  if (lock.count > 0) return;
+  inertLocks.delete(element);
+  element.inert = lock.inert;
+  if (lock.inert) element.setAttribute('inert', '');
+  else element.removeAttribute('inert');
+  if (lock.ariaHidden === null) element.removeAttribute('aria-hidden');
+  else element.setAttribute('aria-hidden', lock.ariaHidden);
+}
+
 const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-4 text-center font-black leading-5 transition active:scale-[.99] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
 type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { size?: 'md' | 'lg' };
 const actionButtonSize = { md: 'min-h-11 text-sm', lg: 'min-h-14 text-[15px]' } as const;
@@ -741,16 +778,7 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
     const siblings = overlay?.parentElement
       ? Array.from(overlay.parentElement.children).filter((element): element is HTMLElement => element instanceof HTMLElement && element !== overlay)
       : [];
-    const siblingState = siblings.map((element) => ({
-      element,
-      inert: element.hasAttribute('inert'),
-      ariaHidden: element.getAttribute('aria-hidden'),
-    }));
-    siblingState.forEach(({ element }) => {
-      element.inert = true;
-      element.setAttribute('inert', '');
-      element.setAttribute('aria-hidden', 'true');
-    });
+    siblings.forEach(lockElement);
     panelRef.current?.focus({ preventScroll: true });
     const handleDialogKeys = (event: KeyboardEvent) => {
       const dialogs = document.querySelectorAll('[role="dialog"]');
@@ -783,13 +811,7 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
     document.addEventListener('keydown', handleDialogKeys);
     return () => {
       document.removeEventListener('keydown', handleDialogKeys);
-      siblingState.forEach(({ element, inert, ariaHidden }) => {
-        element.inert = inert;
-        if (inert) element.setAttribute('inert', '');
-        else element.removeAttribute('inert');
-        if (ariaHidden === null) element.removeAttribute('aria-hidden');
-        else element.setAttribute('aria-hidden', ariaHidden);
-      });
+      siblings.forEach(unlockElement);
       if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus({ preventScroll: true });
     };
   }, []);
