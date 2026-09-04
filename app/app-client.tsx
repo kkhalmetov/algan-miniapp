@@ -571,8 +571,7 @@ function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, toggleFavo
           {stores.map((store) => {
             const storeBoxes = boxes.filter((item) => item.storeId === store.id);
             const box = storeBoxes[0];
-            const isHalal = storeBoxes.length > 0 && storeBoxes.every((item) => item.isHalal);
-            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} isHalal={isHalal} t={t} locale={locale} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
+            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} t={t} locale={locale} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
           })}
         </div>
       </ScreenBody>
@@ -580,7 +579,7 @@ function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, toggleFavo
   );
 }
 
-function StoreCard({ store, fallbackImage, isHalal, t, locale, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; isHalal: boolean; t: Translator; locale: Locale; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
+function StoreCard({ store, fallbackImage, t, locale, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; t: Translator; locale: Locale; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
   const address = storeAddress(store, locale);
   return (
     <SurfaceCard className="overflow-hidden">
@@ -593,10 +592,7 @@ function StoreCard({ store, fallbackImage, isHalal, t, locale, favorite, toggleF
       <div className="p-4">
         <div className="flex items-start gap-3">
           <CardPressable onClick={onOpen} className="min-w-0 flex-1 rounded-control" aria-label={`${store.name} ${address}`}>
-            <span className="flex min-w-0 items-center gap-2">
-              <CardTitle>{store.name}</CardTitle>
-              {isHalal && <img src="/images/halal-logo.svg" alt={t('halal')} className="h-6 w-6 shrink-0 object-contain" />}
-            </span>
+            <CardTitle>{store.name}</CardTitle>
             <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-ink-muted"><MapPin size={14} />{address}</p>
           </CardPressable>
           <IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={favorite} tone={favorite ? 'accent' : 'muted'}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></IconButton>
@@ -636,8 +632,7 @@ function FavoritesTab({ t, locale, favoriteStoreIds, toggleFavorite, openStore }
           {favoriteStores.map((store) => {
             const storeBoxes = boxes.filter((item) => item.storeId === store.id);
             const box = storeBoxes[0];
-            const isHalal = storeBoxes.length > 0 && storeBoxes.every((item) => item.isHalal);
-            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} isHalal={isHalal} t={t} locale={locale} favorite toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
+            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} t={t} locale={locale} favorite toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
           })}
         </div>
       )}
@@ -982,7 +977,6 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
 }) {
   const formatPrice = usePriceFormatter(locale);
   const storeBoxes = boxes.filter((box) => box.storeId === store.id);
-  const isHalal = storeBoxes.length > 0 && storeBoxes.every((box) => box.isHalal);
   const fallbackImage = storeBoxes[0]?.image ?? '/images/bakery.jpg';
   const cartLines = cartItems.flatMap((item) => {
     const box = storeBoxes.find((candidate) => candidate.id === item.boxId);
@@ -1011,10 +1005,7 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
           </MediaBadge>
         </div>
         <div className="px-page-wide pb-6 pt-11">
-          <div className="flex min-w-0 items-center gap-3">
-            <PageTitle className="min-w-0 truncate">{store.name}</PageTitle>
-            {isHalal && <img src="/images/halal-logo.svg" alt={t('halal')} className="h-8 w-8 shrink-0 object-contain" />}
-          </div>
+          <PageTitle className="truncate">{store.name}</PageTitle>
           <SurfaceCard className="mt-5 p-4">
             <DetailRow icon={<MapPin size={19} />} label={t('addressLabel')} value={address} />
             <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">

@@ -58,7 +58,7 @@ describe('store details presentation', () => {
     expect(screen.queryByRole('button', { name: 'Пекарни' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Кофейни' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Магазины' })).not.toBeInTheDocument();
-    expect(screen.getAllByAltText('Halal')).toHaveLength(stores.length);
+    expect(screen.queryByAltText('Halal')).not.toBeInTheDocument();
   });
 
   it('shows venue information and all five Tatti boxes', () => {
@@ -67,12 +67,10 @@ describe('store details presentation', () => {
     const dialog = screen.getByRole('dialog', { name: 'Tatti Bakery' });
     const header = within(dialog).getByTestId('store-details-header');
     const scroll = within(dialog).getByTestId('store-details-scroll');
-    const cover = within(dialog).getByTestId('store-details-cover');
     expect(within(header).getByRole('button', { name: 'Назад' })).toBeInTheDocument();
     expect(within(header).getByRole('button', { name: 'Избранное' })).toHaveAttribute('aria-pressed', 'false');
     expect(scroll.querySelector(`img[src="${stores[0]!.logo}"]`)).toHaveAttribute('alt', '');
-    expect(within(cover).queryByAltText('Halal')).not.toBeInTheDocument();
-    expect(within(scroll).getByAltText('Halal')).toHaveAttribute('src', '/images/halal-logo.svg');
+    expect(within(dialog).queryByAltText('Halal')).not.toBeInTheDocument();
     expect(within(scroll).queryByText('Доступные боксы')).not.toBeInTheDocument();
     expect(within(scroll).getAllByRole('button', { name: /^Подробнее / })).toHaveLength(5);
     expect(within(scroll).getAllByText('SURPRISE')).toHaveLength(2);
