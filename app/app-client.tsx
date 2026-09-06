@@ -948,11 +948,9 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
         <ModalBody className="flex min-h-0 flex-1 flex-col pb-0">
           <SheetHeader title={t('changePhone')} onClose={onClose} closeLabel={t('close')} />
           <ScrollArea className="flex-1 pb-5">
-            <NoticeCard className="mt-4" icon={<Phone size={20} />} title={t('phoneNumber')}>{t('phoneFormatHint')}</NoticeCard>
             <TextField label={t('phone')} required value={value} onValueChange={(phone) => setValue(formatKazakhstanPhoneInput(phone))}
-              placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" aria-invalid={showError} aria-describedby="phone-format-hint" />
-            <p id="phone-format-hint" className={`mt-2 text-xs font-bold ${showError ? 'text-danger' : 'text-ink-muted'}`} role={showError ? 'alert' : undefined}>{showError ? t('invalidPhone') : t('phoneFormatHint')}</p>
-            {normalizedPhone && <StatusBadge className="mt-4" tone="brand" icon={<Check size={12} />}>{t('phoneValid')}</StatusBadge>}
+              placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" aria-invalid={showError} aria-describedby={showError ? 'phone-error' : undefined} />
+            {showError && <p id="phone-error" className="mt-2 text-xs font-bold text-danger" role="alert">{t('invalidPhone')}</p>}
           </ScrollArea>
         </ModalBody>
         <StickyActionFooter><PrimaryButton type="submit" disabled={!normalizedPhone}>{t('savePhone')}<Check size={19} /></PrimaryButton></StickyActionFooter>

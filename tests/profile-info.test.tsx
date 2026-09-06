@@ -137,6 +137,9 @@ describe('profile information sections', () => {
     const phoneDialog = screen.getByRole('dialog', { name: 'Сменить номер телефона' });
     const phoneInput = within(phoneDialog).getByDisplayValue('+7 705 976 80 00');
     expect(phoneInput).toBeInTheDocument();
+    expect(within(phoneDialog).queryByText('Используйте действующий номер Казахстана в формате +7.')).not.toBeInTheDocument();
+    expect(within(phoneDialog).queryByText('Номер указан верно')).not.toBeInTheDocument();
+    expect(within(phoneDialog).queryByRole('heading', { name: 'Номер телефона' })).not.toBeInTheDocument();
     fireEvent.change(phoneInput, { target: { value: '+7 700' } });
     expect(phoneInput).toHaveAttribute('aria-invalid', 'true');
     expect(within(phoneDialog).getByRole('alert')).toHaveTextContent('Введите корректный номер Казахстана.');
