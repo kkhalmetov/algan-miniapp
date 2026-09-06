@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  AlertTriangle, ArrowUpRight, Building2, CalendarDays, Check, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, FileText, Headphones, Heart, Home, Image as ImageIcon, Info, Languages, Mail,
+  AlertTriangle, ArrowUpRight, Building2, CalendarDays, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, FileText, Headphones, Heart, Home, Image as ImageIcon, Info, Languages, Mail,
   MapPin, Package, PackageCheck, Phone, ReceiptText, RotateCcw, Settings2, ShieldCheck, ShoppingBag, Sparkles, UserRound,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -953,7 +953,7 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
             {showError && <p id="phone-error" className="mt-2 text-xs font-bold text-danger" role="alert">{t('invalidPhone')}</p>}
           </ScrollArea>
         </ModalBody>
-        <StickyActionFooter><PrimaryButton type="submit" disabled={!normalizedPhone}>{t('savePhone')}<Check size={19} /></PrimaryButton></StickyActionFooter>
+        <StickyActionFooter><PrimaryButton type="submit" disabled={!normalizedPhone}>{t('savePhone')}</PrimaryButton></StickyActionFooter>
       </form>
     </DialogLayer>
   );

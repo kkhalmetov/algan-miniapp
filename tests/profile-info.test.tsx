@@ -140,6 +140,7 @@ describe('profile information sections', () => {
     expect(within(phoneDialog).queryByText('Используйте действующий номер Казахстана в формате +7.')).not.toBeInTheDocument();
     expect(within(phoneDialog).queryByText('Номер указан верно')).not.toBeInTheDocument();
     expect(within(phoneDialog).queryByRole('heading', { name: 'Номер телефона' })).not.toBeInTheDocument();
+    expect(within(phoneDialog).getByRole('button', { name: 'Сохранить номер' }).querySelector('svg')).not.toBeInTheDocument();
     fireEvent.change(phoneInput, { target: { value: '+7 700' } });
     expect(phoneInput).toHaveAttribute('aria-invalid', 'true');
     expect(within(phoneDialog).getByRole('alert')).toHaveTextContent('Введите корректный номер Казахстана.');
