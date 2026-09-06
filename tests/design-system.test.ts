@@ -13,6 +13,18 @@ function sourceFiles(directory: string): string[] {
 }
 
 describe('Algan design system', () => {
+  it('ships the smiling food-box identity in standalone and horizontal lockups', () => {
+    const mark = readFileSync(resolve(root, 'public/algan-mark.svg'), 'utf8');
+    const wordmark = readFileSync(resolve(root, 'public/algan-wordmark.svg'), 'utf8');
+    const logo = readFileSync(resolve(root, 'public/algan-logo.svg'), 'utf8');
+    const lightLogo = readFileSync(resolve(root, 'public/algan-logo-light.svg'), 'utf8');
+
+    expect(mark).toContain('smile-cut');
+    expect(wordmark).toContain('viewBox="0 0 170 56"');
+    expect(logo).toContain('#0D4F45');
+    expect(lightLogo).toContain('#CBEF69');
+  });
+
   it('keeps application markup free of raw hex colors', () => {
     const sources = ['app', 'components', 'lib']
       .flatMap(sourceFiles)
@@ -24,6 +36,7 @@ describe('Algan design system', () => {
 
   it('declares the semantic tokens used by the interface', () => {
     const css = readFileSync(resolve(root, 'app/globals.css'), 'utf8');
+    const layout = readFileSync(resolve(root, 'app/layout.tsx'), 'utf8');
     const requiredTokens = [
       '--color-brand',
       '--color-accent',
@@ -46,10 +59,8 @@ describe('Algan design system', () => {
     ];
 
     for (const token of requiredTokens) expect(css).toContain(token);
-    expect(css).toContain("url('/fonts/inter-cyrillic-ext-wght-normal.woff2')");
-    expect(css).toContain("url('/fonts/inter-cyrillic-wght-normal.woff2')");
-    expect(css).toContain("url('/fonts/inter-latin-wght-normal.woff2')");
-    expect(css).toContain('--font-sans: "Inter Variable", sans-serif');
+    expect(layout).toContain("import '@fontsource-variable/onest'");
+    expect(css).toContain('--font-sans: "Onest Variable", sans-serif');
   });
 
   it('documents the rules for extending the interface', () => {
@@ -57,7 +68,7 @@ describe('Algan design system', () => {
 
     expect(guide).toContain('## Foundations and tokens');
     expect(guide).toContain('## Components');
-    expect(guide).toContain('new raw hex values are not allowed');
+    expect(guide).toMatch(/new raw hex values are not allowed/i);
     expect(guide).toContain('components/ui-kit.tsx');
     expect(guide).toContain('## Governance');
   });
@@ -82,6 +93,9 @@ describe('Algan design system', () => {
     expect(app).not.toContain('grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-pale');
     expect(app).not.toContain('shrink-0 bg-brand px-4 pb-3');
     expect(app).not.toContain('px-7');
+    expect(app).not.toMatch(/(?:max-)?h-\[(?:82|92)dvh\]/);
+    expect(app).not.toContain("style={{ backgroundColor:");
+    expect(app).not.toContain('!min-h-14');
     expect(app).not.toContain('window.confirm');
     expect(app).not.toContain('description=""');
     expect(app).not.toContain('role="dialog"');
@@ -98,12 +112,10 @@ describe('Algan design system', () => {
   it('uses the primary Kazakh document language and keeps it synchronized at runtime', () => {
     const layout = readFileSync(resolve(root, 'app/layout.tsx'), 'utf8');
     const app = readFileSync(resolve(root, 'app/app-client.tsx'), 'utf8');
-    const map = readFileSync(resolve(root, 'components/location-map.tsx'), 'utf8');
 
     expect(layout).toContain('<html lang="kk">');
     expect(app).toContain('document.documentElement.lang = locale');
     expect(app).toContain('aria-busy={paymentPending}');
-    expect(map).toContain('role="region"');
     expect(layout).not.toContain('спасаем еду');
   });
 
@@ -111,10 +123,10 @@ describe('Algan design system', () => {
     const css = readFileSync(resolve(root, 'app/globals.css'), 'utf8');
     const runtime = readFileSync(resolve(root, 'lib/design-tokens.ts'), 'utf8');
 
-    expect(css).toContain('--color-brand: #1f5c49');
-    expect(css).toContain('--color-surface: #fffdf8');
-    expect(runtime).toContain("BRAND_COLOR = '#1f5c49'");
-    expect(runtime).toContain("APP_SURFACE_COLOR = '#fffdf8'");
+    expect(css).toContain('--color-brand: #0d4f45');
+    expect(css).toContain('--color-surface: #ffffff');
+    expect(runtime).toContain("BRAND_COLOR = '#0d4f45'");
+    expect(runtime).toContain("APP_SURFACE_COLOR = '#ffffff'");
   });
 
   it('does not reset component typography with a global font shorthand', () => {
@@ -122,16 +134,6 @@ describe('Algan design system', () => {
 
     expect(css).not.toMatch(/button\s*,\s*input\s*\{\s*font\s*:/);
     expect(css).toContain('button, input, textarea, select { font-family: inherit; }');
-  });
-
-  it('keeps third-party map controls within the shared touch-target rules', () => {
-    const css = readFileSync(resolve(root, 'app/globals.css'), 'utf8');
-    const map = readFileSync(resolve(root, 'components/location-map.tsx'), 'utf8');
-
-    expect(css).toMatch(/\.leaflet-control-zoom a\s*\{[^}]*width:\s*44px\s*!important;[^}]*height:\s*44px\s*!important;/);
-    expect(css).toMatch(/\.leaflet-control-attribution a\s*\{[^}]*min-height:\s*24px;/);
-    expect(css).toMatch(/\.algan-store-marker span\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;/);
-    expect(map).toContain('iconSize: [44, 44]');
   });
 
   it('keeps secondary text tokens readable on interface surfaces', () => {

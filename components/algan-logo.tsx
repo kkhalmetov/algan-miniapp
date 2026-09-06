@@ -11,8 +11,8 @@ const createMask = (url: string): CSSProperties => ({
   maskSize: 'contain',
 });
 
-const markMask = createMask('/algan-mark.svg?v=2');
-const wordmarkMask = createMask('/algan-wordmark.svg');
+const markMask = createMask('/algan-mark.svg?v=3');
+const wordmarkMask = createMask('/algan-wordmark.svg?v=3');
 
 export function AlganMark({ className = '' }: { className?: string }) {
   return <span aria-hidden="true" className={`inline-block shrink-0 bg-current ${className}`} style={markMask} />;
@@ -34,7 +34,7 @@ export function AlganLogo({
 }) {
   return (
     <div
-      className={`flex items-center gap-2 ${light ? 'text-highlight' : 'text-brand'} ${className}`}
+      className={`flex items-center gap-2.5 ${light ? 'text-highlight' : 'text-brand'} ${className}`}
       aria-label="Algan"
     >
       <AlganMark className={markClassName} />

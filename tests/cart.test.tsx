@@ -16,7 +16,7 @@ describe('multi-box cart', () => {
       profile: { firstName: 'Kimal', phone: '+77059768000' },
       locale: 'ru',
       tab: 'home',
-      favoriteStoreIds: [],
+      favoriteBoxIds: [],
       orders: [],
       cartStoreId: undefined,
       cartItems: [],
@@ -30,14 +30,13 @@ describe('multi-box cart', () => {
     vi.restoreAllMocks();
   });
 
-  const openTatti = () => {
+  const openCatalog = () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
-    fireEvent.click(screen.getByRole('button', { name: /Tatti Bakery пр\. Тауке хана, 47/ }));
   };
 
   const addBoxFromDetails = (name: string, quantity = 1) => {
-    fireEvent.click(screen.getByRole('button', { name: `Подробнее ${name}` }));
+    fireEvent.click(screen.getByRole('button', { name: `Подробнее: ${name}, Tatti Bakery` }));
     const dialog = screen.getByRole('dialog', { name });
     for (let index = 1; index < quantity; index += 1) {
       fireEvent.click(within(dialog).getByRole('button', { name: 'Количество +' }));
@@ -45,8 +44,23 @@ describe('multi-box cart', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: `Добавить в корзину ${name}` }));
   };
 
+  it('shows the cart dock only on the home tab', () => {
+    useAppStore.setState({ cartStoreId: 'tatti', cartItems: [{ boxId: 'bakery-surprise', quantity: 1 }] });
+    openCatalog();
+
+    expect(screen.getByTestId('cart-dock')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
+    expect(screen.queryByTestId('cart-dock')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Избранное' }));
+    expect(screen.queryByTestId('cart-dock')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Профиль' }));
+    expect(screen.queryByTestId('cart-dock')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Главная' }));
+    expect(screen.getByTestId('cart-dock')).toBeInTheDocument();
+  });
+
   it('adds different box types and creates one grouped order', async () => {
-    openTatti();
+    openCatalog();
     addBoxFromDetails('Surprise Tatti-box', 2);
     addBoxFromDetails('Tatti-box');
 
@@ -55,11 +69,14 @@ describe('multi-box cart', () => {
       { boxId: 'tatti-defined', quantity: 1 },
     ]);
     const cartButton = screen.getByRole('button', { name: /^Корзина/ });
-    expect(cartButton).not.toHaveTextContent('·');
+    expect(cartButton).toHaveTextContent('Корзина · 3');
     expect(cartButton.querySelector('svg')).not.toBeInTheDocument();
     fireEvent.click(cartButton);
     const cartDialog = screen.getByRole('dialog', { name: 'Корзина' });
     expect(within(cartDialog).getByRole('heading', { name: 'Корзина' })).toBeInTheDocument();
+    expect(within(cartDialog).queryByText('19:30–20:30')).not.toBeInTheDocument();
+    expect(within(cartDialog).queryByText('18:30–19:30')).not.toBeInTheDocument();
+    expect(within(cartDialog).getAllByText('Tatti Bakery')).toHaveLength(2);
     expect(within(cartDialog).getByTestId('cart-scroll')).toHaveClass('overflow-y-auto', 'overscroll-contain');
     expect(within(cartDialog).queryByRole('img')).not.toBeInTheDocument();
     expect(screen.getAllByText((content) => content.replace(/\s/g, '') === '7370₸').length).toBeGreaterThan(0);
@@ -90,7 +107,7 @@ describe('multi-box cart', () => {
 
   it('keeps the cart after a failed payment and creates the order after returning to checkout', async () => {
     window.history.replaceState({}, '', '/?mockPayment=failed');
-    openTatti();
+    openCatalog();
     addBoxFromDetails('Surprise Tatti-box');
     fireEvent.click(screen.getByRole('button', { name: /^Корзина/ }));
 
@@ -100,6 +117,9 @@ describe('multi-box cart', () => {
 
     const failureDialog = screen.getByRole('dialog', { name: 'Оплата не прошла' });
     expect(within(failureDialog).getByText('Не удалось завершить оплату. Попробуйте ещё раз.')).toBeInTheDocument();
+    expect(within(failureDialog).queryByText('Корзина сохранена')).not.toBeInTheDocument();
+    expect(within(failureDialog).queryByText(/Все выбранные боксы остались на месте/)).not.toBeInTheDocument();
+    expect(failureDialog.querySelector('.bg-accent-soft')).toBeInTheDocument();
     expect(within(failureDialog).queryByRole('button', { name: 'Закрыть' })).not.toBeInTheDocument();
     expect(within(failureDialog).queryByRole('button', { name: 'Повторить оплату' })).not.toBeInTheDocument();
     expect(useAppStore.getState().orders).toEqual([]);
@@ -107,7 +127,9 @@ describe('multi-box cart', () => {
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 1 }]);
     expect(window.location.search).toBe('');
 
-    fireEvent.click(within(failureDialog).getByRole('button', { name: 'Вернуться в корзину' }));
+    const backToCart = within(failureDialog).getByRole('button', { name: 'Вернуться в корзину' });
+    expect(backToCart.querySelector('svg')).not.toBeInTheDocument();
+    fireEvent.click(backToCart);
     const cartDialog = screen.getByRole('dialog', { name: 'Корзина' });
     await act(async () => {
       fireEvent.click(within(cartDialog).getByRole('button', { name: /Оформить заказ/ }));
@@ -121,7 +143,7 @@ describe('multi-box cart', () => {
 
   it('returns from a failed payment to the preserved cart', async () => {
     window.history.replaceState({}, '', '/?mockPayment=failed');
-    openTatti();
+    openCatalog();
     addBoxFromDetails('Surprise Tatti-box');
     fireEvent.click(screen.getByRole('button', { name: /^Корзина/ }));
 
@@ -137,10 +159,10 @@ describe('multi-box cart', () => {
   });
 
   it('does not allow selecting more boxes than are available', () => {
-    openTatti();
+    openCatalog();
     const familyCard = screen.getByText('Семейный Tatti-box').closest('article');
     expect(familyCard).not.toBeNull();
-    fireEvent.click(within(familyCard!).getByRole('button', { name: 'Подробнее Семейный Tatti-box' }));
+    fireEvent.click(within(familyCard!).getByRole('button', { name: 'Подробнее: Семейный Tatti-box, Tatti Bakery' }));
     const familyDialog = screen.getByRole('dialog', { name: 'Семейный Tatti-box' });
     expect(within(familyDialog).getByRole('button', { name: 'Количество +' })).toBeDisabled();
     fireEvent.click(within(familyDialog).getByRole('button', { name: 'Добавить в корзину Семейный Tatti-box' }));
@@ -148,7 +170,7 @@ describe('multi-box cart', () => {
   });
 
   it('links the checkout consent to the public offer and order rules mocks', () => {
-    openTatti();
+    openCatalog();
     addBoxFromDetails('Surprise Tatti-box');
     fireEvent.click(screen.getByRole('button', { name: /^Корзина/ }));
 
@@ -168,17 +190,23 @@ describe('multi-box cart', () => {
     useAppStore.setState({ cartStoreId: 'tatti', cartItems: [{ boxId: 'bakery-surprise', quantity: 1 }] });
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
-    fireEvent.click(screen.getByRole('button', { name: /Köfi ул\. Байтурсынова, 12/ }));
-    const confirmation = screen.getByRole('dialog', { name: 'Корзина' });
-    expect(within(confirmation).getByText('В корзине есть боксы другого заведения. Очистить корзину и перейти?')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Подробнее: Кофе & булочки, Köfi' }));
+    const boxDialog = screen.getByRole('dialog', { name: 'Кофе & булочки' });
+    fireEvent.click(within(boxDialog).getByRole('button', { name: 'Добавить в корзину Кофе & булочки' }));
+    const confirmation = screen.getByRole('dialog', { name: 'Заменить корзину?' });
+    expect(within(confirmation).getByText('В одной корзине могут быть боксы только одного заведения.')).toBeInTheDocument();
+    expect(within(confirmation).getByRole('button', { name: 'Очистить и добавить' })).toHaveClass('bg-danger-soft', 'text-danger');
+    expect(within(confirmation).getByText('Текущие боксы будут удалены, а выбранный бокс добавится в новую корзину.')).toBeInTheDocument();
     expect(within(confirmation).queryByRole('button', { name: 'Закрыть' })).not.toBeInTheDocument();
-    fireEvent.click(within(confirmation).getByRole('button', { name: 'Отмена' }));
-    expect(screen.queryByRole('dialog', { name: 'Köfi' })).not.toBeInTheDocument();
+    fireEvent.click(within(confirmation).getByRole('button', { name: 'Оставить корзину' }));
+    expect(screen.queryByRole('dialog', { name: 'Кофе & булочки' })).not.toBeInTheDocument();
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 1 }]);
 
-    fireEvent.click(screen.getByRole('button', { name: /Köfi ул\. Байтурсынова, 12/ }));
-    fireEvent.click(within(screen.getByRole('dialog', { name: 'Корзина' })).getByRole('button', { name: 'Очистить корзину' }));
-    expect(screen.getByRole('dialog', { name: 'Köfi' })).toBeInTheDocument();
-    expect(useAppStore.getState().cartItems).toEqual([]);
+    fireEvent.click(screen.getByRole('button', { name: 'Подробнее: Кофе & булочки, Köfi' }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Кофе & булочки' })).getByRole('button', { name: 'Добавить в корзину Кофе & булочки' }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Заменить корзину?' })).getByRole('button', { name: 'Очистить и добавить' }));
+    expect(screen.queryByRole('dialog', { name: 'Кофе & булочки' })).not.toBeInTheDocument();
+    expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'coffee-pair', quantity: 1 }]);
+    expect(screen.getByRole('dialog', { name: 'Корзина' })).toBeInTheDocument();
   });
 });

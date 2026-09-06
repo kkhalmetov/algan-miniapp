@@ -16,7 +16,7 @@ describe('profile information sections', () => {
       locale: 'ru',
       currency: 'KZT',
       tab: 'home',
-      favoriteStoreIds: [],
+      favoriteBoxIds: [],
       orders: [],
     });
   });
@@ -58,6 +58,7 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Правовая информация' }));
 
     expect(screen.getByRole('heading', { name: 'Правовая информация' })).toBeInTheDocument();
+    expect(screen.queryByText(/Документы, которые регулируют использование Algan/)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Условия использования' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Политика конфиденциальности' })).toBeInTheDocument();
@@ -108,6 +109,7 @@ describe('profile information sections', () => {
 
     fireEvent.click(support);
     expect(screen.getByRole('heading', { name: 'Помощь и поддержка' })).toBeInTheDocument();
+    expect(screen.getByText(/Мы рядом, если появились вопросы/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'FAQ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Связаться с поддержкой.*Ежедневно с 09:00 до 21:00/ })).toBeInTheDocument();
     expect(screen.queryByText('@kkhalmetov')).not.toBeInTheDocument();
@@ -133,10 +135,16 @@ describe('profile information sections', () => {
     expect(screen.getByRole('heading', { name: 'Настройки' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Номер телефона.*\+7 705 976 80 00/ }));
     const phoneDialog = screen.getByRole('dialog', { name: 'Сменить номер телефона' });
-    expect(within(phoneDialog).getByDisplayValue('+7 705 976 80 00')).toBeInTheDocument();
+    const phoneInput = within(phoneDialog).getByDisplayValue('+7 705 976 80 00');
+    expect(phoneInput).toBeInTheDocument();
+    fireEvent.change(phoneInput, { target: { value: '+7 700' } });
+    expect(phoneInput).toHaveAttribute('aria-invalid', 'true');
+    expect(within(phoneDialog).getByRole('alert')).toHaveTextContent('Введите корректный номер Казахстана.');
     fireEvent.click(within(phoneDialog).getByRole('button', { name: 'Закрыть' }));
     expect(screen.getByRole('heading', { name: 'Настройки' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /Язык.*Русский/ }));
+    const languageChoice = screen.getByRole('group', { name: 'Язык приложения' });
+    expect(within(languageChoice).getByRole('button', { name: 'Русский' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(within(languageChoice).getByRole('button', { name: 'Қазақша' }));
     expect(screen.getByRole('heading', { name: 'Баптаулар' })).toBeInTheDocument();
     expect(useAppStore.getState().locale).toBe('kk');
   });

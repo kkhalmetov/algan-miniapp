@@ -1,6 +1,6 @@
 export type Locale = 'ru' | 'kk';
 export type Currency = 'KZT' | 'RUB';
-export type Tab = 'home' | 'map' | 'favorites' | 'orders' | 'profile';
+export type Tab = 'home' | 'orders' | 'favorites' | 'profile';
 
 export interface UserProfile {
   telegramId?: number;

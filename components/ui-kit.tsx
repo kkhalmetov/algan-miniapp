@@ -45,28 +45,42 @@ function unlockElement(element: HTMLElement) {
   else element.setAttribute('aria-hidden', lock.ariaHidden);
 }
 
-const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-4 text-center font-black leading-5 transition active:scale-[.99] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
+const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-4 text-center font-extrabold leading-5 transition duration-[var(--motion-fast)] active:scale-[.985] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
 type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { size?: 'md' | 'lg' };
-const actionButtonSize = { md: 'min-h-11 text-sm', lg: 'min-h-14 text-[15px]' } as const;
+const actionButtonSize = { md: 'min-h-11 text-sm', lg: 'min-h-13 text-[15px]' } as const;
 
-export function PrimaryButton({ className, type = 'button', size = 'lg', ...props }: ActionButtonProps) {
-  return <button type={type} className={cx(actionButtonBase, actionButtonSize[size], 'bg-brand text-white shadow-action hover:bg-brand-hover disabled:bg-surface-muted disabled:text-ink-subtle', className)} {...props} />;
+type PrimaryButtonTone = 'brand' | 'highlight' | 'warning';
+const primaryButtonTone: Record<PrimaryButtonTone, string> = {
+  brand: 'bg-brand-hover text-white shadow-action hover:bg-brand',
+  highlight: 'bg-highlight text-brand-deep shadow-none hover:brightness-95',
+  warning: 'bg-warning-ink text-white shadow-none hover:brightness-95',
+};
+
+export function PrimaryButton({ className, type = 'button', size = 'lg', tone = 'brand', ...props }: ActionButtonProps & { tone?: PrimaryButtonTone }) {
+  return <button type={type} className={cx(actionButtonBase, actionButtonSize[size], primaryButtonTone[tone], 'disabled:bg-surface-muted disabled:text-ink-subtle', className)} {...props} />;
 }
 
-export function PageTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h1 className={cx('text-page-title text-ink', className)} {...props} />;
+type TitleTone = 'default' | 'inverse' | 'muted';
+const titleTone: Record<TitleTone, string> = {
+  default: 'text-ink',
+  inverse: 'text-white',
+  muted: 'text-ink-muted',
+};
+
+export function PageTitle({ className, tone = 'default', ...props }: HTMLAttributes<HTMLHeadingElement> & { tone?: TitleTone }) {
+  return <h1 className={cx('text-page-title', titleTone[tone], className)} {...props} />;
 }
 
-export function SectionTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cx('text-section-title text-ink', className)} {...props} />;
+export function SectionTitle({ className, tone = 'default', ...props }: HTMLAttributes<HTMLHeadingElement> & { tone?: TitleTone }) {
+  return <h2 className={cx('text-section-title', titleTone[tone], className)} {...props} />;
 }
 
-export function ContentTitle({ as: Component = 'h2', className, ...props }: HTMLAttributes<HTMLHeadingElement> & { as?: 'h1' | 'h2' }) {
-  return <Component className={cx('text-2xl font-black tracking-[-0.04em] text-ink', className)} {...props} />;
+export function ContentTitle({ as: Component = 'h2', className, tone = 'default', ...props }: HTMLAttributes<HTMLHeadingElement> & { as?: 'h1' | 'h2'; tone?: TitleTone }) {
+  return <Component className={cx('text-2xl font-extrabold tracking-[-0.03em]', titleTone[tone], className)} {...props} />;
 }
 
-export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cx('truncate text-lg font-black tracking-[-0.03em] text-ink', className)} {...props} />;
+export function CardTitle({ className, tone = 'default', ...props }: HTMLAttributes<HTMLHeadingElement> & { tone?: TitleTone }) {
+  return <h2 className={cx('truncate text-lg font-extrabold tracking-[-0.025em]', titleTone[tone], className)} {...props} />;
 }
 
 export function PageSection({ title, children, className }: {
@@ -75,7 +89,7 @@ export function PageSection({ title, children, className }: {
   className?: string;
 }) {
   return (
-    <section className={cx('px-page pb-7 pt-[max(2rem,env(safe-area-inset-top))]', className)}>
+    <section className={cx('min-h-full bg-canvas px-page pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-page-wide', className)}>
       <PageTitle>{title}</PageTitle>
       {children}
     </section>
@@ -85,7 +99,7 @@ export function PageSection({ title, children, className }: {
 export function BrandHeader({ className, ...props }: HTMLAttributes<HTMLElement>) {
   return (
     <header
-      className={cx('bg-brand px-page-wide pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] text-white', className)}
+      className={cx('relative overflow-hidden bg-brand px-page pb-6 pt-[max(1.25rem,env(safe-area-inset-top))] text-white sm:px-page-wide', className)}
       {...props}
     />
   );
@@ -97,10 +111,10 @@ export function TopAppBar({ leading, title, trailing, className, ...props }: HTM
   trailing: ReactNode;
 }) {
   return (
-    <header className={cx('shrink-0 bg-brand px-page pb-3 pt-[max(.75rem,env(safe-area-inset-top))] text-white', className)} {...props}>
+    <header className={cx('shrink-0 border-b border-border bg-surface/96 px-page pb-2.5 pt-[max(.625rem,env(safe-area-inset-top))] text-ink backdrop-blur-xl sm:px-page-wide', className)} {...props}>
       <div className="flex min-h-11 items-center gap-3">
         {leading}
-        <div className="min-w-0 flex-1 truncate text-center text-sm font-black">{title}</div>
+        <div className="min-w-0 flex-1 truncate text-center text-sm font-extrabold">{title}</div>
         {trailing}
       </div>
     </header>
@@ -108,14 +122,14 @@ export function TopAppBar({ leading, title, trailing, className, ...props }: HTM
 }
 
 export function ScreenBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cx('bg-surface px-page pt-6', className)} {...props} />;
+  return <div className={cx('bg-canvas px-page pt-5 sm:px-page-wide', className)} {...props} />;
 }
 
 export function SecondaryButton({ className, type = 'button', size = 'lg', ...props }: ActionButtonProps) {
   return (
     <button
       type={type}
-      className={cx(actionButtonBase, actionButtonSize[size], 'bg-brand-pale text-brand hover:bg-brand-soft', className)}
+      className={cx(actionButtonBase, actionButtonSize[size], 'border border-border bg-surface text-brand hover:border-brand/30 hover:bg-brand-pale', className)}
       {...props}
     />
   );
@@ -135,7 +149,7 @@ export function TextLinkButton({ className, type = 'button', ...props }: ButtonH
   return (
     <button
       type={type}
-      className={cx('inline-flex min-h-6 items-center align-baseline font-extrabold text-brand underline decoration-border-strong underline-offset-2 transition hover:text-brand-hover', className)}
+      className={cx('inline-flex min-h-6 items-center align-baseline font-bold text-brand-hover underline decoration-brand-hover/35 underline-offset-2 transition hover:text-brand', className)}
       {...props}
     />
   );
@@ -149,7 +163,7 @@ export function PillButton({ className, type = 'button', tone = 'soft', ...props
       type={type}
       className={cx(
         'flex h-11 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-black transition active:scale-95',
-        tone === 'dark' ? 'bg-white/12 text-white hover:bg-white/18' : 'bg-surface-soft text-brand hover:bg-brand-pale',
+        tone === 'dark' ? 'border border-white/20 bg-white/12 text-white hover:bg-white/18' : 'border border-border bg-surface text-brand hover:bg-brand-pale',
         className,
       )}
       {...props}
@@ -199,7 +213,7 @@ export function TextField({
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
         className={cx(
-          'mt-2 h-13 w-full rounded-control border border-border bg-panel px-4 text-[15px] outline-none transition placeholder:text-ink-subtle focus:border-brand-hover focus:ring-4 focus:ring-brand-hover/10',
+          'mt-2 h-13 w-full rounded-control border border-border bg-panel px-4 text-[15px] outline-none transition placeholder:text-ink-subtle focus:border-brand-hover focus:ring-4 focus:ring-brand-hover/12',
           className,
         )}
       />
@@ -207,13 +221,15 @@ export function TextField({
   );
 }
 
-type IconButtonTone = 'muted' | 'dark' | 'brand' | 'accent';
+type IconButtonTone = 'muted' | 'dark' | 'brand' | 'accent' | 'floating' | 'floatingAccent';
 
 const iconButtonTone: Record<IconButtonTone, string> = {
-  muted: 'bg-surface-muted text-ink',
+  muted: 'border border-border bg-surface text-ink',
   dark: 'bg-white/12 text-white',
-  brand: 'bg-brand text-white',
-  accent: 'bg-accent-soft text-accent',
+  brand: 'bg-brand-hover text-white',
+  accent: 'bg-accent-soft text-accent-strong',
+  floating: 'border border-white/50 bg-surface/95 text-ink shadow-control backdrop-blur-md',
+  floatingAccent: 'border border-white/50 bg-accent-soft text-accent-strong shadow-control backdrop-blur-md',
 };
 
 export function IconButton({
@@ -261,7 +277,7 @@ export function ModalHeader({
           <ArrowLeft size={18} />
         </IconButton>
       )}
-      <h2 className="min-w-0 flex-1 text-xl font-black tracking-[-0.035em]">{title}</h2>
+      <h2 className="min-w-0 flex-1 text-xl font-extrabold tracking-[-0.025em]">{title}</h2>
       <IconButton onClick={onClose} label={closeLabel}>
         <X size={18} />
       </IconButton>
@@ -270,7 +286,7 @@ export function ModalHeader({
 }
 
 export function SheetHandle({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div aria-hidden="true" className={cx('mx-auto h-1.5 w-10 rounded-full bg-border-strong', className)} {...props} />;
+  return <div aria-hidden="true" className={cx('mx-auto h-1 w-9 rounded-full bg-border-strong', className)} {...props} />;
 }
 
 export function SheetHeader({
@@ -319,7 +335,8 @@ export function MediaSheetHeader({ children, onClose, closeLabel, className, ...
       <IconButton
         onClick={onClose}
         label={closeLabel}
-        className="absolute right-page top-4 z-20 bg-surface/95 shadow-control backdrop-blur-md"
+        tone="floating"
+        className="absolute right-page top-4 z-20 sm:right-page-wide"
       >
         <X size={18} />
       </IconButton>
@@ -328,21 +345,21 @@ export function MediaSheetHeader({ children, onClose, closeLabel, className, ...
 }
 
 export function ModalBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cx('px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5', className)} {...props} />;
+  return <div className={cx('px-page pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-page-wide', className)} {...props} />;
 }
 
 export function ScrollArea({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div className={cx('hide-scrollbar min-h-0 overflow-y-auto overscroll-contain', className)} {...props} />;
 }
 
-export function SurfaceCard({ className, ...props }: HTMLAttributes<HTMLElement>) {
-  return <article className={cx('rounded-card border border-border bg-panel shadow-card', className)} {...props} />;
+export function SurfaceCard({ className, tone = 'panel', ...props }: HTMLAttributes<HTMLElement> & { tone?: 'panel' | 'muted' }) {
+  return <article className={cx('rounded-card border', tone === 'muted' ? 'border-border bg-surface-muted' : 'border-border/90 bg-panel shadow-card', className)} {...props} />;
 }
 
 type InsetTone = 'soft' | 'panel' | 'brand' | 'brandSolid' | 'warning' | 'danger' | 'allergen';
 
 const insetTone: Record<InsetTone, string> = {
-  soft: 'bg-surface-soft',
+  soft: 'border border-border/70 bg-surface-soft',
   panel: 'border border-border bg-panel',
   brand: 'border border-brand/15 bg-brand-pale',
   brandSolid: 'bg-brand text-white',
@@ -363,7 +380,7 @@ export function CardPressable({ className, type = 'button', ...props }: ButtonHT
     <button
       type={type}
       className={cx(
-        'block w-full text-left transition hover:bg-surface-soft/50 focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover',
+        'block w-full text-left transition duration-[var(--motion-fast)] hover:bg-surface-soft/50 focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover',
         className,
       )}
       {...props}
@@ -378,7 +395,7 @@ const statusTone: Record<StatusTone, string> = {
   brand: 'bg-brand-pale text-brand',
   dark: 'bg-brand-deep/92 text-white',
   accent: 'bg-accent-soft text-accent-strong',
-  accentSolid: 'bg-accent text-white',
+  accentSolid: 'bg-accent text-ink',
   danger: 'bg-danger-soft text-danger',
   warning: 'bg-warning-surface text-warning-ink',
   neutral: 'bg-surface-muted text-ink-secondary',
@@ -396,7 +413,7 @@ export function StatusBadge({ children, icon, tone = 'brand', size = 'md', class
   size?: StatusSize;
 }) {
   return (
-    <span className={cx('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full font-black', statusTone[tone], statusSize[size], className)} {...props}>
+    <span className={cx('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full font-extrabold', statusTone[tone], statusSize[size], className)} {...props}>
       {icon}{children}
     </span>
   );
@@ -424,13 +441,13 @@ export function IconBadge({ children, tone = 'brand', className }: {
 
 export function MediaBadge({ children, size = 'md', className }: {
   children: ReactNode;
-  size?: 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }) {
   return (
     <span className={cx(
-      'grid shrink-0 place-items-center overflow-hidden rounded-full border bg-panel shadow-card',
-      size === 'lg' ? 'h-17 w-17 border-4 border-surface' : 'h-12 w-12 border-border',
+      'grid shrink-0 place-items-center overflow-hidden rounded-[14px] border bg-panel shadow-card',
+      size === 'lg' ? 'h-17 w-17 border-4 border-surface' : size === 'sm' ? 'h-9 w-9 rounded-[10px] border-border' : 'h-12 w-12 border-border',
       className,
     )}>
       {children}
@@ -445,7 +462,7 @@ export function AvatarFrame({ children, size = 'sm', className, ...props }: HTML
   return (
     <div
       className={cx(
-        'grid shrink-0 place-items-center overflow-hidden rounded-full bg-highlight font-black text-ink',
+        'grid shrink-0 place-items-center overflow-hidden rounded-[16px] bg-highlight font-extrabold text-ink',
         size === 'lg' ? 'h-16 w-16 text-2xl' : 'h-12 w-12 text-lg',
         className,
       )}
@@ -458,7 +475,7 @@ export function AvatarFrame({ children, size = 'sm', className, ...props }: HTML
 
 export function DisclosureIndicator({ className }: { className?: string }) {
   return (
-    <span className={cx('grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-pale text-brand', className)} aria-hidden="true">
+    <span className={cx('grid h-9 w-9 shrink-0 place-items-center rounded-control bg-brand-pale text-brand', className)} aria-hidden="true">
       <ChevronDown size={18} strokeWidth={2.5} className="-rotate-90" />
     </span>
   );
@@ -474,8 +491,8 @@ export function DetailRow({ icon, label, value, divided = false, className, ...p
     <div className={cx('flex items-start gap-3', divided && 'border-t border-border pt-4', className)} {...props}>
       <IconBadge tone="soft">{icon}</IconBadge>
       <div className="min-w-0">
-        <p className="text-xs font-bold text-ink-muted">{label}</p>
-        <div className="mt-1 text-sm font-black leading-5 text-ink">{value}</div>
+        <p className="text-xs font-semibold text-ink-muted">{label}</p>
+        <div className="mt-1 text-sm font-extrabold leading-5 text-ink">{value}</div>
       </div>
     </div>
   );
@@ -503,7 +520,7 @@ export function NoticeCard({ icon, title, titleAs: Title = 'h3', children, tone 
       <div className="flex items-start gap-3">
         <IconBadge tone={styles.icon}>{icon}</IconBadge>
         <div className="min-w-0 text-sm leading-6">
-          {title && <Title className={cx('font-black', styles.title)}>{title}</Title>}
+          {title && <Title className={cx('font-extrabold', styles.title)}>{title}</Title>}
           <div className={cx(Boolean(title) && 'mt-1.5', styles.body)}>{children}</div>
         </div>
       </div>
@@ -517,6 +534,7 @@ export function ListRow({
   subtitle,
   trailing,
   tone = 'soft',
+  density = 'default',
   subtitleWrap = false,
   className,
   type = 'button',
@@ -527,21 +545,23 @@ export function ListRow({
   subtitle?: ReactNode;
   trailing?: ReactNode;
   tone?: 'soft' | 'panel';
+  density?: 'default' | 'compact';
   subtitleWrap?: boolean;
 }) {
   return (
     <button
       type={type}
       className={cx(
-        'flex min-h-17 w-full items-center gap-3 rounded-control p-4 text-left transition active:scale-[.99] disabled:opacity-100',
-        tone === 'panel' ? 'border border-border bg-panel hover:bg-surface-soft' : 'bg-surface-soft hover:bg-surface-muted',
+        'flex w-full items-center gap-3 rounded-card text-left transition active:scale-[.99] disabled:opacity-100',
+        density === 'compact' ? 'min-h-14 px-3 py-2' : 'min-h-17 p-4',
+        tone === 'panel' ? 'border border-border bg-panel hover:bg-surface-soft' : 'border border-border/70 bg-surface-soft hover:bg-surface-muted',
         className,
       )}
       {...props}
     >
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-panel text-brand">{icon}</span>
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-control bg-brand-pale text-brand">{icon}</span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-black">{title}</span>
+        <span className="block text-sm font-extrabold">{title}</span>
         {subtitle && (
           <span className={cx('mt-0.5 block text-xs text-ink-muted', subtitleWrap ? 'whitespace-normal leading-5' : 'truncate')}>
             {subtitle}
@@ -562,13 +582,13 @@ export function LinkRow({ icon, title, subtitle, trailing, tone = 'soft', classN
 }) {
   return (
     <a className={cx(
-      'flex min-h-17 w-full items-center gap-3 rounded-control p-4 text-left text-ink transition active:scale-[.99]',
-      tone === 'panel' ? 'border border-border bg-panel hover:bg-surface-soft' : 'bg-surface-soft hover:bg-surface-muted',
+      'flex min-h-17 w-full items-center gap-3 rounded-card p-4 text-left text-ink transition active:scale-[.99]',
+      tone === 'panel' ? 'border border-border bg-panel hover:bg-surface-soft' : 'border border-border/70 bg-surface-soft hover:bg-surface-muted',
       className,
     )} {...props}>
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-panel text-brand">{icon}</span>
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-control bg-brand-pale text-brand">{icon}</span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-black">{title}</span>
+        <span className="block text-sm font-extrabold">{title}</span>
         {subtitle && <span className="mt-0.5 block truncate text-xs text-ink-muted">{subtitle}</span>}
       </span>
       {trailing}
@@ -585,9 +605,9 @@ export function AccordionItem({ title, expanded, onToggle, children }: {
   const buttonId = useId();
   const contentId = useId();
   return (
-    <div className="overflow-hidden rounded-control bg-surface-soft">
+    <div className="overflow-hidden rounded-card border border-border/70 bg-surface-soft">
       <button id={buttonId} type="button" aria-expanded={expanded} aria-controls={contentId} onClick={onToggle} className="flex min-h-14 w-full items-center gap-3 p-4 text-left transition hover:bg-surface-muted focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-hover">
-        <span className="min-w-0 flex-1 text-sm font-black leading-5">{title}</span>
+        <span className="min-w-0 flex-1 text-sm font-extrabold leading-5">{title}</span>
         <ChevronDown size={18} className={cx('shrink-0 text-ink-subtle transition', expanded && 'rotate-180')} />
       </button>
       {expanded && <div id={contentId} role="region" aria-labelledby={buttonId} className="px-4 pb-4 text-sm leading-6 text-ink-secondary">{children}</div>}
@@ -619,34 +639,36 @@ export function QuantityStepper({ quantity, min = 1, max, label, onChange }: {
   onChange: (quantity: number) => void;
 }) {
   return (
-    <div className="flex min-h-12 items-center justify-between rounded-control bg-brand-soft px-1.5" role="group" aria-label={label}>
+    <div className="flex min-h-12 items-center justify-between rounded-control bg-brand-pale px-1.5" role="group" aria-label={label}>
       <button type="button" onClick={() => onChange(quantity - 1)} aria-label={`${label} −`} disabled={quantity <= min} className="grid h-11 w-11 shrink-0 place-items-center disabled:opacity-45">
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-surface-muted text-ink transition active:scale-95"><Minus size={16} /></span>
+        <span className="grid h-8 w-8 place-items-center rounded-[10px] bg-surface text-ink transition active:scale-95"><Minus size={16} /></span>
       </button>
-      <span className="text-base font-black text-brand" aria-live="polite" aria-atomic="true">{quantity}</span>
+      <span className="text-base font-extrabold text-brand" aria-live="polite" aria-atomic="true">{quantity}</span>
       <button type="button" onClick={() => onChange(quantity + 1)} aria-label={`${label} +`} disabled={quantity >= max} className="grid h-11 w-11 shrink-0 place-items-center disabled:opacity-45">
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-white transition active:scale-95"><Plus size={16} /></span>
+        <span className="grid h-8 w-8 place-items-center rounded-[10px] bg-brand-hover text-white transition active:scale-95"><Plus size={16} /></span>
       </button>
     </div>
   );
 }
 
-export function EmptyState({ icon, title, description, tone = 'brand' }: {
+export function EmptyState({ icon, title, description, children, tone = 'brand' }: {
   icon: ReactNode;
   title: ReactNode;
   description?: ReactNode;
+  children?: ReactNode;
   tone?: 'brand' | 'accent';
 }) {
   return (
-    <div className="mt-20 text-center">
+    <div className="mt-16 text-center">
       <span className={cx(
-        'mx-auto grid h-20 w-20 place-items-center rounded-full',
+        'mx-auto grid h-20 w-20 rotate-[-3deg] place-items-center rounded-[24px]',
         tone === 'accent' ? 'bg-accent-soft text-accent' : 'bg-brand-pale text-brand',
       )}>
         {icon}
       </span>
-      <h2 className="mx-auto mt-6 max-w-[290px] text-xl font-black">{title}</h2>
+      <h2 className="mx-auto mt-6 max-w-[290px] text-xl font-extrabold">{title}</h2>
       {description && <p className="mx-auto mt-2 max-w-[290px] text-sm leading-6 text-ink-secondary">{description}</p>}
+      {children && <div className="mx-auto mt-6 max-w-[280px]">{children}</div>}
     </div>
   );
 }
@@ -663,7 +685,7 @@ export function SegmentedControl<T extends string>({
   label: string;
 }) {
   return (
-    <div className="grid grid-cols-2 rounded-control bg-surface-muted p-1" role="group" aria-label={label}>
+    <div className="grid grid-cols-2 rounded-control border border-border bg-surface p-1" role="group" aria-label={label}>
       {items.map((item) => (
         <button
           key={item.value}
@@ -671,8 +693,8 @@ export function SegmentedControl<T extends string>({
           aria-pressed={value === item.value}
           onClick={() => onChange(item.value)}
           className={cx(
-            'min-h-11 rounded-xl px-3 text-sm font-black transition',
-            value === item.value ? 'bg-panel text-brand shadow-sm' : 'text-ink-muted hover:bg-surface-soft',
+            'min-h-11 rounded-[10px] px-3 text-sm font-extrabold transition',
+            value === item.value ? 'bg-brand-pale text-brand shadow-sm' : 'text-ink-muted hover:bg-surface-soft',
           )}
         >
           {item.label}
@@ -686,16 +708,20 @@ export function CardActionButton({ className, type = 'button', ...props }: Butto
   return (
     <button
       type={type}
-      className={cx('flex min-h-12 w-full items-center justify-center gap-2 border-t border-border px-4 text-sm font-black text-brand transition hover:bg-brand-pale active:bg-brand-pale disabled:text-ink-subtle', className)}
+      className={cx('flex min-h-12 w-full items-center justify-center gap-2 border-t border-border px-4 text-sm font-extrabold text-brand transition hover:bg-brand-pale active:bg-brand-pale disabled:text-ink-subtle', className)}
       {...props}
     />
   );
 }
 
-export function StickyActionFooter({ className, ...props }: HTMLAttributes<HTMLElement>) {
+export function StickyActionFooter({ className, density = 'default', ...props }: HTMLAttributes<HTMLElement> & { density?: 'default' | 'compact' }) {
   return (
     <footer
-      className={cx('shrink-0 border-t border-border bg-surface/96 px-page pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl', className)}
+      className={cx(
+        'shrink-0 border-t border-border bg-surface/96 px-page backdrop-blur-xl sm:px-page-wide',
+        density === 'compact' ? 'pb-[max(.625rem,env(safe-area-inset-bottom))] pt-2.5' : 'pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3',
+        className,
+      )}
       {...props}
     />
   );
@@ -703,7 +729,7 @@ export function StickyActionFooter({ className, ...props }: HTMLAttributes<HTMLE
 
 export function BottomNavigation({ children }: { children: ReactNode }) {
   return (
-    <nav className="z-[800] shrink-0 border-t border-border bg-surface/95 px-1 pb-[max(.4rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl">
+    <nav className="z-[800] shrink-0 border-t border-border bg-surface/96 px-2 pb-[max(.4rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl">
       <div className="grid grid-cols-4">{children}</div>
     </nav>
   );
@@ -719,33 +745,39 @@ export function BottomNavigationItem({ active, icon, label, ...props }: ButtonHT
       type="button"
       aria-current={active ? 'page' : undefined}
       className={cx(
-        'flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[10px] font-extrabold tracking-[-0.02em] transition hover:bg-surface-soft',
+        'flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-control text-xs font-bold tracking-[-0.02em] transition hover:bg-surface-soft',
         active ? 'text-brand' : 'text-ink-subtle',
       )}
       {...props}
     >
-      <span aria-hidden="true" className={cx('grid h-7 w-11 shrink-0 place-items-center rounded-full', active && 'bg-brand-soft')}>{icon}</span>
+      <span aria-hidden="true" className={cx('grid h-7 w-11 shrink-0 place-items-center rounded-[10px]', active && 'bg-brand-soft')}>{icon}</span>
       <span className="whitespace-nowrap text-center leading-none">{label}</span>
     </button>
   );
 }
 
-export function FullScreenFeedback({ icon, title, description, children, centered = false, tone = 'brand' }: {
+export function FullScreenFeedback({ icon, title, description, children, centered = false, tone = 'brand', className }: {
   icon: ReactNode;
   title: ReactNode;
   description: ReactNode;
   children: ReactNode;
   centered?: boolean;
-  tone?: 'brand' | 'danger';
+  tone?: 'brand' | 'coral' | 'danger';
+  className?: string;
 }) {
   return (
     <div className={cx(
-      'hide-scrollbar flex min-h-dvh flex-col overflow-y-auto overscroll-contain px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px]',
+      'hide-scrollbar flex min-h-dvh flex-col overflow-y-auto overscroll-contain px-page pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px] sm:px-page-wide',
+      tone === 'coral' && 'bg-accent-soft',
+      tone === 'danger' && 'bg-danger-soft/30',
       centered && 'justify-center',
+      className,
     )}>
       <div className={cx(
-        'relative mx-auto grid h-16 w-16 shrink-0 place-items-center rounded-full',
-        tone === 'danger' ? 'bg-danger-soft text-danger' : 'bg-highlight text-brand',
+        'relative mx-auto grid h-18 w-18 shrink-0 rotate-[-3deg] place-items-center rounded-[24px]',
+        tone === 'danger' && 'bg-danger-soft text-danger',
+        tone === 'coral' && 'bg-accent text-brand-deep',
+        tone === 'brand' && 'bg-highlight text-brand',
       )}>{icon}</div>
       <PageTitle className="mt-5">{title}</PageTitle>
       <p className="mx-auto mt-3 max-w-[320px] text-sm leading-6 text-ink-secondary">{description}</p>
@@ -754,7 +786,7 @@ export function FullScreenFeedback({ icon, title, description, children, centere
   );
 }
 
-export function DialogLayer({ children, onClose, closeLabel, full = false, variant, ariaLabel, className }: {
+export function DialogLayer({ children, onClose, closeLabel, full = false, variant, ariaLabel, className, sheetHeight = 'content' }: {
   children: ReactNode;
   onClose: () => void;
   closeLabel: string;
@@ -762,6 +794,7 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
   variant?: 'sheet' | 'center' | 'full';
   ariaLabel?: string;
   className?: string;
+  sheetHeight?: 'content' | 'medium' | 'tall';
 }) {
   const resolvedVariant = full ? 'full' : variant ?? 'sheet';
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -818,7 +851,7 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
 
   return (
     <div ref={overlayRef} className={cx(
-      'algan-dialog-backdrop absolute inset-0 z-[1000] flex overscroll-contain bg-brand-deep/40 backdrop-blur-[2px]',
+      'algan-dialog-backdrop absolute inset-0 z-[1000] flex overscroll-contain bg-brand-deep/45 backdrop-blur-[3px]',
       resolvedVariant === 'center' ? 'items-center p-page' : 'items-end',
       className,
     )} role="dialog" aria-modal="true" aria-label={ariaLabel}>
@@ -827,7 +860,9 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
         'algan-dialog-panel relative z-10 w-full overflow-hidden bg-surface outline-none',
         resolvedVariant === 'full' && 'h-full min-h-0',
         resolvedVariant === 'sheet' && 'max-h-[92%] rounded-t-sheet shadow-sheet',
-        resolvedVariant === 'center' && 'mx-auto max-w-sm rounded-card shadow-floating',
+        resolvedVariant === 'sheet' && sheetHeight === 'medium' && 'h-[82%]',
+        resolvedVariant === 'sheet' && sheetHeight === 'tall' && 'h-[92%]',
+        resolvedVariant === 'center' && 'mx-auto max-w-sm rounded-sheet shadow-floating',
       )}>
         {children}
       </section>
@@ -835,7 +870,7 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
   );
 }
 
-export function ConfirmationDialog({ title, description, confirmLabel, cancelLabel, closeLabel, onConfirm, onCancel, tone = 'brand', className, showClose = true }: {
+export function ConfirmationDialog({ title, description, confirmLabel, cancelLabel, closeLabel, onConfirm, onCancel, icon, tone = 'brand', className, showClose = true }: {
   title: string;
   description: ReactNode;
   confirmLabel: ReactNode;
@@ -843,22 +878,27 @@ export function ConfirmationDialog({ title, description, confirmLabel, cancelLab
   closeLabel: string;
   onConfirm: () => void;
   onCancel: () => void;
-  tone?: 'brand' | 'danger';
+  icon?: ReactNode;
+  tone?: 'brand' | 'warning' | 'danger';
   className?: string;
   showClose?: boolean;
 }) {
-  const ConfirmButton = tone === 'danger' ? DangerButton : PrimaryButton;
+  const iconTone = tone === 'danger' ? 'bg-danger-soft text-danger' : tone === 'warning' ? 'bg-warning-surface text-warning-ink' : 'bg-brand-pale text-brand';
   return (
     <DialogLayer variant="center" onClose={onCancel} closeLabel={closeLabel} ariaLabel={title} className={className}>
       <ModalBody>
         {showClose ? (
           <ModalHeader title={title} onClose={onCancel} closeLabel={closeLabel} />
         ) : (
-          <h2 className="min-h-11 text-xl font-black tracking-[-0.035em]">{title}</h2>
+          <div className="min-h-2" />
         )}
-        <p className="mt-3 text-sm leading-6 text-ink-secondary">{description}</p>
+        {icon && <span className={cx('mt-3 grid h-14 w-14 place-items-center rounded-[18px]', iconTone)}>{icon}</span>}
+        {!showClose && <h2 className={cx('text-xl font-extrabold tracking-[-0.025em]', Boolean(icon) && 'mt-4')}>{title}</h2>}
+        <p className={cx('text-sm leading-6 text-ink-secondary', showClose && !icon ? 'mt-3' : 'mt-2')}>{description}</p>
         <div className="mt-5 flex flex-col gap-3">
-          <ConfirmButton onClick={onConfirm}>{confirmLabel}</ConfirmButton>
+          {tone === 'danger'
+            ? <DangerButton onClick={onConfirm}>{confirmLabel}</DangerButton>
+            : <PrimaryButton onClick={onConfirm} tone={tone === 'warning' ? 'warning' : 'brand'}>{confirmLabel}</PrimaryButton>}
           <SecondaryButton onClick={onCancel}>{cancelLabel}</SecondaryButton>
         </div>
       </ModalBody>

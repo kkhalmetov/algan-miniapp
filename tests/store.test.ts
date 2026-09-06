@@ -12,7 +12,7 @@ describe('local MVP state', () => {
       locale: 'ru',
       currency: 'KZT',
       tab: 'home',
-      favoriteStoreIds: [],
+      favoriteBoxIds: [],
       orders: [],
       cartStoreId: undefined,
       cartItems: [],
@@ -41,7 +41,7 @@ describe('local MVP state', () => {
     useAppStore.setState({
       onboardingDone: true,
       profile: { firstName: 'Алия', phone: '+77059768000' },
-      favoriteStoreIds: ['tatti'],
+      favoriteBoxIds: ['bakery-surprise'],
       legalAcceptance: undefined,
     });
     useAppStore.getState().acceptLegalDocuments(acceptedLegalDocuments);
@@ -49,15 +49,15 @@ describe('local MVP state', () => {
     expect(useAppStore.getState()).toMatchObject({
       onboardingDone: true,
       profile: { firstName: 'Алия', phone: '+77059768000' },
-      favoriteStoreIds: ['tatti'],
+      favoriteBoxIds: ['bakery-surprise'],
       legalAcceptance: acceptedLegalDocuments,
     });
   });
 
-  it('toggles stores in favorites without duplicates', () => {
-    useAppStore.getState().toggleFavorite('tatti');
-    useAppStore.getState().toggleFavorite('tatti');
-    expect(useAppStore.getState().favoriteStoreIds).toEqual([]);
+  it('toggles boxes in favorites without duplicates', () => {
+    useAppStore.getState().toggleFavoriteBox('bakery-surprise');
+    useAppStore.getState().toggleFavoriteBox('bakery-surprise');
+    expect(useAppStore.getState().favoriteBoxIds).toEqual([]);
   });
 
   it('syncs Telegram identity without removing the saved phone', () => {
@@ -141,5 +141,20 @@ describe('local MVP state', () => {
     }) as { orders: Array<{ storeId: string; pickupCode: string; items: unknown[] }> };
     expect(migrated.orders[0]).toMatchObject({ storeId: 'tatti', pickupCode: '001234' });
     expect(migrated.orders[0]?.items).toEqual([{ boxId: 'bakery-surprise', quantity: 2, unitPrice: 2490 }]);
+  });
+
+  it('migrates favorite venues to every existing box from those venues', () => {
+    const migrated = migratePersistedState({
+      favoriteStoreIds: ['tatti', 'missing-store'],
+      orders: [],
+    }) as { favoriteBoxIds: string[] };
+
+    expect(migrated.favoriteBoxIds).toEqual([
+      'bakery-surprise',
+      'tatti-defined',
+      'tatti-morning',
+      'tatti-family',
+      'tatti-evening-surprise',
+    ]);
   });
 });

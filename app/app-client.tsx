@@ -2,19 +2,18 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  AlertTriangle, Building2, Check, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, Heart, Home, Image as ImageIcon, Info, Languages, Mail, Map as MapIcon,
-  MapPin, Package, PackageCheck, Phone, Settings2, ShoppingBag, Sparkles,
+  AlertTriangle, ArrowUpRight, Building2, CalendarDays, Check, CheckCircle2, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, FileText, Headphones, Heart, Home, Image as ImageIcon, Info, Languages, Mail,
+  MapPin, Package, PackageCheck, Phone, ReceiptText, RotateCcw, Settings2, ShieldCheck, ShoppingBag, Sparkles, UserRound,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { AlganLogo } from '@/components/algan-logo';
-import LocationMap from '@/components/location-map';
+import { AlganLogo, AlganMark } from '@/components/algan-logo';
 import {
   AccordionItem, AvatarFrame, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
-  ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
+  ContentTitle, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
   MediaBadge, MediaSheetHeader, ModalBody, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, QuantityStepper, ScreenBody,
   ScrollArea, SecondaryButton, SectionTitle, SegmentedControl, SheetHeader, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
-  TextLinkButton, TopAppBar,
+  TextLinkButton,
 } from '@/components/ui-kit';
 import { authenticateTelegram } from '@/lib/api';
 import { boxAllergens, boxContentName, boxName, storeAddress } from '@/lib/catalog-localization';
@@ -35,7 +34,6 @@ import { getCopy, type CopyKey } from '@/lib/translations';
 import { haptic, openExternalLink, openTelegramLink, prepareTelegram, telegramProfile } from '@/lib/telegram';
 import type { Box, CartItem, Currency, Locale, Order, Store, Tab, UserProfile } from '@/lib/types';
 
-const SHYMKENT = { lat: 42.3155, lng: 69.5869 };
 export const MINIMUM_SPLASH_MS = 900;
 const TELEGRAM_SYNC_DELAYS_MS = [0, 250, 750, 1500, 3000] as const;
 const SUPPORT_TELEGRAM_URL = 'https://t.me/kkhalmetov';
@@ -43,8 +41,7 @@ type LegalDocument = 'terms' | 'personalDataConsent' | 'privacy' | 'orderRules' 
 type LegalInformationView = LegalDocument | 'contacts';
 type LegalSubject = { fullName: string; telegramId?: number; phone?: string };
 type PendingCartReplacement =
-  | { kind: 'openStore'; storeId: string }
-  | { kind: 'changeQuantity'; box: Box; quantity: number };
+  { kind: 'changeQuantity'; box: Box; quantity: number };
 const LEGAL_TITLE_KEYS: Record<LegalDocument, CopyKey> = {
   terms: 'termsTitle', personalDataConsent: 'personalDataConsentTitle', privacy: 'privacyTitle',
   orderRules: 'orderRulesTitle', publicOffer: 'publicOfferTitle',
@@ -71,8 +68,8 @@ const availableQuantity = (box: Box, purchasedBoxQuantities: Record<string, numb
 
 export default function AlganApp() {
   const {
-    hydrated, onboardingDone, profile, legalAcceptance, locale, currency, tab, favoriteStoreIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
-    completeOnboarding, acceptLegalDocuments, syncTelegramProfile, updatePhone, setLocale, setCurrency, setTab, toggleFavorite,
+    hydrated, onboardingDone, profile, legalAcceptance, locale, currency, tab, favoriteBoxIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
+    completeOnboarding, acceptLegalDocuments, syncTelegramProfile, updatePhone, setLocale, setCurrency, setTab, toggleFavoriteBox,
     setCartItemQuantity, clearCart, completePurchase, resetDemo,
   } = useAppStore();
   const t = useCallback((key: CopyKey) => getCopy(locale)(key), [locale]);
@@ -81,7 +78,6 @@ export default function AlganApp() {
   const [legal, setLegal] = useState<LegalDocument | null>(null);
   const [documentsOpen, setDocumentsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [pendingCartReplacement, setPendingCartReplacement] = useState<PendingCartReplacement | null>(null);
@@ -199,23 +195,9 @@ export default function AlganApp() {
     completeOnboarding(nextProfile, createLegalAcceptance(locale, nextProfile.telegramId));
   };
 
-  const showStore = useCallback((storeId: string) => {
-    haptic('tap');
-    setSelectedBox(null);
-    setSelectedStoreId(storeId);
-  }, []);
-
-  const openStore = useCallback((storeId: string) => {
-    if (cartItems.length > 0 && cartStoreId && cartStoreId !== storeId) {
-      setPendingCartReplacement({ kind: 'openStore', storeId });
-      return;
-    }
-    showStore(storeId);
-  }, [cartItems.length, cartStoreId, showStore]);
-
   const openBox = (box: Box) => {
+    if (availableQuantity(box, purchasedBoxQuantities) < 1) return;
     haptic('tap');
-    setSelectedStoreId(box.storeId);
     setSelectedBox(box);
   };
 
@@ -238,11 +220,8 @@ export default function AlganApp() {
     const pending = pendingCartReplacement;
     setPendingCartReplacement(null);
     clearCart();
-    if (pending.kind === 'openStore') {
-      showStore(pending.storeId);
-      return;
-    }
     applyCartQuantity(pending.box, pending.quantity);
+    setCartOpen(true);
   };
 
   const payCart = async () => {
@@ -288,7 +267,6 @@ export default function AlganApp() {
     completePurchase(order);
     setCartOpen(false);
     setSelectedBox(null);
-    setSelectedStoreId(null);
     setSuccessOrder(order);
     haptic('success');
   };
@@ -328,18 +306,18 @@ export default function AlganApp() {
     <PriceContext.Provider value={{ currency: displayCurrency, kztToRubRate }}>
     <PhoneShell>
       <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-surface sm:h-[780px]">
-        <main className={`hide-scrollbar min-h-0 flex-1 overflow-x-hidden overscroll-contain ${tab === 'map' ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
+        <main className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
           {tab === 'home' && (
             <HomeTab
-              t={t} locale={locale} profile={profile} openProfile={() => { setTab('profile'); haptic('tap'); }}
-              favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openStore={openStore}
+              t={t} locale={locale} profile={profile}
+              favoriteBoxIds={favoriteBoxIds} toggleFavoriteBox={toggleFavoriteBox} openBox={openBox}
+              purchasedBoxQuantities={purchasedBoxQuantities}
             />
           )}
-          {tab === 'map' && <MapTab openStore={openStore} />}
           {tab === 'favorites' && (
-            <FavoritesTab t={t} locale={locale} favoriteStoreIds={favoriteStoreIds} toggleFavorite={toggleFavorite} openStore={openStore} />
+            <FavoritesTab t={t} locale={locale} favoriteBoxIds={favoriteBoxIds} toggleFavoriteBox={toggleFavoriteBox} openBox={openBox} purchasedBoxQuantities={purchasedBoxQuantities} />
           )}
-          {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} />}
+          {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} onBrowseOffers={() => { setTab('home'); haptic('tap'); }} />}
           {tab === 'profile' && (
             <ProfileTab t={t} profile={profile} currency={currency}
               currencyLoading={currency === 'RUB' && !kztToRubRate} currencyRateError={currencyRateError} onToggleCurrency={toggleCurrency}
@@ -349,16 +327,12 @@ export default function AlganApp() {
               resetDemo={resetDemo} />
           )}
         </main>
+        {tab === 'home' && cartItems.length > 0 && !selectedBox && !cartOpen && (
+          <CartDock items={cartItems} locale={locale} t={t} onOpen={() => setCartOpen(true)} />
+        )}
         <BottomNav tab={tab} setTab={setTab} t={t} />
       </div>
 
-      {selectedStoreId && (
-        <StoreDetails store={storeById(selectedStoreId)} locale={locale} t={t}
-          isFavorite={favoriteStoreIds.includes(selectedStoreId)} toggleFavorite={() => toggleFavorite(selectedStoreId)}
-          cartItems={cartItems} purchasedBoxQuantities={purchasedBoxQuantities}
-          onOpenBox={openBox} onOpenCart={() => setCartOpen(true)}
-          onClose={() => { setSelectedBox(null); setSelectedStoreId(null); }} />
-      )}
       {selectedBox && (
         <BoxDetails box={selectedBox} locale={locale} t={t}
           cartQuantity={cartItems.find((item) => item.boxId === selectedBox.id)?.quantity ?? 0}
@@ -413,11 +387,13 @@ function CartReplacementDialog({ t, onCancel, onConfirm }: {
   return (
     <ConfirmationDialog
       className="z-[1400]"
-      title={t('cart')}
-      description={t('replaceCartConfirm')}
+      title={t('cartRuleTitle')}
+      description={<><span className="block">{t('cartRuleText')}</span><span className="mt-2 block font-bold text-ink">{t('replaceCartConfirm')}</span></>}
       confirmLabel={t('replaceCartAction')}
-      cancelLabel={t('cancel')}
+      cancelLabel={t('keepCart')}
       closeLabel={t('close')}
+      icon={<ShoppingBag size={24} />}
+      tone="danger"
       showClose={false}
       onConfirm={onConfirm}
       onCancel={onCancel}
@@ -427,15 +403,16 @@ function CartReplacementDialog({ t, onCancel, onConfirm }: {
 
 function Splash({ t }: { t: Translator }) {
   return (
-    <main className="grid min-h-dvh place-items-center overflow-hidden bg-brand px-page-wide text-white" aria-label={`Algan — ${t('loading')}`}>
-      <div className="flex flex-col items-center">
+    <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-canvas px-page text-brand sm:px-page-wide" aria-label={`Algan — ${t('loading')}`}>
+      <div aria-hidden="true" className="absolute -right-18 top-14 h-48 w-48 rounded-full bg-brand-soft/55 blur-[1px]" />
+      <div aria-hidden="true" className="absolute -bottom-24 -left-20 h-64 w-64 rounded-full border-[46px] border-accent/12" />
+      <div className="relative flex flex-col items-center text-center">
         <AlganLogo
-          light
-          className="flex-col gap-3"
-          markClassName="h-20 w-20"
-          wordmarkClassName="h-9 w-[110px]"
+          className="algan-logo-float flex-col gap-4"
+          markClassName="h-24 w-24"
+          wordmarkClassName="h-10 w-[122px]"
         />
-        <span className="algan-loader mt-10" role="status">
+        <span className="algan-loader mt-8" role="status">
           <span className="sr-only">{t('loading')}</span>
         </span>
       </div>
@@ -465,29 +442,29 @@ function Onboarding(props: OnboardingProps) {
   const { t, locale, setLocale, phone, setPhone, openLegal, onContinue } = props;
   const canContinue = Boolean(normalizeKazakhstanPhone(phone));
   return (
-    <main className="flex min-h-dvh flex-col sm:min-h-[780px]">
-      <div className="relative overflow-hidden bg-brand px-page-wide pb-9 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
-        <div className="absolute -right-8 -top-6 h-40 w-40 rounded-full bg-warning-ink/20" />
-        <div className="absolute -bottom-14 -left-8 h-36 w-36 rounded-full border-[28px] border-highlight/20" />
+    <main className="flex min-h-dvh flex-col bg-canvas sm:min-h-[780px]">
+      <div className="relative overflow-hidden bg-brand px-page pb-10 pt-[max(1.25rem,env(safe-area-inset-top))] text-white sm:px-page-wide">
+        <div className="absolute -right-14 -top-10 h-48 w-48 rounded-full bg-brand-hover" />
+        <div className="absolute -bottom-18 -left-10 h-40 w-40 rounded-full border-[32px] border-highlight/25" />
         <div className="relative flex items-start justify-between">
           <AlganLogo light />
           <LanguagePill locale={locale} setLocale={setLocale} dark />
         </div>
-        <div className="relative mt-12">
-          <p className="text-sm font-bold text-highlight">{t('slogan')}</p>
-          <h1 className="mt-2 max-w-[340px] text-display">{t('hero')}</h1>
+        <div className="relative mt-14">
+          <p className="inline-flex rounded-full bg-highlight px-3 py-1.5 text-xs font-extrabold text-brand">{t('slogan')}</p>
+          <h1 className="mt-4 max-w-[360px] text-display">{t('hero')}</h1>
         </div>
       </div>
 
-      <form className="flex flex-1 flex-col px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-7" onSubmit={(event) => { event.preventDefault(); onContinue(); }}>
-        <p className="text-sm font-bold text-accent">{t('intro')}</p>
-        <ContentTitle className="mt-1">{t('askName')}</ContentTitle>
+      <form className="relative -mt-4 flex flex-1 flex-col rounded-t-sheet bg-surface px-page pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8 sm:px-page-wide" onSubmit={(event) => { event.preventDefault(); onContinue(); }}>
+        <p className="text-xs font-extrabold uppercase tracking-[.08em] text-accent-strong">{t('intro')}</p>
+        <ContentTitle className="mt-2">{t('askName')}</ContentTitle>
         <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('nameHelp')}</p>
 
         <TextField label={t('phone')} required value={phone} onValueChange={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
 
         <PrimaryButton type="submit" disabled={!canContinue} className="mt-7">{t('continue')}</PrimaryButton>
-        <LegalAcceptanceSentence t={t} openLegal={openLegal} className="mt-4" />
+        <LegalAcceptanceSentence t={t} openLegal={openLegal} className="mt-auto pt-4" />
       </form>
     </main>
   );
@@ -520,23 +497,26 @@ function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccept }: {
   onAccept: () => void;
 }) {
   return (
-    <main className="flex min-h-dvh flex-col sm:min-h-[780px]">
-      <div className="bg-brand px-page-wide pb-6 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
-        <div className="flex items-start justify-between gap-4">
+    <main className="flex min-h-dvh flex-col overflow-hidden bg-canvas sm:min-h-[780px]">
+      <div className="relative overflow-hidden bg-brand px-page pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] text-white sm:px-page-wide">
+        <div aria-hidden="true" className="absolute -right-14 -top-16 h-48 w-48 rounded-full bg-brand-hover" />
+        <div aria-hidden="true" className="absolute -bottom-20 -left-12 h-44 w-44 rounded-full border-[34px] border-highlight/20" />
+        <div className="relative flex items-start justify-between gap-4">
           <AlganLogo light />
           <LanguagePill locale={locale} setLocale={setLocale} dark />
         </div>
+        <div className="relative mt-10 grid h-16 w-16 place-items-center rounded-[20px] bg-highlight text-brand shadow-action"><ShieldCheck size={30} /></div>
       </div>
-      <div className="flex flex-1 flex-col px-page-wide pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8">
-        <div className="grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand"><FileCheck2 size={25} /></div>
-        <PageTitle className="mt-5">{t('legalUpdateTitle')}</PageTitle>
+      <div className="-mt-4 flex flex-1 flex-col rounded-t-sheet bg-surface px-page pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8 sm:px-page-wide">
+        <p className="text-xs font-extrabold uppercase tracking-[.08em] text-accent-strong">Algan</p>
+        <PageTitle className="mt-2">{t('legalUpdateTitle')}</PageTitle>
         <p className="mt-3 text-sm leading-6 text-ink-secondary">{t('legalUpdateText')}</p>
-        <div className="mt-5 space-y-2">
-          <ProfileRow icon={<Info size={18} />} label={t('termsTitle')} onClick={() => openLegal('terms')} />
+        <div className="mt-6 space-y-3">
+          <ProfileRow icon={<FileText size={18} />} label={t('termsTitle')} onClick={() => openLegal('terms')} />
           <ProfileRow icon={<FileCheck2 size={18} />} label={t('personalDataConsentTitle')} onClick={() => openLegal('personalDataConsent')} />
-          <ProfileRow icon={<PackageCheck size={18} />} label={t('privacyTitle')} onClick={() => openLegal('privacy')} />
+          <ProfileRow icon={<ShieldCheck size={18} />} label={t('privacyTitle')} onClick={() => openLegal('privacy')} />
         </div>
-        <PrimaryButton onClick={onAccept} className="mt-auto">{t('acceptAndContinue')}</PrimaryButton>
+        <PrimaryButton onClick={onAccept} className="mt-auto"><Check size={19} />{t('acceptAndContinue')}</PrimaryButton>
       </div>
     </main>
   );
@@ -550,90 +530,147 @@ function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; set
   );
 }
 
-function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, toggleFavorite, openStore }: {
-  t: Translator; locale: Locale; profile: UserProfile; openProfile: () => void; favoriteStoreIds: string[];
-  toggleFavorite: (id: string) => void; openStore: (storeId: string) => void;
+function HomeTab({ t, locale, profile, favoriteBoxIds, toggleFavoriteBox, openBox, purchasedBoxQuantities }: {
+  t: Translator; locale: Locale; profile: UserProfile; favoriteBoxIds: string[];
+  toggleFavoriteBox: (id: string) => void; openBox: (box: Box) => void; purchasedBoxQuantities: Record<string, number>;
 }) {
   const firstName = localizedFirstName(profile, t);
   return (
     <>
       <BrandHeader>
-        <div className="mt-2 flex items-center justify-between gap-4">
-          <div className="min-w-0"><p className="text-sm text-white/70">{t('greeting')},</p><PageTitle className="mt-0.5 truncate text-white">{firstName}!</PageTitle></div>
-          <button type="button" onClick={openProfile} aria-label={t('profile')} className="shrink-0 rounded-full outline-none transition active:scale-95 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
-            <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} fallbackName={firstName} compact />
-          </button>
+        <div aria-hidden="true" className="absolute -right-10 -top-14 h-44 w-44 rounded-full bg-brand-hover" />
+        <div className="relative">
+          <AlganLogo light markClassName="h-8 w-8" wordmarkClassName="h-6 w-[73px]" />
+        </div>
+        <div className="relative mt-7 min-w-0">
+          <p className="text-sm font-medium text-white/75">{t('greeting')},</p>
+          <PageTitle tone="inverse" className="mt-0.5 truncate">{firstName}!</PageTitle>
         </div>
       </BrandHeader>
 
       <ScreenBody>
-        <div className="space-y-4 pb-6">
-          {stores.map((store) => {
-            const storeBoxes = boxes.filter((item) => item.storeId === store.id);
-            const box = storeBoxes[0];
-            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} t={t} locale={locale} favorite={favoriteStoreIds.includes(store.id)} toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
-          })}
+        <div className="space-y-4 pb-7">
+          {boxes.map((box) => (
+            <MarketplaceBoxCard
+              key={box.id}
+              box={box}
+              store={storeById(box.storeId)}
+              t={t}
+              locale={locale}
+              favorite={favoriteBoxIds.includes(box.id)}
+              toggleFavorite={() => toggleFavoriteBox(box.id)}
+              onOpen={() => openBox(box)}
+              available={availableQuantity(box, purchasedBoxQuantities)}
+            />
+          ))}
         </div>
       </ScreenBody>
     </>
   );
 }
 
-function StoreCard({ store, fallbackImage, t, locale, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; t: Translator; locale: Locale; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
+function MarketplaceBoxCard({ box, store, t, locale, favorite, toggleFavorite, onOpen, available }: {
+  box: Box; store: Store; t: Translator; locale: Locale; favorite: boolean;
+  toggleFavorite: () => void; onOpen: () => void; available: number;
+}) {
+  const formatPrice = usePriceFormatter(locale);
+  const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
+  const name = boxName(box, locale);
   const address = storeAddress(store, locale);
+  const soldOut = available < 1;
   return (
-    <SurfaceCard className="overflow-hidden">
-      <CardPressable onClick={onOpen} className="relative h-44 overflow-hidden" aria-label={`${t('details')}: ${store.name}`}>
-        <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover transition duration-[var(--motion-slow)] hover:scale-105" />
-        <MediaBadge className="absolute bottom-3 left-3 border-3 border-panel">
-          <img src={store.logo} alt="" className="h-9 w-9 object-contain" />
-        </MediaBadge>
+    <SurfaceCard data-testid="marketplace-box-card" tone={soldOut ? 'muted' : 'panel'} className="relative overflow-hidden transition" data-sold-out={soldOut || undefined}>
+      <CardPressable
+        onClick={onOpen}
+        disabled={soldOut}
+        aria-label={`${t('details')}: ${name}, ${store.name}`}
+        className="group overflow-hidden rounded-card disabled:cursor-default"
+      >
+        <span className={`relative block h-44 overflow-hidden bg-canvas ${soldOut ? 'opacity-55 grayscale' : ''}`}>
+          <img src={box.image} alt={name} className="h-full w-full object-cover transition duration-[var(--motion-slow)] group-hover:scale-[1.03] group-disabled:scale-100" />
+          <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-brand-deep/55 to-transparent" />
+          <MediaBadge className="absolute bottom-3 left-3 border-3 border-panel">
+            <img src={store.logo} alt="" className="h-9 w-9 object-contain" />
+          </MediaBadge>
+          {box.type === 'SURPRISE' && <span className="absolute bottom-3 right-3"><SurpriseBadge compact /></span>}
+        </span>
+        <span className={`block p-4 ${soldOut ? 'text-ink-muted' : ''}`}>
+          <span className="block pr-1 text-xs font-extrabold text-brand">{store.name}</span>
+          <CardTitle tone={soldOut ? 'muted' : 'default'} className="mt-1 min-w-0">{name}</CardTitle>
+          <span className="mt-2 flex items-start gap-1.5 text-xs font-medium text-ink-muted"><MapPin size={14} className="mt-0.5 shrink-0 text-brand-hover" /><span>{address}</span></span>
+          <span className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-bold text-ink-secondary">
+            <span className="flex items-center gap-1.5"><Clock3 size={14} className="shrink-0 text-brand" />{box.pickupFrom}–{box.pickupTo}</span>
+            <span className={`flex items-center gap-1.5 ${soldOut ? 'font-extrabold text-danger' : 'text-brand'}`}><Package size={14} className="shrink-0" />{soldOut ? t('boxesSoldOut') : formatBoxesLeft(available, locale)}</span>
+          </span>
+          <span className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/80 pt-3">
+            <b className={`text-xl leading-none ${soldOut ? 'text-ink-muted' : 'text-brand-hover'}`}>{formatPrice(box.salePrice)}</b>
+            <span className="text-xs text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
+            <StatusBadge tone={soldOut ? 'neutral' : 'accentSolid'} size="sm">−{discount}%</StatusBadge>
+          </span>
+        </span>
       </CardPressable>
-      <div className="p-4">
-        <div className="flex items-start gap-3">
-          <CardPressable onClick={onOpen} className="min-w-0 flex-1 rounded-control" aria-label={`${store.name} ${address}`}>
-            <CardTitle>{store.name}</CardTitle>
-            <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-ink-muted"><MapPin size={14} />{address}</p>
-          </CardPressable>
-          <IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={favorite} tone={favorite ? 'accent' : 'muted'}><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></IconButton>
-        </div>
-      </div>
+      {!soldOut && (
+        <IconButton
+          onClick={toggleFavorite}
+          label={`${t('favorites')}: ${name}`}
+          aria-pressed={favorite}
+          tone={favorite ? 'floatingAccent' : 'floating'}
+          className="absolute right-3 top-3 z-20"
+        ><Heart size={19} fill={favorite ? 'currentColor' : 'none'} /></IconButton>
+      )}
     </SurfaceCard>
   );
 }
 
 function SurpriseBadge({ compact = false }: { compact?: boolean }) {
   return (
-    <StatusBadge tone="dark" size={compact ? 'sm' : 'md'} icon={<Sparkles size={12} aria-hidden="true" />} className="shrink-0 tracking-[0.08em] shadow-card backdrop-blur-sm">
+    <span
+      data-surprise-variant={compact ? 'compact' : 'default'}
+      className={`inline-flex shrink-0 items-center rounded-full border border-brand/20 bg-highlight font-black tracking-[0.08em] text-brand-deep shadow-card ${compact ? 'min-h-6 gap-1 px-2 py-1 text-[9px]' : 'min-h-8 gap-1.5 px-2.5 py-1.5 text-[10px]'}`}
+    >
+      <SurpriseBoxIcon compact={compact} />
       SURPRISE
-    </StatusBadge>
+    </span>
   );
 }
 
-function MapTab({ openStore }: { openStore: (storeId: string) => void }) {
-  const selectStore = useCallback((id: string) => {
-    openStore(id);
-  }, [openStore]);
+function SurpriseBoxIcon({ compact }: { compact: boolean }) {
   return (
-    <div className="relative h-full min-h-0">
-      <LocationMap lat={SHYMKENT.lat} lng={SHYMKENT.lng} stores={stores} onSelectStore={selectStore} className="absolute inset-0" />
-    </div>
+    <svg
+      data-testid="surprise-box-icon"
+      aria-hidden="true"
+      viewBox="0 0 18 18"
+      fill="none"
+      className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'}
+    >
+      <path d="M3.25 7.5 9 10.5l5.75-3M3.75 8.75v4.75L9 16l5.25-2.5V8.75M9 10.5V16" stroke="currentColor" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="m3.25 7.5 2.5-2.25L9 7l3.25-1.75 2.5 2.25L9 10.5 3.25 7.5Z" fill="currentColor" fillOpacity=".12" stroke="currentColor" strokeWidth="1.55" strokeLinejoin="round" />
+      <path d="M14.25 1.5v3M12.75 3h3" stroke="currentColor" strokeWidth="1.55" strokeLinecap="round" />
+    </svg>
   );
 }
 
-function FavoritesTab({ t, locale, favoriteStoreIds, toggleFavorite, openStore }: { t: Translator; locale: Locale; favoriteStoreIds: string[]; toggleFavorite: (id: string) => void; openStore: (storeId: string) => void }) {
-  const favoriteStores = stores.filter((store) => favoriteStoreIds.includes(store.id));
+function FavoritesTab({ t, locale, favoriteBoxIds, toggleFavoriteBox, openBox, purchasedBoxQuantities }: { t: Translator; locale: Locale; favoriteBoxIds: string[]; toggleFavoriteBox: (id: string) => void; openBox: (box: Box) => void; purchasedBoxQuantities: Record<string, number> }) {
+  const favoriteBoxes = boxes.filter((box) => favoriteBoxIds.includes(box.id));
   return (
     <PageSection title={t('favorites')}>
-      {favoriteStores.length === 0 ? (
+      {favoriteBoxes.length === 0 ? (
         <EmptyState icon={<Heart size={34} />} title={t('noFavorites')} description={t('noFavoritesText')} tone="accent" />
       ) : (
         <div className="mt-6 space-y-4">
-          {favoriteStores.map((store) => {
-            const storeBoxes = boxes.filter((item) => item.storeId === store.id);
-            const box = storeBoxes[0];
-            return box ? <StoreCard key={store.id} store={store} fallbackImage={box.image} t={t} locale={locale} favorite toggleFavorite={() => toggleFavorite(store.id)} onOpen={() => openStore(store.id)} /> : null;
-          })}
+          {favoriteBoxes.map((box) => (
+            <MarketplaceBoxCard
+              key={box.id}
+              box={box}
+              store={storeById(box.storeId)}
+              t={t}
+              locale={locale}
+              favorite
+              toggleFavorite={() => toggleFavoriteBox(box.id)}
+              onOpen={() => openBox(box)}
+              available={availableQuantity(box, purchasedBoxQuantities)}
+            />
+          ))}
         </div>
       )}
     </PageSection>
@@ -650,7 +687,7 @@ function orderPickupWindow(order: Order) {
   return from && to ? `${from}–${to}` : undefined;
 }
 
-function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; orders: Order[] }) {
+function OrdersTab({ t, locale, orders, onBrowseOffers }: { t: Translator; locale: Locale; orders: Order[]; onBrowseOffers: () => void }) {
   const formatPrice = usePriceFormatter(locale);
   const [view, setView] = useState<'active' | 'past'>('active');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -681,61 +718,60 @@ function OrdersTab({ t, locale, orders }: { t: Translator; locale: Locale; order
           icon={view === 'active' ? <ShoppingBag size={34} /> : <PackageCheck size={34} />}
           title={emptyTitle}
           description={emptyText}
-        />
+        >
+          <PrimaryButton onClick={onBrowseOffers}>{t('browseOffers')}</PrimaryButton>
+        </EmptyState>
       ) : (
         <div className="mt-5 space-y-3">
           {visibleOrders.map((order) => {
             const store = stores.find((item) => item.id === order.storeId);
             const orderDate = formatOrderDate(order.createdAt, locale);
             const pickupWindow = orderPickupWindow(order);
-            const summary = (
-              <>
-                <span className="flex gap-3">
-                  {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-xs font-bold text-ink-muted">{store?.name}</span>
-                    <span className="mt-1 block truncate text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</span>
-                    <span className="mt-2 block space-y-1">{order.items.map((item) => {
+            const isActive = view === 'active';
+            return (
+              <SurfaceCard key={order.id} data-order-status={order.status} className="overflow-hidden">
+                <div className="p-4">
+                  <div className="flex items-start gap-3">
+                    {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="truncate text-sm font-extrabold text-ink">{store?.name}</p>
+                        <StatusBadge tone={isActive ? 'brand' : 'neutral'} icon={isActive ? <Clock3 size={12} /> : <CheckCircle2 size={12} />}>
+                          {t(isActive ? 'activeOrderStatus' : 'completedOrderStatus')}
+                        </StatusBadge>
+                      </div>
+                      <p className="mt-1 text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</p>
+                    </div>
+                  </div>
+
+                  {isActive ? (
+                    <div data-testid="active-order-pickup" className="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs font-bold">
+                      <span className="flex items-center gap-2 text-brand"><Clock3 size={16} />{t('pickupToday')} · {pickupWindow}</span>
+                      <span className="flex items-center gap-2 text-ink-muted"><CalendarDays size={16} />{orderDate}</span>
+                    </div>
+                  ) : (
+                    <div className="mt-4 flex items-center gap-2 text-xs font-bold text-ink-muted"><CalendarDays size={16} />{orderDate}</div>
+                  )}
+
+                  <div className="mt-4 space-y-2">
+                    {order.items.map((item) => {
                       const box = boxes.find((candidate) => candidate.id === item.boxId);
                       return (
-                        <span key={item.boxId} className="flex items-center justify-between gap-3 text-xs">
-                          <span className="truncate font-bold">{box ? boxName(box, locale) : ''}</span>
-                          <span className="shrink-0 text-right">
-                            <span className="font-black text-ink-secondary">{formatPrice(item.unitPrice)}</span>
-                            <span className="ml-1 font-semibold text-ink-muted">× {item.quantity}</span>
-                          </span>
-                        </span>
+                        <div key={item.boxId} className="flex items-center justify-between gap-3 text-xs">
+                          <span className="min-w-0 truncate font-bold text-ink-secondary">{box ? boxName(box, locale) : ''}</span>
+                          <span className="shrink-0 font-bold text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</span>
+                        </div>
                       );
-                    })}</span>
-                  </span>
-                </span>
-                <span className="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
-                  {view === 'active' ? (
-                    <>
-                      <span className="min-w-0">
-                        <span className="block font-bold text-ink-secondary">{t('pickupTime')}: {pickupWindow}</span>
-                        <span className="mt-1 block font-bold text-ink-muted">{orderDate}</span>
-                      </span>
-                      <span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total)}</span>
-                    </>
-                  ) : (
-                    <><span className="font-bold text-ink-muted">{orderDate}</span><span className="shrink-0 text-sm font-black text-brand">{formatPrice(order.total)}</span></>
-                  )}
-                </span>
-              </>
-            );
-            return (
-              <SurfaceCard key={order.id} className="overflow-hidden">
-                <div className="w-full p-4 text-left">{summary}</div>
-                {view === 'active' && (
-                  <CardActionButton onClick={() => { setSelectedOrder(order); haptic('tap'); }}>
-                    {t('showQr')}
-                  </CardActionButton>
-                )}
-                {view === 'active' && store && (
-                  <CardActionButton onClick={() => { setRouteStore(store); haptic('tap'); }}>
-                    {t('buildRoute')}
-                  </CardActionButton>
+                    })}
+                  </div>
+                  <div className="mt-4 flex items-center justify-between border-t border-border pt-4"><span className="text-xs font-bold text-ink-muted">{t('total')}</span><b className="text-lg text-brand">{formatPrice(order.total)}</b></div>
+                </div>
+
+                {isActive && (
+                  <div className={`grid gap-2 border-t border-border bg-surface-soft p-3 ${store ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    <PrimaryButton size="md" onClick={() => { setSelectedOrder(order); haptic('tap'); }}>{t('showQr')}</PrimaryButton>
+                    {store && <SecondaryButton size="md" onClick={() => { setRouteStore(store); haptic('tap'); }}>{t('buildRoute')}</SecondaryButton>}
+                  </div>
                 )}
               </SurfaceCard>
             );
@@ -776,12 +812,13 @@ function PickupCodePanel({ pickupCode, label, className }: { pickupCode: string;
 function OrderItemsList({ order, locale }: { order: Order; locale: Locale }) {
   const formatPrice = usePriceFormatter(locale);
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {order.items.map((item) => {
         const box = boxes.find((candidate) => candidate.id === item.boxId);
         return (
-          <InsetSurface key={item.boxId} className="flex items-start justify-between gap-4 px-4 py-3">
-            <div className="min-w-0"><p className="text-sm font-black">{box ? boxName(box, locale) : ''}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</p></div>
+          <InsetSurface key={item.boxId} tone="panel" radius="card" className="flex items-center gap-3 p-3">
+            {box && <img src={box.image} alt="" className="h-14 w-14 shrink-0 rounded-control object-cover" />}
+            <div className="min-w-0 flex-1"><p className="truncate text-sm font-black">{box ? boxName(box, locale) : ''}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</p></div>
             <b className="shrink-0 text-sm text-brand">{formatPrice(item.unitPrice * item.quantity)}</b>
           </InsetSurface>
         );
@@ -794,27 +831,38 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
   const formatPrice = usePriceFormatter(locale);
   const store = stores.find((item) => item.id === order.storeId);
   const orderDate = formatOrderDate(order.createdAt, locale);
+  const isActive = order.status === 'paid';
+  if (isActive) {
+    return (
+      <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('showQr')} sheetHeight="medium">
+        <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden">
+          <SheetHeader title={t('showQr')} onClose={onClose} closeLabel={t('close')} />
+          <ScrollArea className="flex-1 pb-2 text-center">
+            <div className="mt-6"><OrderQr order={order} t={t} /></div>
+            <p className="mx-auto mt-5 max-w-[300px] text-sm leading-6 text-ink-secondary">{t('successText')}</p>
+            <PickupCodePanel pickupCode={order.pickupCode} label={t('pickupCode')} className="mt-5" />
+          </ScrollArea>
+        </ModalBody>
+      </DialogLayer>
+    );
+  }
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('orders')}>
-      <ModalBody className="flex max-h-[90dvh] min-h-0 flex-col overflow-hidden">
-        <SheetHeader title={order.status === 'collected' ? store?.name ?? t('orders') : undefined} onClose={onClose} closeLabel={t('close')} compact={order.status === 'paid'} />
-        <ScrollArea className="flex-1 pb-1">
-        {order.status === 'paid' && (
-          <>
-            <div className="mt-4"><OrderQr order={order} t={t} /></div>
-            <p className="mx-auto mt-4 max-w-[300px] text-center text-xs leading-5 text-ink-secondary">{t('successText')}</p>
-            <PickupCodePanel pickupCode={order.pickupCode} label={t('pickupCode')} className="mt-4" />
-          </>
-        )}
-        {order.status === 'collected' && (
-          <>
-            <p className="mt-5 text-center text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
-            <SectionTitle className="mt-6 text-base">{t('orderContents')}</SectionTitle>
-            <div className="mt-3"><OrderItemsList order={order} locale={locale} /></div>
-            <div className="mt-4 flex items-center justify-between border-t border-border pt-4"><span className="text-sm font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-brand">{formatPrice(order.total)}</b></div>
-            <p className="mt-3 text-sm font-bold text-ink-secondary">{orderDate}</p>
-          </>
-        )}
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('orderDetails')} sheetHeight="tall">
+      <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden pb-0">
+        <SheetHeader title={t('orderDetails')} onClose={onClose} closeLabel={t('close')} />
+        <ScrollArea className="flex-1 pb-5">
+          <InsetSurface tone="brand" radius="card" className="mt-4 p-4">
+            <div className="flex items-center gap-3">
+              {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
+              <div className="min-w-0 flex-1"><p className="truncate text-base font-extrabold">{store?.name}</p><p className="mt-1 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p></div>
+              <StatusBadge tone="neutral">{t('completedOrderStatus')}</StatusBadge>
+            </div>
+            <div className="mt-4 flex items-center gap-2 border-t border-brand/10 pt-3 text-xs font-bold text-ink-secondary"><CalendarDays size={15} />{orderDate}</div>
+          </InsetSurface>
+
+          <SectionTitle className="mt-7 text-base">{t('orderContents')}</SectionTitle>
+          <div className="mt-3"><OrderItemsList order={order} locale={locale} /></div>
+          <InsetSurface radius="card" className="mt-4 flex items-center justify-between p-4"><span className="text-sm font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-brand">{formatPrice(order.total)}</b></InsetSurface>
         </ScrollArea>
       </ModalBody>
     </DialogLayer>
@@ -830,16 +878,18 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
   const fullName = [firstName, DEMO_FALLBACK_NAMES.has(profile.firstName.trim()) ? undefined : profile.lastName].filter(Boolean).join(' ');
   const [resetConfirmationOpen, setResetConfirmationOpen] = useState(false);
   return (
-    <section className="pb-8">
+    <section className="min-h-full bg-canvas pb-8">
       <BrandHeader>
-        <div className="mt-2 flex items-center gap-4">
+        <div aria-hidden="true" className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-brand-hover" />
+        <div className="relative flex items-center gap-4">
           <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} fallbackName={firstName} />
-          <div><ContentTitle as="h1" className="text-white">{fullName}</ContentTitle><p className="mt-1 text-sm text-white/70">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
+          <div><ContentTitle as="h1" tone="inverse">{fullName}</ContentTitle><p className="mt-1 text-sm text-white/70">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
         </div>
       </BrandHeader>
 
       <ScreenBody>
-        <div className="space-y-2">
+        <SectionTitle className="mb-3">{t('profile')}</SectionTitle>
+        <div className="space-y-3">
           <ProfileRow icon={<Settings2 size={18} />} label={t('settings')} onClick={openSettings} />
           <ProfileRow icon={<CircleHelp size={18} />} label={t('support')} onClick={openHelp} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
@@ -857,6 +907,7 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
           confirmLabel={t('signOutDemo')}
           cancelLabel={t('cancel')}
           closeLabel={t('close')}
+          icon={<RotateCcw size={24} />}
           tone="danger"
           onCancel={() => setResetConfirmationOpen(false)}
           onConfirm={resetDemo}
@@ -893,30 +944,38 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
 }) {
   const [value, setValue] = useState(formatKazakhstanPhoneInput(currentPhone ?? '+7'));
   const normalizedPhone = normalizeKazakhstanPhone(value);
+  const showError = value.replace(/\D/g, '').length > 1 && !normalizedPhone;
 
   return (
-    <DialogLayer className="z-[1200]" onClose={onClose} closeLabel={t('close')} ariaLabel={t('changePhone')}>
-      <ModalBody>
-        <form onSubmit={(event) => {
+    <DialogLayer className="z-[1200]" onClose={onClose} closeLabel={t('close')} ariaLabel={t('changePhone')} sheetHeight="medium">
+      <form className="flex h-full min-h-0 flex-col" onSubmit={(event) => {
           event.preventDefault();
           if (normalizedPhone) onSave(normalizedPhone);
         }}>
+        <ModalBody className="flex min-h-0 flex-1 flex-col pb-0">
           <SheetHeader title={t('changePhone')} onClose={onClose} closeLabel={t('close')} />
-          <TextField label={t('phone')} required value={value} onValueChange={(phone) => setValue(formatKazakhstanPhoneInput(phone))}
-            placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
-          <PrimaryButton type="submit" disabled={!normalizedPhone} className="mt-6">{t('savePhone')}<Check size={19} /></PrimaryButton>
-        </form>
-      </ModalBody>
+          <ScrollArea className="flex-1 pb-5">
+            <NoticeCard className="mt-4" icon={<Phone size={20} />} title={t('phoneNumber')}>{t('phoneFormatHint')}</NoticeCard>
+            <TextField label={t('phone')} required value={value} onValueChange={(phone) => setValue(formatKazakhstanPhoneInput(phone))}
+              placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" aria-invalid={showError} aria-describedby="phone-format-hint" />
+            <p id="phone-format-hint" className={`mt-2 text-xs font-bold ${showError ? 'text-danger' : 'text-ink-muted'}`} role={showError ? 'alert' : undefined}>{showError ? t('invalidPhone') : t('phoneFormatHint')}</p>
+            {normalizedPhone && <StatusBadge className="mt-4" tone="brand" icon={<Check size={12} />}>{t('phoneValid')}</StatusBadge>}
+          </ScrollArea>
+        </ModalBody>
+        <StickyActionFooter><PrimaryButton type="submit" disabled={!normalizedPhone}>{t('savePhone')}<Check size={19} /></PrimaryButton></StickyActionFooter>
+      </form>
     </DialogLayer>
   );
 }
 
-function ProfileRow({ icon, label, value, valueWrap = false, onClick }: {
+function ProfileRow({ icon, label, value, valueWrap = false, onClick, className, density = 'default' }: {
   icon: React.ReactNode;
   label: string;
   value?: string;
   valueWrap?: boolean;
   onClick?: () => void;
+  className?: string;
+  density?: 'default' | 'compact';
 }) {
   return (
     <ListRow
@@ -927,16 +986,36 @@ function ProfileRow({ icon, label, value, valueWrap = false, onClick }: {
       onClick={onClick}
       disabled={!onClick}
       trailing={onClick ? <ChevronRight size={17} className="text-ink-subtle" /> : undefined}
+      className={className}
+      density={density}
     />
+  );
+}
+
+function CartDock({ items, locale, t, onOpen }: { items: CartItem[]; locale: Locale; t: Translator; onOpen: () => void }) {
+  const formatPrice = usePriceFormatter(locale);
+  const lines = items.flatMap((item) => {
+    const box = boxes.find((candidate) => candidate.id === item.boxId);
+    return box ? [{ box, quantity: item.quantity }] : [];
+  });
+  const total = lines.reduce((sum, line) => sum + line.box.salePrice * line.quantity, 0);
+  const quantity = lines.reduce((sum, line) => sum + line.quantity, 0);
+  return (
+    <StickyActionFooter data-testid="cart-dock" density="compact" className="z-[700]">
+      <PrimaryButton size="md" onClick={onOpen} aria-label={`${t('cart')}, ${formatPrice(total)}`}>
+        <span>{t('cart')} · {quantity}</span>
+        <span className="ml-auto">{formatPrice(total)}</span>
+      </PrimaryButton>
+    </StickyActionFooter>
   );
 }
 
 function BottomNav({ tab, setTab, t }: { tab: Tab; setTab: (tab: Tab) => void; t: Translator }) {
   const items: { id: Tab; icon: React.ReactNode; label: CopyKey }[] = [
     { id: 'home', icon: <Home size={21} />, label: 'home' },
-    { id: 'map', icon: <MapIcon size={21} />, label: 'map' },
-    { id: 'favorites', icon: <Heart size={21} />, label: 'favoritesNav' },
     { id: 'orders', icon: <ShoppingBag size={21} />, label: 'ordersNav' },
+    { id: 'favorites', icon: <Heart size={21} />, label: 'favoritesNav' },
+    { id: 'profile', icon: <UserRound size={21} />, label: 'profile' },
   ];
   return (
     <BottomNavigation>
@@ -961,116 +1040,14 @@ function SettingsModal({ t, locale, setLocale, phone, onEditPhone, onClose }: {
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('settings')}>
       <ModalBody>
         <SheetHeader title={t('settings')} onClose={onClose} closeLabel={t('close')} />
-        <div className="mt-5 space-y-2">
-          <ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={phone ? formatKazakhstanPhoneInput(phone) : undefined} onClick={onEditPhone} />
-          <ProfileRow icon={<Languages size={18} />} label={t('language')} value={locale === 'ru' ? 'Русский' : 'Қазақша'} onClick={() => setLocale(locale === 'ru' ? 'kk' : 'ru')} />
+        <div className="pb-1">
+          <SectionTitle className="mt-4 text-base">{t('accountDetails')}</SectionTitle>
+          <div className="mt-3"><ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={phone ? formatKazakhstanPhoneInput(phone) : undefined} onClick={onEditPhone} /></div>
+          <SectionTitle className="mt-6 text-base">{t('languageChoice')}</SectionTitle>
+          <div className="mt-3"><SegmentedControl value={locale} label={t('languageChoice')} items={[{ value: 'ru', label: t('russianLanguage') }, { value: 'kk', label: t('kazakhLanguage') }]} onChange={(nextLocale) => { if (nextLocale !== locale) { setLocale(nextLocale); haptic('tap'); } }} /></div>
         </div>
       </ModalBody>
     </DialogLayer>
-  );
-}
-
-function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems, purchasedBoxQuantities, onOpenBox, onOpenCart, onClose }: {
-  store: Store; locale: Locale; t: Translator; isFavorite: boolean; toggleFavorite: () => void;
-  cartItems: CartItem[]; purchasedBoxQuantities: Record<string, number>;
-  onOpenBox: (box: Box) => void; onOpenCart: () => void; onClose: () => void;
-}) {
-  const formatPrice = usePriceFormatter(locale);
-  const storeBoxes = boxes.filter((box) => box.storeId === store.id);
-  const fallbackImage = storeBoxes[0]?.image ?? '/images/bakery.jpg';
-  const cartLines = cartItems.flatMap((item) => {
-    const box = storeBoxes.find((candidate) => candidate.id === item.boxId);
-    return box ? [{ box, quantity: item.quantity }] : [];
-  });
-  const cartQuantity = cartLines.reduce((sum, line) => sum + line.quantity, 0);
-  const cartTotal = cartLines.reduce((sum, line) => sum + line.box.salePrice * line.quantity, 0);
-  const [routePickerOpen, setRoutePickerOpen] = useState(false);
-  const address = storeAddress(store, locale);
-
-  return (
-    <DialogLayer variant="full" onClose={onClose} closeLabel={t('close')} ariaLabel={store.name}>
-      <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
-      <TopAppBar
-        data-testid="store-details-header"
-        leading={<IconButton onClick={onClose} label={t('back')} tone="dark"><ChevronRight className="rotate-180" size={20} /></IconButton>}
-        title={store.name}
-        trailing={<IconButton onClick={toggleFavorite} label={t('favorites')} aria-pressed={isFavorite} tone={isFavorite ? 'accent' : 'dark'}><Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} /></IconButton>}
-      />
-
-      <ScrollArea data-testid="store-details-scroll" className="flex-1">
-        <div data-testid="store-details-cover" className="relative h-[240px] bg-canvas">
-          <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover object-center" />
-          <MediaBadge size="lg" className="absolute -bottom-8 left-page">
-            <img src={store.logo} alt="" className="h-13 w-13 object-contain" />
-          </MediaBadge>
-        </div>
-        <div className="px-page-wide pb-6 pt-11">
-          <PageTitle className="truncate">{store.name}</PageTitle>
-          <SurfaceCard className="mt-5 p-4">
-            <DetailRow icon={<MapPin size={19} />} label={t('addressLabel')} value={address} />
-            <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">
-              {t('buildRoute')}
-            </SecondaryButton>
-          </SurfaceCard>
-          <NoticeCard data-testid="store-appearance-notice" className="mt-4" icon={<ImageIcon size={18} />} title={t('appearanceMayDifferTitle')} titleAs="h2">
-            {t('appearanceMayDifferText')}
-          </NoticeCard>
-
-          <div className="mt-6 space-y-3">
-            {storeBoxes.map((box) => (
-              <BoxOfferCard key={box.id} box={box} locale={locale} t={t}
-                available={availableQuantity(box, purchasedBoxQuantities)}
-                onOpen={() => onOpenBox(box)} />
-            ))}
-          </div>
-        </div>
-      </ScrollArea>
-      {cartQuantity > 0 && (
-        <StickyActionFooter>
-          <PrimaryButton onClick={onOpenCart} aria-label={`${t('cart')}, ${formatPrice(cartTotal)}`}>
-            {t('cart')}<span className="ml-auto">{formatPrice(cartTotal)}</span>
-          </PrimaryButton>
-        </StickyActionFooter>
-      )}
-        {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
-      </div>
-    </DialogLayer>
-  );
-}
-
-function BoxOfferCard({ box, locale, t, available, onOpen }: {
-  box: Box; locale: Locale; t: Translator; available: number; onOpen: () => void;
-}) {
-  const formatPrice = usePriceFormatter(locale);
-  const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
-  const name = boxName(box, locale);
-  return (
-    <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
-      <CardPressable onClick={onOpen} className="group relative" aria-label={`${t('details')} ${name}`}>
-        <span data-testid="box-card-image" className="relative block h-36 w-full overflow-hidden bg-canvas">
-          <img src={box.image} alt={name} className="h-full w-full object-cover transition duration-[var(--motion-slow)] group-hover:scale-105" />
-          <span className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center gap-2">
-            {box.type === 'SURPRISE' && <SurpriseBadge compact />}
-            <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />}>
-              {formatBoxesLeft(available, locale)}
-            </StatusBadge>
-          </span>
-        </span>
-        <span data-testid="box-card-content" className="relative block p-4">
-          <span className="block min-w-0 pr-12 text-base font-black leading-5">{name}</span>
-          <DisclosureIndicator className="absolute right-4 top-4" />
-          <span className="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-[-0.02em] text-ink-secondary">
-            <Clock3 size={14} className="shrink-0 text-brand" />
-            <span className="whitespace-nowrap">{t('pickupTime')}: {box.pickupFrom}–{box.pickupTo}</span>
-          </span>
-          <span className="mt-2 flex flex-wrap items-center gap-2">
-            <b className="text-base text-brand">{formatPrice(box.salePrice)}</b>
-            <span className="text-[11px] text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
-            <StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge>
-          </span>
-        </span>
-      </CardPressable>
-    </SurfaceCard>
   );
 }
 
@@ -1081,57 +1058,71 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
   const formatPrice = usePriceFormatter(locale);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   const name = boxName(box, locale);
+  const store = storeById(box.storeId);
+  const address = storeAddress(store, locale);
   const allergens = boxAllergens(box, locale);
+  const [routePickerOpen, setRoutePickerOpen] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(() =>
     Math.min(Math.max(cartQuantity, 1), Math.max(available, 1)),
   );
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={name}>
-      <div data-testid="box-details-sheet" className="flex h-[90dvh] min-h-0 flex-col sm:h-[700px]">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={name} sheetHeight="tall">
+      <div data-testid="box-details-sheet" className="flex h-full min-h-0 flex-col">
         <ScrollArea data-testid="box-details-scroll" className="flex-1">
           <MediaSheetHeader data-testid="box-details-cover" onClose={onClose} closeLabel={t('close')}>
             <img src={box.image} alt={name} className="h-full w-full object-cover" />
           </MediaSheetHeader>
-          <div data-testid="box-details-content" className="relative z-10 -mt-5 bg-surface px-page-wide pb-6 pt-5">
+          <div data-testid="box-details-content" className="relative z-10 -mt-5 rounded-t-sheet bg-surface px-page pb-6 pt-6 sm:px-page-wide">
+            <div className="mb-3 flex items-center gap-2.5 text-sm font-extrabold text-ink">
+              <MediaBadge size="sm"><img src={store.logo} alt="" className="h-7 w-7 object-contain" /></MediaBadge>
+              <span className="min-w-0 truncate">{store.name}</span>
+            </div>
             <PageTitle>{name}</PageTitle>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {box.type === 'SURPRISE' && <SurpriseBadge />}
-              <StatusBadge data-testid="box-stock" tone={available > 0 ? 'accent' : 'danger'} size="lg" icon={<Package size={15} />}>
-                {formatBoxesLeft(available, locale)}
-              </StatusBadge>
+            {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}
+
+            <InsetSurface data-testid="box-store-summary" tone="panel" className="mt-4 overflow-hidden p-0 shadow-card">
+              <div className="flex items-start gap-2.5 p-3.5 text-sm font-bold text-ink-secondary">
+                <MapPin size={17} className="mt-0.5 shrink-0 text-brand-hover" />
+                <span>{address}</span>
+              </div>
+              <CardActionButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }}>
+                {t('buildRoute')}
+              </CardActionButton>
+            </InsetSurface>
+
+            <div data-testid="box-price-card" className="mt-4 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-4">
+              <div><p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p><p className="mt-1 whitespace-nowrap text-[30px] font-black tracking-[-0.04em] text-brand-hover">{formatPrice(box.salePrice)}</p></div>
+              <div className="mb-1 flex items-center gap-2"><span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice)}</span><StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge></div>
             </div>
 
-            <InsetSurface data-testid="box-commerce-summary" tone="panel" className="mt-5 overflow-hidden p-0">
-              <div className="grid grid-cols-[minmax(0,1fr)_7.5rem]">
-                <div data-testid="box-price-card" className="min-w-0 p-3.5">
-                  <p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p>
-                  <p className="mt-2 whitespace-nowrap text-[25px] font-black tracking-[-0.04em] text-brand">{formatPrice(box.salePrice)}</p>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
-                    <StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge>
-                  </div>
-                </div>
-                <div data-testid="box-pickup-time" className="min-w-0 border-l border-border p-3.5">
-                  <p className="whitespace-nowrap text-[11px] font-black uppercase tracking-[0.05em] text-ink-secondary">{t('pickupTime')}</p>
-                  <p className="mt-3 whitespace-nowrap text-[13px] font-black tracking-[-0.025em] text-brand">{box.pickupFrom}–{box.pickupTo}</p>
-                </div>
-              </div>
-            </InsetSurface>
+            <div data-testid="box-commerce-summary" className="mt-3 grid grid-cols-2 gap-2">
+              <InsetSurface data-testid="box-pickup-time" className="min-w-0 p-3">
+                <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.05em] text-ink-secondary"><Clock3 size={13} className="shrink-0 text-brand" />{t('pickupTime')}</p>
+                <p className="mt-2 whitespace-nowrap text-sm font-black tracking-[-0.02em] text-ink">{box.pickupFrom}–{box.pickupTo}</p>
+              </InsetSurface>
+              <InsetSurface className="min-w-0 p-3">
+                <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.05em] text-ink-secondary"><Package size={13} className="shrink-0 text-brand" />{t('offersLabel')}</p>
+                <p data-testid="box-stock" className={`mt-2 text-xs font-black ${available > 0 ? 'text-brand' : 'text-danger'}`}>{formatBoxesLeft(available, locale)}</p>
+              </InsetSurface>
+            </div>
+
+            <div data-testid="box-appearance-notice" className="mt-4 flex items-center gap-2.5 rounded-control bg-brand-pale/55 px-3 py-2.5 text-xs leading-5 text-ink-secondary">
+              <ImageIcon size={16} className="shrink-0 text-brand" />
+              <strong className="font-extrabold text-brand">{t('appearanceMayDifferTitle')}.</strong>
+            </div>
 
             {box.type === 'SURPRISE' ? (
               <>
                 <SectionTitle className="mt-6">{t('surprisePossibleTitle')}</SectionTitle>
                 <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprisePossibleContents')}</p>
-                <NoticeCard data-testid="surprise-composition-notice" className="mt-4" icon={<Sparkles size={18} />} title={t('surpriseNoticeTitle')}>
-                  {t('surprise')}
-                </NoticeCard>
+                <NoticeCard data-testid="surprise-composition-notice" className="mt-4" icon={<Package size={19} />} title={t('surpriseNoticeTitle')}>{t('surprise')}</NoticeCard>
               </>
             ) : (
               <>
                 <SectionTitle className="mt-6">{t('composition')}</SectionTitle>
-                <ul className="mt-3 overflow-hidden rounded-control border border-border bg-panel" data-testid="box-contents">
-                  {box.contents?.map((item, index) => (
-                    <li key={item.contentName} className={`flex items-center justify-between gap-4 px-4 py-3.5 text-sm ${index > 0 ? 'border-t border-border' : ''}`}>
+                <ul className="mt-2 divide-y divide-border border-y border-border" data-testid="box-contents">
+                  {box.contents?.map((item) => (
+                    <li key={item.contentName} className="flex items-center justify-between gap-4 py-3 text-sm">
                       <span className="font-bold text-ink">{boxContentName(item, locale)}</span>
                       <span className="shrink-0 rounded-full bg-brand-pale px-2.5 py-1 text-xs font-black text-brand">× {item.quantity}</span>
                     </li>
@@ -1139,26 +1130,28 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
                 </ul>
               </>
             )}
-            <NoticeCard className="mt-4" tone="allergen" icon={<AlertTriangle size={19} />} title={allergens ? t('containsAllergens') : t('allergens')} titleAs="h2">
-              {allergens ?? t('allergensUnknown')}
-            </NoticeCard>
+            <InsetSurface data-testid="box-allergens" tone="danger" radius="card" className="mt-5 flex items-start gap-2.5 p-4 text-sm leading-6">
+              <AlertTriangle size={18} className="mt-0.5 shrink-0 text-danger" />
+              <div><h2 className="font-extrabold text-danger">{allergens ? t('containsAllergens') : t('allergens')}</h2><p className="mt-1">{allergens ?? t('allergensUnknown')}</p></div>
+            </InsetSurface>
           </div>
         </ScrollArea>
         {(available > 0 || cartQuantity > 0) && (
           <StickyActionFooter>
-            <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-center gap-3">
+            <div className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-2">
               <QuantityStepper quantity={selectedQuantity} min={1} max={Math.max(available, cartQuantity)}
                 label={t('quantity')} onChange={setSelectedQuantity} />
-              <PrimaryButton size="md" className="whitespace-normal text-center leading-4" onClick={() => {
+              <PrimaryButton size="md" className="whitespace-nowrap px-2 text-center text-[13px]" onClick={() => {
                 onChangeQuantity(selectedQuantity);
                 onClose();
               }}
                 aria-label={`${t('addToCartFull')} ${name}`}>
-                <span>{t('addToCartFull')}</span>
+                {t('addToCartFull')}
               </PrimaryButton>
             </div>
           </StickyActionFooter>
         )}
+        {routePickerOpen && <RoutePicker lat={store.lat} lng={store.lng} t={t} onClose={() => setRoutePickerOpen(false)} />}
       </div>
     </DialogLayer>
   );
@@ -1174,23 +1167,26 @@ const routeProviderLogo: Record<RouteProvider, string> = {
 function RoutePicker({ lat, lng, t, onClose }: {
   lat: number; lng: number; t: Translator; onClose: () => void;
 }) {
-  const options = getRouteOptions(lat, lng);
+  const options = getRouteOptions(lat, lng, true);
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('chooseMap')} className="z-[1200]">
-      <ModalBody className="pt-4">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('chooseMap')} className="z-[1200]" sheetHeight="medium">
+      <ModalBody className="flex h-full min-h-0 flex-col pt-4">
         <SheetHeader title={t('chooseMap')} onClose={onClose} closeLabel={t('close')} />
-        <div className="mt-4 space-y-2">
-          {options.map((option) => (
-            <ListRow
-              key={option.id}
-              icon={<img src={routeProviderLogo[option.id]} alt="" className="h-9 w-9 rounded-xl object-cover" />}
-              title={option.label}
-              tone="panel"
-              trailing={<ChevronRight size={17} className="text-ink-subtle" />}
-              onClick={() => { openExternalLink(option.url); haptic('tap'); }}
-            />
-          ))}
-        </div>
+        <ScrollArea className="mt-4 flex-1 pb-1">
+          <div className="space-y-3">
+            {options.map((option) => (
+              <ListRow
+                key={option.id}
+                icon={<img src={routeProviderLogo[option.id]} alt="" className="h-10 w-10 rounded-control object-cover" />}
+                title={option.label}
+                tone="panel"
+                className="min-h-19"
+                trailing={<span className="flex items-center gap-1 text-xs font-extrabold text-brand">{t('openInMap')}<ArrowUpRight size={16} /></span>}
+                onClick={() => { openExternalLink(option.url); haptic('tap'); }}
+              />
+            ))}
+          </div>
+        </ScrollArea>
       </ModalBody>
     </DialogLayer>
   );
@@ -1208,22 +1204,25 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
   });
   const total = lines.reduce((sum, line) => sum + line.box.salePrice * line.quantity, 0);
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('cart')}>
-      <ModalBody className="flex max-h-[92dvh] min-h-0 flex-col overflow-hidden">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('cart')} sheetHeight="tall">
+      <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden">
         <SheetHeader className="pb-3" title={t('cart')} onClose={onClose} closeLabel={t('close')} />
-        <ScrollArea data-testid="cart-scroll" className="flex-1 pb-1">
+        <ScrollArea data-testid="cart-scroll" className="flex flex-1 flex-col pb-1">
         {lines.length === 0 ? (
           <EmptyState icon={<ShoppingBag size={32} />} title={t('cartEmpty')} />
         ) : (
           <div className="mt-2 space-y-3">
             {lines.map(({ box, quantity }) => (
-              <InsetSurface key={box.id} tone="panel" className="p-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-black">{boxName(box, locale)}</p>
-                  <p className="mt-1 text-xs font-bold text-ink-muted">{formatPrice(box.salePrice)} × {quantity}</p>
-                  <p className="mt-1 text-sm font-black text-brand">{formatPrice(box.salePrice * quantity)}</p>
+              <InsetSurface key={box.id} tone="panel" className="overflow-hidden p-3">
+                <div className="flex items-center gap-3">
+                  <span aria-hidden="true" className="h-18 w-18 shrink-0 overflow-hidden rounded-control"><img src={box.image} alt="" className="h-full w-full object-cover" /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-bold text-brand">{storeById(box.storeId).name}</p>
+                    <p className="mt-0.5 truncate text-sm font-extrabold">{boxName(box, locale)}</p>
+                    <p className="mt-1.5 text-base font-extrabold text-brand-hover">{formatPrice(box.salePrice * quantity)}</p>
+                  </div>
                 </div>
-                <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
+                <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-border pt-3">
                   <QuantityControl quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} label={t('quantity')}
                     addLabel={`${t('addToCart')} ${boxName(box, locale)}`} addText={t('addToCart')} onChange={(next) => onChangeQuantity(box, next)} />
                   <TertiaryButton tone="danger" onClick={() => onChangeQuantity(box, 0)}>{t('removeFromCart')}</TertiaryButton>
@@ -1232,12 +1231,12 @@ function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQuantity,
             ))}
           </div>
         )}
-        <div className="my-5 h-px bg-border" />
-        <div className="flex items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black" aria-live="polite">{formatPrice(total)}</span></div>
-        <PrimaryButton onClick={() => void onPay()} disabled={lines.length === 0 || paymentPending} aria-busy={paymentPending} className="mt-5">
+        <div className="my-5 h-px shrink-0 bg-border" />
+        <div className="flex shrink-0 items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black" aria-live="polite">{formatPrice(total)}</span></div>
+        <PrimaryButton onClick={() => void onPay()} disabled={lines.length === 0 || paymentPending} aria-busy={paymentPending} className="mt-5 shrink-0">
           {paymentPending ? t('paymentProcessing') : t('checkoutCart')}
         </PrimaryButton>
-        <p className="mt-3 text-center text-xs leading-5 text-ink-muted">
+        <p className="mt-auto shrink-0 pt-3 text-center text-xs leading-5 text-ink-muted">
           {t('checkoutOfferPrefix')}{' '}
           <TextLinkButton onClick={onOpenOffer}>{t('checkoutOfferLink')}</TextLinkButton>
           {' '}{t('checkoutOfferBetween')}{' '}
@@ -1257,12 +1256,13 @@ function PaymentFailure({ t, onBackToCart }: {
     <DialogLayer onClose={onBackToCart} closeLabel={t('close')} ariaLabel={t('paymentFailedTitle')} variant="full">
       <FullScreenFeedback
         centered
-        tone="danger"
-        icon={<AlertTriangle size={32} strokeWidth={2.5} />}
+        tone="coral"
+        className="relative overflow-hidden"
+        icon={<><AlganMark className="h-9 w-9" /><AlertTriangle className="absolute -right-2 -top-2 rounded-full bg-surface p-1 text-accent-strong shadow-control" size={24} strokeWidth={2.5} /></>}
         title={t('paymentFailedTitle')}
         description={t('paymentFailedText')}
       >
-        <PrimaryButton onClick={onBackToCart} className="mt-8">{t('backToCart')}</PrimaryButton>
+        <PrimaryButton onClick={onBackToCart} className="mx-auto mt-6 w-full max-w-[330px]">{t('backToCart')}</PrimaryButton>
       </FullScreenFeedback>
     </DialogLayer>
   );
@@ -1272,7 +1272,7 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
   return (
     <DialogLayer onClose={onDone} closeLabel={t('close')} ariaLabel={t('ordersCreated')} variant="full">
       <FullScreenFeedback
-        icon={<><Check size={32} strokeWidth={3} /><Sparkles className="absolute -right-2 -top-1 text-accent" size={20} /></>}
+        icon={<><AlganMark className="h-10 w-10" /><Sparkles className="absolute -right-2 -top-1 text-accent-strong" size={20} /></>}
         title={t('ordersCreated')}
         description={t('successText')}
       >
@@ -1288,19 +1288,19 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
 function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale: Locale; subject: LegalSubject; onClose: () => void }) {
   const [selectedView, setSelectedView] = useState<LegalInformationView | null>(null);
   const documents: { type: LegalDocument; icon: React.ReactNode }[] = [
-    { type: 'terms', icon: <Info size={18} /> },
+    { type: 'terms', icon: <FileText size={18} /> },
     { type: 'personalDataConsent', icon: <FileCheck2 size={18} /> },
-    { type: 'privacy', icon: <PackageCheck size={18} /> },
+    { type: 'privacy', icon: <ShieldCheck size={18} /> },
     { type: 'orderRules', icon: <ShoppingBag size={18} /> },
-    { type: 'publicOffer', icon: <Check size={18} /> },
+    { type: 'publicOffer', icon: <ReceiptText size={18} /> },
   ];
   const title = selectedView === 'contacts'
     ? t('contacts')
     : selectedView ? t(LEGAL_TITLE_KEYS[selectedView]) : t('legal');
 
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('legal')}>
-      <ModalBody className="flex max-h-[82dvh] min-h-0 flex-col overflow-hidden">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('legal')} sheetHeight="tall">
+      <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden">
         <SheetHeader
           data-testid="documents-modal-header"
           className="pb-3"
@@ -1310,7 +1310,7 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
           onClose={onClose}
           closeLabel={t('close')}
         />
-        <ScrollArea data-testid="documents-modal-scroll" className="flex-1 pb-1">
+        <ScrollArea data-testid="documents-modal-scroll" className="flex-1 pb-4">
           {selectedView === 'contacts' ? (
             <>
               <CompanyContacts t={t} />
@@ -1324,12 +1324,16 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
               )}
             </>
           ) : (
-            <div className="mt-5 space-y-2">
-              {documents.map((document) => (
-                <ProfileRow key={document.type} icon={document.icon} label={t(LEGAL_TITLE_KEYS[document.type])} onClick={() => setSelectedView(document.type)} />
-              ))}
-              <ProfileRow icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setSelectedView('contacts')} />
-            </div>
+            <>
+              <SectionTitle className="mt-4 text-base">{t('agreements')}</SectionTitle>
+              <div className="mt-3 space-y-2">
+                {documents.map((document) => (
+                  <ProfileRow density="compact" key={document.type} icon={document.icon} label={t(LEGAL_TITLE_KEYS[document.type])} onClick={() => setSelectedView(document.type)} />
+                ))}
+              </div>
+              <SectionTitle className="mt-4 text-base">{t('companyInformation')}</SectionTitle>
+              <div className="mb-1 mt-2"><ProfileRow density="compact" icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setSelectedView('contacts')} /></div>
+            </>
           )}
         </ScrollArea>
       </ModalBody>
@@ -1339,15 +1343,15 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
 
 function CompanyContacts({ t }: { t: Translator }) {
   return (
-    <InsetSurface radius="card" className="mt-5 p-5 text-sm">
-      <SectionTitle>{t('companyName')}</SectionTitle>
-      <p className="mt-1 font-bold text-ink-secondary">{t('companyId')}</p>
-      <div className="mt-5 space-y-4">
-        <div><p className="text-xs font-black text-ink-muted">{t('contactLegalAddressLabel')}</p><p className="mt-1 leading-6">{t('companyAddress')}</p></div>
-        <LinkRow tone="panel" href="mailto:algansupport@gmail.com" icon={<Mail size={18} />} title={t('emailLabel')} subtitle="algansupport@gmail.com" />
-        <LinkRow tone="panel" href="tel:+77059768000" icon={<Phone size={18} />} title={t('contactPhoneLabel')} subtitle="+7 705 976 80 00" />
-      </div>
-    </InsetSurface>
+    <div className="mt-4 space-y-3">
+      <InsetSurface tone="brandSolid" radius="card" className="relative overflow-hidden p-5 text-sm">
+        <div aria-hidden="true" className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-brand-hover" />
+        <div className="relative"><AlganLogo light markClassName="h-8 w-8" wordmarkClassName="h-6 w-[73px]" /><SectionTitle tone="inverse" className="mt-5">{t('companyName')}</SectionTitle><p className="mt-1 font-bold text-white/70">{t('companyId')}</p></div>
+      </InsetSurface>
+      <InsetSurface tone="panel" radius="card" className="p-4"><p className="text-xs font-black uppercase tracking-[.06em] text-ink-muted">{t('contactLegalAddressLabel')}</p><p className="mt-2 text-sm leading-6 text-ink">{t('companyAddress')}</p></InsetSurface>
+      <LinkRow tone="panel" href="mailto:algansupport@gmail.com" icon={<Mail size={18} />} title={t('emailLabel')} subtitle="algansupport@gmail.com" trailing={<ArrowUpRight size={17} className="text-ink-subtle" />} />
+      <LinkRow tone="panel" href="tel:+77059768000" icon={<Phone size={18} />} title={t('contactPhoneLabel')} subtitle="+7 705 976 80 00" trailing={<ArrowUpRight size={17} className="text-ink-subtle" />} />
+    </div>
   );
 }
 
@@ -1364,8 +1368,8 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
   const title = view === 'faq' ? t('faq') : t('support');
 
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('support')}>
-      <ModalBody className="flex max-h-[82dvh] min-h-0 flex-col overflow-hidden">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('support')} sheetHeight="tall">
+      <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden">
         <SheetHeader
           className="pb-3"
           title={title}
@@ -1377,22 +1381,39 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
 
         <ScrollArea className="flex-1 pb-1">
           {view === 'menu' && (
-            <div className="mt-2 space-y-2">
-              <ProfileRow icon={<CircleHelp size={18} />} label={t('faq')} onClick={() => setView('faq')} />
-              <ProfileRow icon={<TelegramIcon />} label={t('contactSupport')} value={t('workingHours')} valueWrap onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} />
-            </div>
+            <>
+              <InsetSurface tone="brandSolid" radius="card" className="relative mt-3 overflow-hidden p-5 text-white">
+                <div aria-hidden="true" className="absolute -right-8 -top-12 h-32 w-32 rounded-full bg-brand-hover" />
+                <span className="relative grid h-12 w-12 place-items-center rounded-[16px] bg-highlight text-brand"><Headphones size={23} /></span>
+                <p className="relative mt-5 text-xl font-extrabold tracking-[-0.025em] text-white">{t('support')}</p>
+                <p className="relative mt-2 text-sm leading-6 text-white/75">{t('supportIntro')}</p>
+                <PrimaryButton
+                  aria-label={`${t('contactSupport')}. ${t('workingHours')}`}
+                  onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)}
+                  className="relative mt-5"
+                  tone="highlight"
+                >
+                  <TelegramIcon />
+                  <span>{t('contactSupport')}</span>
+                </PrimaryButton>
+                <p className="relative mt-3 text-center text-xs font-bold text-white/70">{t('workingHours')}</p>
+              </InsetSurface>
+              <div className="mt-4"><ProfileRow icon={<CircleHelp size={18} />} label={t('faq')} onClick={() => setView('faq')} /></div>
+            </>
           )}
 
           {view === 'faq' && (
-            <div className="mt-2 space-y-2">
+            <div className="mt-3">
+              <div className="space-y-3">
               {faqItems.map((item, index) => {
                 const expanded = openQuestion === index;
                 return (
-                  <AccordionItem key={item.question} title={t(item.question)} expanded={expanded} onToggle={() => setOpenQuestion(expanded ? null : index)}>
+                  <AccordionItem key={item.question} title={<span className="flex items-start gap-3"><span aria-hidden="true" className="grid h-6 w-6 shrink-0 place-items-center rounded-[8px] bg-brand-pale text-[11px] font-black text-brand">{index + 1}</span><span>{t(item.question)}</span></span>} expanded={expanded} onToggle={() => setOpenQuestion(expanded ? null : index)}>
                     {t(item.answer)}
                   </AccordionItem>
                 );
               })}
+              </div>
             </div>
           )}
         </ScrollArea>
@@ -1423,8 +1444,9 @@ function LegalDocumentView({ type, t, locale, subject }: {
   const document = getLegalDocument(locale, type);
   const meta = legalDocumentMeta[locale];
   return (
-    <article className="mt-4 text-sm leading-6 text-ink-secondary" data-legal-document={type}>
-      <InsetSurface className="p-4">
+    <article className="mt-4 text-sm leading-7 text-ink-secondary" data-legal-document={type}>
+      <InsetSurface tone="brand" radius="card" className="p-4">
+        <div className="mb-3 flex items-center gap-2 border-b border-brand/10 pb-3 text-brand"><FileText size={18} /><span className="text-xs font-extrabold uppercase tracking-[.06em]">{t(LEGAL_TITLE_KEYS[type])}</span></div>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
           <dt className="font-black text-ink-muted">{meta.version}</dt><dd className="text-right font-bold text-ink">{LEGAL_DOCUMENT_VERSION}</dd>
           <dt className="font-black text-ink-muted">{meta.effectiveDate}</dt><dd className="text-right font-bold text-ink">{LEGAL_EFFECTIVE_DATE}</dd>
@@ -1443,12 +1465,12 @@ function LegalDocumentView({ type, t, locale, subject }: {
         </InsetSurface>
       )}
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-6 space-y-4 text-ink-secondary">
         {document.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
       </div>
-      <div className="mt-6 space-y-7">
+      <div className="mt-7 space-y-0">
         {document.sections.map((section) => (
-          <section key={section.heading}>
+          <section key={section.heading} className="border-t border-border py-6 first:border-t-0 first:pt-0">
             <h3 className="text-base font-black leading-6 text-ink">{section.heading}</h3>
             {section.paragraphs && (
               <div className="mt-3 space-y-3">{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
@@ -1471,10 +1493,10 @@ function LegalModal({ type, t, locale, subject, onClose }: {
   onClose: () => void;
 }) {
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t(LEGAL_TITLE_KEYS[type])}>
-      <ModalBody className="flex max-h-[90dvh] min-h-0 flex-col overflow-hidden">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t(LEGAL_TITLE_KEYS[type])} sheetHeight="tall">
+      <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden">
         <SheetHeader data-testid="legal-modal-header" className="pb-3" title={t(LEGAL_TITLE_KEYS[type])} onClose={onClose} closeLabel={t('close')} />
-        <ScrollArea data-testid="legal-modal-scroll" className="flex-1 pb-1">
+        <ScrollArea data-testid="legal-modal-scroll" className="flex-1 pb-4">
           <LegalDocumentView type={type} t={t} locale={locale} subject={subject} />
           {!isPublishedLegalDocument(type) && <PrimaryButton onClick={onClose} className="mt-5">{t('back')}</PrimaryButton>}
         </ScrollArea>

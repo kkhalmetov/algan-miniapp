@@ -1,104 +1,114 @@
 # Algan Design System
 
-## Direction
+## Brand idea
 
-Algan uses a warm, friendly food-rescue visual language: deep green for trust, coral for urgency, lime for positive confirmation, warm off-white surfaces, and rounded tactile controls. Mobile and Telegram Mini App layouts are the primary surfaces.
+Algan helps good food find a person instead of a bin. The interface should feel useful, optimistic and local: appetising photography does the selling, clear commerce information builds trust, and the smiling food-box mark keeps the mission human.
+
+The product is a mobile-first Telegram Mini App. Too Good To Go is a category reference, not a visual template. Algan must not reuse its logo geometry, illustrations, layouts or exact colour relationships.
+
+## Logo
+
+The symbol is an open takeaway box with a smile cut from its front. The handle suggests something ready to carry. It must remain recognisable at 24 px.
+
+- `public/algan-mark.svg`: standalone mark and favicon source.
+- `public/algan-wordmark.svg`: custom lowercase wordmark.
+- `public/algan-logo.svg`: pine horizontal lockup.
+- `public/algan-logo-light.svg`: lime lockup for pine surfaces.
+- Use the mark alone only when the product name is already visible or space is constrained.
+- Never recolour parts independently, outline the logo, put it in a generic circle, or use a partner colour for it.
 
 ## Foundations and tokens
 
-- Brand: `brand`, `brand-hover`, `brand-deep`, `brand-soft`, `brand-pale`, `highlight`.
-- Accent and status: `accent`, `accent-strong`, `accent-soft`, `warning-*`, `danger-*`, `allergen-*`.
-- Surfaces: `canvas`, `surface`, `panel`, `surface-muted`, `surface-soft`.
-- Text: `ink`, `ink-secondary`, `ink-muted`, `ink-subtle`.
-- Structure: `border`, `border-strong`, `rounded-control`, `rounded-card`, `rounded-sheet`, `rounded-shell`.
-- Layout: `page` (20 px) and `page-wide` (24 px) horizontal gutters; safe-area additions remain explicit because they are supplied by Telegram/the operating system.
-- Typography: `display`, `page-title`, and `section-title` encode size, weight, line height, and tracking as a unit.
-- Elevation: `shadow-card`, `shadow-floating`, `shadow-shell`, `shadow-action`, `shadow-sheet`, `shadow-marker`, `shadow-control`.
-- Motion: `motion-fast`, `motion-medium`, `motion-slow`, `ease-standard`; control feedback, dialogs and media transitions use the shared scale.
+Tokens live in `app/globals.css` and are exposed through Tailwind v4 semantic utilities. New raw hex values are not allowed in product markup. `lib/design-tokens.ts` is the single runtime mirror for Telegram and browser APIs.
 
-Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Components must use semantic utilities such as `bg-brand`, `text-ink-muted`, `border-border`, and `rounded-card`; new raw hex values are not allowed in application markup.
+### Colour
 
-`lib/design-tokens.ts` is the only runtime color bridge. It mirrors CSS values for Telegram and browser metadata APIs that cannot consume CSS custom properties. Product code must not add another color source.
+| Role | Token | Value | Use |
+| --- | --- | --- | --- |
+| Pine | `brand` | `#0D4F45` | Identity and large brand surfaces |
+| Emerald | `brand-hover` | `#17735F` | Primary actions and active controls |
+| Lime | `brand-soft`, `highlight` | `#CBEF69` | Positive selection and small highlights |
+| Coral | `accent` | `#FF7455` | Discount and urgency |
+| Canvas | `canvas` | `#F6F4EE` | App background |
+| Surface | `surface`, `panel` | `#FFFFFF` | Cards, sheets and controls |
+| Ink | `ink` | `#132620` | Primary copy |
+| Muted | `ink-muted` | `#4E635C` | Supporting copy |
+| Border | `border` | `#DCE5E1` | Quiet structure |
+
+Status colours have paired light surfaces and dark foregrounds. Never communicate stock, payment or validation state through colour alone.
+
+### Typography
+
+Onest Variable is bundled through `@fontsource-variable/onest` with Latin and Cyrillic Extended coverage.
+
+- Display: 32/36, weight 800.
+- Page title: 28/32, weight 800.
+- Section title: 20/26, weight 800.
+- Body: 15/22, weight 400–600.
+- Supporting: 13/18.
+- Caption: 12/16.
+- Prices and quantities use weight 800, never decorative type.
+
+### Layout
+
+- 4 px spacing rhythm.
+- Screen gutter: 20 px; compact mobile gutter: 16 px.
+- Canonical screen, header, modal and sticky-footer primitives switch from 16 px below the `sm` breakpoint to 20 px inside the desktop phone shell. Feature screens must not recreate these gutters.
+- Controls: 12 px radius; cards: 18 px; sheets: 28 px.
+- Primary actions: 52 px high. Every interactive target is at least 44 × 44 px.
+- Phone shell is fluid up to 460 px. Desktop presentation keeps the 780 px preview shell.
+- Use one border and, only where needed, one quiet shadow. Avoid cards nested inside cards.
+
+### Motion
+
+- Fast 140 ms for control feedback.
+- Medium 220 ms for dialogs and selected states.
+- Slow 360 ms for photography and larger transitions.
+- Use the shared standard easing and respect `prefers-reduced-motion`.
 
 ## Components
 
-- The canonical React primitives live in `components/ui-kit.tsx`. Product screens compose these primitives instead of recreating their class lists.
-- `PrimaryButton`, `SecondaryButton`, `DangerButton`: one action hierarchy with shared 44/56 px sizes, pressed, hover and disabled states.
-- `TextLinkButton`: one inline legal/action link treatment.
-- `PillButton`: compact text-and-icon control for language and similar toolbar actions.
-- `TertiaryButton`: low-emphasis brand or destructive action with a 44 px touch target.
-- `IconButton`: 44 × 44 px touch target with muted, dark, brand and accent variants; an accessible label is mandatory.
-- `QuantityControl`: one add/stepper pattern with compact visuals and 44 px increment/decrement touch targets.
-- `TextField`: shared label, required marker, border, focus ring and placeholder treatment.
-- `ModalBody`, `ModalHeader`, `SheetHeader`, `MediaSheetHeader` and `SheetHandle`: consistent safe-area spacing, navigation, close controls and sheet affordance. Product sheets that start with photography use `MediaSheetHeader` for the contrasting handle and overlaid close action.
-- `ScrollArea`: the only feature-level vertical scrolling primitive; it owns overscroll containment and scrollbar-chrome suppression for sheets and detail views.
-- `DialogLayer`: shared modal backdrop, dismissal target, elevation and full-screen/sheet/center modes.
-- `ConfirmationDialog`: one confirmation pattern for ordinary and destructive actions; native browser confirmation windows are not used.
-- `AccordionItem`: shared disclosure row for FAQ and future expandable content.
-- `BottomNavigation` and `BottomNavigationItem`: canonical application navigation, active pill and label treatment.
-- `FullScreenFeedback`: canonical success/error layout for transactional outcomes.
-- `CardPressable`: shared keyboard-focus treatment for interactive regions inside clipped cards.
-- `BrandHeader`, `TopAppBar`, `PageSection`, `ScreenBody`, `PageTitle`, `ContentTitle`, `CardTitle`, `SectionTitle`: one hierarchy for screen chrome, gutters and headings. `ContentTitle` may render the screen-level `h1`; cards use `CardTitle` as `h2`.
-- `ListRow`, `LinkRow`: shared button/link rows with icon container, optional supporting text, panel/soft surfaces and trailing action; `ListRow` can explicitly wrap long supporting copy instead of silently clipping it.
-- `InsetSurface`, `NoticeCard`, `DetailRow`: canonical inset surfaces, semantic notices and labelled detail rows.
-- `MediaBadge`, `DisclosureIndicator`: shared store-logo containers and affordances for tappable content.
-- `AvatarFrame`: shared 48/64 px Telegram avatar and localized initial fallback treatment.
-- `SegmentedControl`: shared two-state selector with pressed-state semantics.
-- `EmptyState`: shared illustration container, title and supporting copy.
-- `IconBadge`: shared contextual icon container for informational cards.
-- `StatusBadge`: shared stock, discount, surprise and status treatment with semantic tones.
-- `CardActionButton` and `StickyActionFooter`: shared actions attached to cards and fixed content surfaces.
-- Cards: panel background, border token, `rounded-card`, card shadow only when separation from the surface is needed.
-- Sheets and modals: surface background, `rounded-sheet` top corners, dimmed brand-deep overlay.
-- Product detail sheet: 90% mobile height, edge-to-edge media hero, overlaid handle/close action, straight-edged overlapping surface content and a persistent purchase footer.
-- Inputs: 52 px height, panel background, border token, brand focus ring.
-- Primary, secondary and destructive page actions: 56 px height; compact embedded actions: 44 px height.
-- Navigation: surface background, border token, brand-soft selected pill, muted inactive icons and 10 px labels sized to keep full RU/KK names visible.
+Canonical primitives live in `components/ui-kit.tsx`. Product screens compose them; domain cards may define layout but may not redefine controls, modal layers, typography or status treatments.
 
-## Typography and spacing
+- **Actions:** `PrimaryButton`, `SecondaryButton`, `DangerButton`, `TertiaryButton`, `TextLinkButton`, `IconButton`, `PillButton`. `PrimaryButton` owns brand, highlight-on-brand and warning variants; feature code must not recolour it with utility conflicts or inline styles. Floating and selected favorite icon buttons use the corresponding `IconButton` tones.
+- **Structure:** `PageSection`, `BrandHeader`, `TopAppBar`, `ScreenBody`, title primitives, `SurfaceCard`, `InsetSurface`.
+- **Commerce:** `StatusBadge`, `QuantityControl`, `QuantityStepper`, `StickyActionFooter`, `CardActionButton`.
+- **Rows and information:** `ListRow`, `LinkRow`, `DetailRow`, `NoticeCard`, `AccordionItem`, `MediaBadge`, `AvatarFrame`. List rows expose default and compact densities; media badges expose semantic sizes instead of feature-owned height/radius overrides.
+- **Navigation and state:** `BottomNavigation`, `SegmentedControl`, `EmptyState`, `FullScreenFeedback`. Full-screen feedback uses brand for success, coral for recoverable payment failure and danger only for destructive or blocking failure.
+- **Layers:** `DialogLayer`, `ModalBody`, `SheetHeader`, `MediaSheetHeader`, `ConfirmationDialog`, `ScrollArea`. Bottom sheets use content, medium or tall shell-relative heights. Never calculate their height from browser `dvh` inside the desktop phone shell. Confirmations may add one semantic icon and use warning for reversible replacement, danger for deletion.
 
-- Font: self-hosted Inter Variable (`100–900`) with Cyrillic and Kazakh character support. The same bundled font files are used on every platform.
-- Display title: 34 px via `text-display`.
-- Page title: 30 px via `PageTitle` / `text-page-title`.
-- Section title: 18 px via `SectionTitle` / `text-section-title`.
-- Body: 14–15 px, line height 1.5–1.7.
-- Supporting text: 11–13 px using `ink-muted` or `ink-subtle`; every secondary text token maintains at least WCAG AA `4.5:1` contrast on canonical light surfaces.
-- Use the 4 px spacing rhythm. Primary horizontal page padding is 20–24 px.
+Primary actions use emerald. Lime is for selected or positive supporting states and must not become a full-page background. Coral highlights discounts and urgency; destructive flows use danger tokens.
 
-## Composition rules
+The product-specific `SURPRISE` badge uses a lime surface, deep-pine text and the open-box-with-spark icon in both compact card and standard detail variants. It must never reuse the coral discount treatment.
 
-- Top-level list screens use `PageSection`; branded identity screens use `BrandHeader`.
-- Screen content uses the 20 px `ScreenBody` gutter; detail and modal content may use the 24 px `page-wide` gutter. One screen must not introduce an additional gutter value.
-- Elevated content uses `SurfaceCard`; inset content uses `surface-soft` with `rounded-control`.
-- Repeated labelled facts use `DetailRow`; semantic explanatory blocks use `NoticeCard`; logos shown over imagery or in lists use `MediaBadge`.
-- Modal and bottom-sheet flows start with `DialogLayer`; nested implementations must not recreate a backdrop.
-- Repeated state labels use `StatusBadge` and repeated card/footer actions use their UI-kit primitives.
-- Domain components may own their internal layout, but may not redefine shared control, surface, typography, overlay, or status styles.
+## Screen patterns
+
+- Home and favorites use the same photo-first box card. The box image leads; venue logo/name, address, pickup window, stock, prices, discount and box-level favorite action remain visible without opening details.
+- Box cards open the box sheet directly. There is no intermediate venue-details screen; venue identity, address and routing live inside the box experience.
+- Sold-out boxes remain in catalogue order but use a muted grayscale media state, an explicit sold-out label and no interactive card or favorite action.
+- Box details use a tall sheet with venue context, routing, a strong price hierarchy, two compact pickup/stock cells, exact or surprise composition, allergens and a persistent quantity/action footer that includes the selected total.
+- Bottom navigation always follows the product flow: Home, Orders, Favorites, Profile. Profile is a dedicated tab and is not duplicated in the home header.
+- Active orders prioritise pickup time, collection code and route. History prioritises contents, date and total.
+- Order details always identify the venue, order number, status, date, purchased items and total. Only active orders expose QR, pickup code and route.
+- Profile is available only from the fourth bottom-navigation tab; the home header contains no profile shortcut.
+- Settings use an explicit segmented language choice; support starts with the direct contact action; long legal documents keep the sheet header fixed while their body scrolls.
+- Empty, loading, success and failure states use the same friendly geometric language as the box mark.
 
 ## Accessibility and interaction
 
-- Preserve safe-area insets for Telegram headers, bottom navigation, sheets, and fixed actions.
-- Never communicate state by color alone; pair color with text or an icon.
-- Use a maximum of one strong brand action per surface.
-- Keep touch targets at least 44 px and provide accessible labels for icon-only controls.
-- Third-party compact controls use the same 44 px target; unavoidable inline attribution links keep the WCAG 24 px minimum.
-- Product photography and partner logos keep their original colors; design tokens control their containers.
-- Use native button, link and input semantics. Selected controls expose `aria-pressed` or `aria-current`; modal surfaces expose dialog semantics.
-- Dialogs keep keyboard focus inside the active layer without changing the viewport scroll position, close with Escape and restore prior focus.
-- Dialogs make every background sibling inert while open, including when sheets are nested. Locks are reference-counted so simultaneous layer replacement cannot leave the application blocked.
-- Loading controls expose `aria-busy`; empty states omit unused supporting text instead of rendering blank layout space.
-- The document language follows the selected RU/KK locale, with Kazakh as the initial language.
-- Browser fallback identity and order dates follow the selected locale; order dates use the Shymkent time zone and bundled month names instead of platform-dependent locale output.
-- Catalog copy is localized through `lib/catalog-localization.ts`; visible addresses, box names, contents and allergens never read source-language fields directly.
-- Motion respects `prefers-reduced-motion`.
+- Maintain WCAG AA contrast for body and supporting text on every canonical surface.
+- Keep native button, link, heading, list and input semantics.
+- Icon-only actions require an accessible label; selection uses `aria-current` or `aria-pressed`.
+- Modal focus stays inside the top layer, Escape closes it, the background becomes inert, and previous focus is restored without scrolling.
+- Preserve Telegram and operating-system safe-area insets in headers, navigation, sheets and sticky actions.
+- Never truncate legal or transactional information. Catalogue cards may truncate only repeated names and addresses.
+- RU and KK are equal first-class layouts. The document language follows the selected locale; KK remains the default.
 
 ## Governance
 
-- Add or change a foundation in `app/globals.css` first, then expose it through `components/ui-kit.tsx`.
-- Extend an existing primitive before copying its full class list into a feature screen.
-- Every new primitive needs a focused test in `tests/ui-kit.test.tsx`.
-- `tests/design-system.test.ts` enforces token ownership and guards against duplicated page-title, overlay, card-action and sticky-footer recipes.
-
-## Audit status
-
-The interface audit covers onboarding, home, map markers, favorites, orders, profile, settings, legal/help flows, store details, box details, cart and payment feedback. Screen gutters now use only the documented 20/24 px values; repeated information, notice, media, disclosure, confirmation and compact-header patterns are routed through the UI kit. Modal layers share focus containment and restoration without scroll jumps, Escape dismissal, safe-area spacing, motion and one elevation model. The detailed discrepancy register lives in `UX_AUDIT.md`.
+1. Add or change semantic foundations in `app/globals.css` before using them.
+2. Extend an existing UI-kit primitive before copying its class recipe into a screen.
+3. Add a focused UI-kit test for every new shared variant.
+4. Keep product markup free of raw hex colours and feature-owned modal/backdrop recipes.
+5. Verify 320, 390 and 460 px widths, both locales, reduced motion and keyboard focus before release.
+6. Run `npm run typecheck`, `npm test` and `npm run build` for every design-system change.

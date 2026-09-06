@@ -16,7 +16,7 @@ describe('onboarding legal consent', () => {
       profile: { firstName: '' },
       locale: 'ru',
       tab: 'home',
-      favoriteStoreIds: [],
+      favoriteBoxIds: [],
       orders: [],
     });
   });
@@ -36,7 +36,7 @@ describe('onboarding legal consent', () => {
 
     expect(screen.getAllByRole('main')).toHaveLength(1);
     expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
-    expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Нажимая «Продолжить», вы автоматически принимаете условия использования, даёте согласие на сбор и обработку персональных данных и подтверждаете ознакомление с политикой конфиденциальности')).toBeInTheDocument();
+    expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Нажимая «Продолжить», вы автоматически принимаете условия использования, даёте согласие на сбор и обработку персональных данных и подтверждаете ознакомление с политикой конфиденциальности')).toHaveClass('mt-auto', 'pt-4');
     expect(screen.getByRole('button', { name: 'условия использования' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'политикой конфиденциальности' })).toBeInTheDocument();
@@ -106,7 +106,7 @@ describe('onboarding legal consent', () => {
       onboardingDone: true,
       legalAcceptance: { ...acceptedLegalDocuments, version: '0.9' },
       profile: { firstName: 'Kimal', phone: '+77059768000' },
-      favoriteStoreIds: ['tatti'],
+      favoriteBoxIds: ['bakery-surprise'],
     });
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
@@ -122,13 +122,13 @@ describe('onboarding legal consent', () => {
     expect(terms.compareDocumentPosition(consent) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(consent.compareDocumentPosition(privacy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const acceptButton = screen.getByRole('button', { name: 'Принять и продолжить' });
-    expect(acceptButton.querySelector('svg')).not.toBeInTheDocument();
+    expect(acceptButton.querySelector('svg')).toBeInTheDocument();
     expect(screen.queryByText((_, element) => element?.tagName === 'P' && element.textContent?.startsWith('Нажимая «Принять и продолжить»'))).not.toBeInTheDocument();
     expect(privacy.compareDocumentPosition(acceptButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fireEvent.click(acceptButton);
 
     expect(screen.getByText('Kimal!')).toBeInTheDocument();
-    expect(useAppStore.getState().favoriteStoreIds).toEqual(['tatti']);
+    expect(useAppStore.getState().favoriteBoxIds).toEqual(['bakery-surprise']);
     expect(useAppStore.getState().legalAcceptance?.version).toBe(LEGAL_DOCUMENT_VERSION);
   });
 });

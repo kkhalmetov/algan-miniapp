@@ -15,7 +15,7 @@ describe('startup splash', () => {
       profile: { firstName: '' },
       locale: 'ru',
       tab: 'home',
-      favoriteStoreIds: [],
+      favoriteBoxIds: [],
       orders: [],
     });
   });
@@ -30,6 +30,8 @@ describe('startup splash', () => {
     render(<AlganApp />);
 
     expect(screen.getByLabelText('Algan — Загрузка')).toBeInTheDocument();
+    expect(screen.queryByText('Хорошая еда не должна пропадать')).not.toBeInTheDocument();
+    expect(screen.queryByText('Жақсы тағам ысырап болмауы керек')).not.toBeInTheDocument();
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS - 1));
     expect(screen.getByLabelText('Algan — Загрузка')).toBeInTheDocument();
 

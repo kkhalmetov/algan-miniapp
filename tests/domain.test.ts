@@ -52,6 +52,8 @@ describe('mock customer catalog', () => {
     expect(kk('workingHours')).toBe('Күн сайын 09:00-ден 21:00-ге дейін');
     expect(ru('nearby')).toBe('Доступные заведения');
     expect(kk('nearby')).toBe('Қолжетімді мекемелер');
+    expect(ru('boxesToday')).toBe('Боксы сегодня');
+    expect(kk('boxesToday')).toBe('Бүгінгі бокстар');
     expect(ru('buildRoute')).toBe('Построить маршрут');
     expect(kk('buildRoute')).toBe('Бағыт құру');
     expect(ru('pickupTime')).toBe('Время выдачи');
@@ -66,6 +68,10 @@ describe('mock customer catalog', () => {
     expect(kk('paymentFailedTitle')).toBe('Төлем өтпеді');
     expect(ru('backToCart')).toBe('Вернуться в корзину');
     expect(kk('backToCart')).toBe('Себетке оралу');
+    expect(ru('cartPreservedTitle')).toBe('Корзина сохранена');
+    expect(kk('cartPreservedTitle')).toBe('Себет сақталды');
+    expect(ru('orderDetails')).toBe('Детали заказа');
+    expect(kk('orderDetails')).toBe('Тапсырыс мәліметтері');
     expect(ru('resetDemoConfirm')).toMatch(/история заказов/);
     expect(kk('resetDemoConfirm')).toMatch(/тапсырыстар тарихы/);
     expect(ru('loading')).toBe('Загрузка');

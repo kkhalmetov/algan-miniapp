@@ -3,8 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow, MediaBadge, MediaSheetHeader,
-  AvatarFrame, ModalBody, ModalHeader, NoticeCard, PageSection, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SheetHeader,
-  ScrollArea, SegmentedControl, StatusBadge, StickyActionFooter, TextField, TextLinkButton, TertiaryButton, TopAppBar,
+  AvatarFrame, ModalBody, ModalHeader, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SheetHeader,
+  ScrollArea, SegmentedControl, StatusBadge, StickyActionFooter, SurfaceCard, TextField, TextLinkButton, TertiaryButton, TopAppBar,
 } from '../components/ui-kit';
 
 describe('Algan UI kit', () => {
@@ -13,6 +13,7 @@ describe('Algan UI kit', () => {
   it('uses one primary action style and preserves native button state', () => {
     render(<>
       <PrimaryButton disabled>Продолжить</PrimaryButton>
+      <PrimaryButton tone="highlight">Поддержка</PrimaryButton>
       <SecondaryButton>Маршрут</SecondaryButton>
       <DangerButton>Выйти</DangerButton>
       <TertiaryButton tone="danger">Удалить</TertiaryButton>
@@ -20,9 +21,10 @@ describe('Algan UI kit', () => {
     const button = screen.getByRole('button', { name: 'Продолжить' });
 
     expect(button).toBeDisabled();
-    expect(button).toHaveClass('min-h-14', 'bg-brand', 'text-center', 'leading-5');
-    expect(screen.getByRole('button', { name: 'Маршрут' })).toHaveClass('min-h-14', 'bg-brand-pale');
-    expect(screen.getByRole('button', { name: 'Выйти' })).toHaveClass('min-h-14', 'bg-danger-soft');
+    expect(button).toHaveClass('min-h-13', 'bg-brand-hover', 'text-center', 'leading-5');
+    expect(screen.getByRole('button', { name: 'Поддержка' })).toHaveClass('bg-highlight', 'text-brand-deep', 'shadow-none');
+    expect(screen.getByRole('button', { name: 'Маршрут' })).toHaveClass('min-h-13', 'bg-surface');
+    expect(screen.getByRole('button', { name: 'Выйти' })).toHaveClass('min-h-13', 'bg-danger-soft');
     expect(screen.getByRole('button', { name: 'Удалить' })).toHaveClass('min-h-11', 'text-danger');
   });
 
@@ -50,7 +52,7 @@ describe('Algan UI kit', () => {
     const { rerender } = render(<SheetHeader title="Документы" onBack={onBack} backLabel="Назад" onClose={onClose} closeLabel="Закрыть" />);
 
     expect(screen.getByRole('heading', { name: 'Документы' })).toBeInTheDocument();
-    expect(document.querySelector('[aria-hidden="true"]')).toHaveClass('w-10', 'bg-border-strong');
+    expect(document.querySelector('[aria-hidden="true"]')).toHaveClass('w-9', 'bg-border-strong');
     fireEvent.click(screen.getByRole('button', { name: 'Назад' }));
     fireEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
     expect(onBack).toHaveBeenCalledOnce();
@@ -66,7 +68,7 @@ describe('Algan UI kit', () => {
     render(<MediaSheetHeader data-testid="media-header" onClose={onClose} closeLabel="Закрыть"><span aria-label="Бокс" /></MediaSheetHeader>);
 
     expect(screen.getByTestId('media-header')).toHaveClass('h-[220px]', 'overflow-hidden');
-    expect(document.querySelector('[aria-hidden="true"].w-10')).toHaveClass('bg-white/85', 'shadow-control');
+    expect(document.querySelector('[aria-hidden="true"].w-9')).toHaveClass('bg-white/85', 'shadow-control');
     fireEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
     expect(onClose).toHaveBeenCalledOnce();
   });
@@ -106,6 +108,24 @@ describe('Algan UI kit', () => {
     expect(screen.getByText('Боксы закончились')).toHaveClass('bg-danger-soft', 'text-danger');
   });
 
+  it('owns semantic visual variants inside the kit', () => {
+    render(<>
+      <PageTitle tone="inverse">Светлый заголовок</PageTitle>
+      <CardTitle tone="muted">Недоступный бокс</CardTitle>
+      <SurfaceCard tone="muted">Приглушённая карточка</SurfaceCard>
+      <MediaBadge size="sm">S</MediaBadge>
+      <IconButton label="В избранном" tone="floatingAccent">♡</IconButton>
+      <StickyActionFooter density="compact">Действие</StickyActionFooter>
+    </>);
+
+    expect(screen.getByRole('heading', { name: 'Светлый заголовок' })).toHaveClass('text-white');
+    expect(screen.getByRole('heading', { name: 'Недоступный бокс' })).toHaveClass('text-ink-muted');
+    expect(screen.getByText('Приглушённая карточка')).toHaveClass('bg-surface-muted');
+    expect(screen.getByText('S')).toHaveClass('h-9', 'w-9');
+    expect(screen.getByRole('button', { name: 'В избранном' })).toHaveClass('bg-accent-soft', 'shadow-control');
+    expect(screen.getByText('Действие')).toHaveClass('pt-2.5');
+  });
+
   it('shares attached actions and modal layers', () => {
     const onClose = vi.fn();
     render(
@@ -120,6 +140,26 @@ describe('Algan UI kit', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  it('provides a shell-relative tall sheet', () => {
+    render(
+      <DialogLayer sheetHeight="tall" onClose={vi.fn()} closeLabel="Закрыть" ariaLabel="Длинный экран">
+        <ModalBody>Содержимое</ModalBody>
+      </DialogLayer>,
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Длинный экран' }).querySelector('section')).toHaveClass('h-[92%]', 'max-h-[92%]');
+  });
+
+  it('provides a shell-relative medium sheet', () => {
+    render(
+      <DialogLayer sheetHeight="medium" onClose={vi.fn()} closeLabel="Закрыть" ariaLabel="Средний экран">
+        <ModalBody>Содержимое</ModalBody>
+      </DialogLayer>,
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Средний экран' }).querySelector('section')).toHaveClass('h-[82%]', 'max-h-[92%]');
+  });
+
   it('shares modal spacing, inline links and accordion behavior', () => {
     const onToggle = vi.fn();
     render(
@@ -128,16 +168,18 @@ describe('Algan UI kit', () => {
         <ScrollArea data-testid="scroll-area">Содержимое</ScrollArea>
         <LinkRow tone="panel" href="mailto:test@example.com" icon="@" title="Email" subtitle="test@example.com" />
         <ListRow icon="?" title="Поддержка" subtitle="Ежедневно с 09:00 до 21:00" subtitleWrap />
+        <ListRow density="compact" icon="!" title="Компактная строка" />
         <AccordionItem title="Вопрос" expanded onToggle={onToggle}>Ответ</AccordionItem>
       </ModalBody>,
     );
 
-    expect(screen.getByTestId('modal-body')).toHaveClass('px-page-wide');
+    expect(screen.getByTestId('modal-body')).toHaveClass('px-page', 'sm:px-page-wide');
     expect(screen.getByRole('button', { name: 'Политика' })).toHaveClass('underline', 'min-h-6');
     expect(screen.getByTestId('scroll-area')).toHaveClass('hide-scrollbar', 'overflow-y-auto', 'overscroll-contain');
     expect(screen.getByRole('link', { name: /Email/ })).toHaveClass('border-border', 'bg-panel');
     expect(screen.getByText('Ежедневно с 09:00 до 21:00')).toHaveClass('whitespace-normal', 'leading-5');
     expect(screen.getByText('Ежедневно с 09:00 до 21:00')).not.toHaveClass('truncate');
+    expect(screen.getByRole('button', { name: /Компактная строка/ })).toHaveClass('min-h-14', 'px-3', 'py-2');
     const question = screen.getByRole('button', { name: 'Вопрос' });
     expect(question).toHaveAttribute('aria-controls');
     expect(screen.getByRole('region', { name: 'Вопрос' })).toHaveTextContent('Ответ');
@@ -159,9 +201,37 @@ describe('Algan UI kit', () => {
 
     expect(screen.getByRole('navigation')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Главная' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('button', { name: 'Главная' })).toHaveClass('text-[10px]');
+    expect(screen.getByRole('button', { name: 'Главная' })).toHaveClass('text-xs');
     expect(screen.getByRole('heading', { name: 'Ошибка' })).toHaveClass('text-page-title');
     expect(screen.getByText('!')).toHaveClass('bg-danger-soft');
+  });
+
+  it('supports the coral feedback state and warning confirmation treatment', () => {
+    const { unmount } = render(
+      <FullScreenFeedback icon="!" title="Оплата не прошла" description="Корзина сохранена" tone="coral" centered>
+        <PrimaryButton>Назад</PrimaryButton>
+      </FullScreenFeedback>,
+    );
+    expect(screen.getByText('!')).toHaveClass('bg-accent', 'text-brand-deep');
+    expect(screen.getByText('Оплата не прошла').closest('div')).toHaveClass('bg-accent-soft');
+    unmount();
+
+    render(
+      <ConfirmationDialog
+        title="Новая корзина"
+        description="Текущая корзина будет очищена"
+        cancelLabel="Отмена"
+        confirmLabel="Продолжить"
+        closeLabel="Закрыть"
+        icon="!"
+        tone="warning"
+        showClose={false}
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('!')).toHaveClass('bg-warning-surface', 'text-warning-ink');
+    expect(screen.getByRole('button', { name: 'Продолжить' })).toHaveClass('bg-warning-ink');
   });
 
   it('supports a centered confirmation dialog variant', () => {
@@ -169,7 +239,7 @@ describe('Algan UI kit', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Подтверждение' });
     expect(dialog.firstElementChild).toHaveClass('absolute');
-    expect(dialog.querySelector('section')).toHaveClass('rounded-card', 'max-w-sm');
+    expect(dialog.querySelector('section')).toHaveClass('rounded-sheet', 'max-w-sm');
     expect(dialog.querySelector('section')).toHaveFocus();
   });
 
@@ -229,7 +299,7 @@ describe('Algan UI kit', () => {
   it('shares compact branded app bars', () => {
     render(<TopAppBar leading={<span>Назад</span>} title="Заведение" trailing={<span>Нравится</span>} />);
 
-    expect(screen.getByRole('banner')).toHaveClass('bg-brand', 'px-page');
+    expect(screen.getByRole('banner')).toHaveClass('bg-surface/96', 'px-page', 'sm:px-page-wide');
     expect(screen.getByText('Заведение')).toHaveClass('truncate', 'text-center');
   });
 

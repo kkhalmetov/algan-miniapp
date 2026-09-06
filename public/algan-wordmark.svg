@@ -1,13 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 159 52" fill="none">
-  <g stroke="#173C31" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M25 20v18"/>
-    <path d="M24.8 28a10 10 0 1 1-3.1-7.2"/>
-    <path d="M40 10v24.5c0 2.4 1.2 3.5 3.5 3.5"/>
-    <path d="M79 20v18.5c0 7.1-4.1 10.5-10.5 10.5-3.2 0-5.7-.8-7.8-2.2"/>
-    <path d="M78.8 28a10 10 0 1 1-3.1-7.2"/>
-    <path d="M114 20v18"/>
-    <path d="M113.8 28a10 10 0 1 1-3.1-7.2"/>
-    <path d="M129 38V20"/>
-    <path d="M129 28c1-5.1 4.8-8 9.7-8 6 0 10.3 4.2 10.3 10.5V38"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 56" fill="none">
+  <g stroke="#0D4F45" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M30 22v20"/><path d="M29.7 31.6a10.4 10.4 0 1 1-3.3-7.6"/>
+    <path d="M48 10v27.3c0 3.1 1.5 4.7 4.6 4.7"/>
+    <path d="M88 22v19.5c0 7.2-4 10.8-10.8 10.8-3.2 0-6.1-.8-8.5-2.4"/><path d="M87.7 31.6a10.4 10.4 0 1 1-3.3-7.6"/>
+    <path d="M124 22v20"/><path d="M123.7 31.6a10.4 10.4 0 1 1-3.3-7.6"/>
+    <path d="M142 42V22"/><path d="M142 31c1-5.7 4.9-9 10-9 6.3 0 10.5 4.4 10.5 11v9"/>
   </g>
 </svg>

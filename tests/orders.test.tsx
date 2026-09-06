@@ -15,7 +15,7 @@ describe('orders tab', () => {
       profile: { firstName: 'Kimal', phone: '+77059768000' },
       locale: 'ru',
       tab: 'home',
-      favoriteStoreIds: [],
+      favoriteBoxIds: [],
       orders: [
         {
           id: '12345678', storeId: 'tatti', items: [
@@ -45,53 +45,70 @@ describe('orders tab', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
     expect(screen.getByRole('heading', { name: 'Заказы' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Активные' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('Готов к получению')).toBeInTheDocument();
     expect(screen.getByText('Surprise Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Tatti-box')).toBeInTheDocument();
-    expect(within(screen.getByText('Surprise Tatti-box').parentElement!).getByText((content) => content.replace(/\s/g, '') === '2490₸')).toBeInTheDocument();
-    expect(within(screen.getByText('Surprise Tatti-box').parentElement!).getByText('× 2')).toBeInTheDocument();
-    expect(within(screen.getByText('Tatti-box').parentElement!).getByText((content) => content.replace(/\s/g, '') === '2390₸')).toBeInTheDocument();
-    expect(within(screen.getByText('Tatti-box').parentElement!).getByText('× 1')).toBeInTheDocument();
+    expect(screen.getByText('Surprise Tatti-box').parentElement).toHaveTextContent(/2.?490 ₸ × 2/);
+    expect(screen.getByText('Tatti-box').parentElement).toHaveTextContent(/2.?390 ₸ × 1/);
     expect(screen.getByText('Номер заказа: 12345678')).toBeInTheDocument();
-    const pickupTime = screen.getByText(/Время выдачи:/);
+    const pickupTime = screen.getByText(/Заберите сегодня ·/);
     expect(pickupTime).toBeInTheDocument();
-    expect(within(pickupTime.parentElement!).getByText('25 августа 2026 г.')).toBeInTheDocument();
+    const activeCard = screen.getByText('Номер заказа: 12345678').closest('article');
+    expect(activeCard).not.toBeNull();
+    expect(within(activeCard!).getByTestId('active-order-pickup')).toHaveTextContent('Заберите сегодня · 18:30–20:30');
+    expect(within(activeCard!).getByText('25 августа 2026 г.').parentElement?.querySelector('.lucide-calendar-days')).toBeInTheDocument();
+    expect(within(activeCard!).getByText('Итого')).toBeInTheDocument();
+    expect(screen.getByText('25 августа 2026 г.')).toBeInTheDocument();
     expect(screen.queryByText(/Забрать:/)).not.toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 12345678').closest('button')).toBeNull();
     fireEvent.click(screen.getByText('Номер заказа: 12345678'));
     expect(screen.queryByTitle('QR-код')).not.toBeInTheDocument();
     const receiveOrderButton = screen.getByRole('button', { name: 'Получить заказ' });
-    expect(receiveOrderButton).toBeInTheDocument();
     expect(receiveOrderButton.querySelector('svg')).not.toBeInTheDocument();
+    expect(receiveOrderButton).toBeInTheDocument();
     expect(screen.queryByText('Кофе & булочки')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 87654321')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Прошедшие' }));
     expect(screen.getByRole('button', { name: 'Прошедшие' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getAllByText('Получен').length).toBeGreaterThan(0);
     expect(screen.getByText('Кофе & булочки')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 87654321')).toBeInTheDocument();
-    expect(within(screen.getByText('Кофе & булочки').parentElement!).getByText((content) => content.replace(/\s/g, '') === '1990₸')).toBeInTheDocument();
-    expect(within(screen.getByText('Кофе & булочки').parentElement!).getByText('× 2')).toBeInTheDocument();
+    expect(screen.getByText('Кофе & булочки').parentElement).toHaveTextContent(/1.?990 ₸ × 2/);
+    expect(screen.queryByRole('button', { name: 'Подробнее' })).not.toBeInTheDocument();
     expect(screen.queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 12345678')).not.toBeInTheDocument();
   });
 
-  it('opens one active order with QR, one code and all purchased boxes', () => {
+  it('opens a focused pickup window with only QR, instructions and code', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
     fireEvent.click(screen.getByRole('button', { name: 'Получить заказ' }));
 
-    const dialog = screen.getByRole('dialog');
+    const dialog = screen.getByRole('dialog', { name: 'Получить заказ' });
     expect(within(dialog).getByTitle('QR-код')).toBeInTheDocument();
     expect(within(dialog).getByText('123-456')).toBeInTheDocument();
+    expect(within(dialog).getByText('Покажите QR-код или код получения сотруднику заведения при получении заказа.')).toBeInTheDocument();
     expect(within(dialog).queryByRole('heading', { name: 'QR-код' })).not.toBeInTheDocument();
     expect(within(dialog).queryByText('Номер заказа: 12345678')).not.toBeInTheDocument();
     expect(within(dialog).queryByText('Tatti Bakery')).not.toBeInTheDocument();
-    expect(within(dialog).queryByText('Состав заказа')).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('heading', { name: 'Состав заказа' })).not.toBeInTheDocument();
     expect(within(dialog).queryByText('Итого')).not.toBeInTheDocument();
-    expect(within(dialog).queryByText(/Забрать:/)).not.toBeInTheDocument();
     expect(within(dialog).queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
     expect(within(dialog).queryByText('Tatti-box')).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Построить маршрут' })).not.toBeInTheDocument();
+  });
+
+  it('keeps completed orders informational without a details action', () => {
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+    fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Прошедшие' }));
+    const completedCard = screen.getByText('Номер заказа: 87654321').closest('article');
+    expect(completedCard).not.toBeNull();
+    expect(within(completedCard!).queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Детали заказа' })).not.toBeInTheDocument();
   });
 
   it('opens route providers from an active order card', () => {
@@ -103,10 +120,12 @@ describe('orders tab', () => {
     fireEvent.click(buildRouteButton);
 
     const dialog = screen.getByRole('dialog', { name: 'Выберите карту' });
-    expect(dialog.querySelector('[data-dialog-variant] > div')).toHaveClass('px-page-wide');
+    expect(dialog.querySelector('[data-dialog-variant] > div')).toHaveClass('px-page', 'sm:px-page-wide');
     expect(within(dialog).getByText('2GIS')).toBeInTheDocument();
     expect(within(dialog).getByText('Яндекс Карты')).toBeInTheDocument();
     expect(within(dialog).getByText('Google Maps')).toBeInTheDocument();
+    expect(within(dialog).queryByText('Маршрут откроется в выбранном приложении.')).not.toBeInTheDocument();
+    expect(within(dialog).getAllByText('Открыть')).toHaveLength(4);
     expect(within(dialog).queryByTitle('QR-код')).not.toBeInTheDocument();
   });
 
@@ -122,16 +141,31 @@ describe('orders tab', () => {
     expect(screen.getByText('Номер заказа: 48273106')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 48273106').closest('button')).toBeNull();
     expect(screen.getByText('Сладкий вечер')).toBeInTheDocument();
-    expect(within(screen.getByText('Сладкий вечер').parentElement!).getByText((content) => content.replace(/\s/g, '') === '3190₸')).toBeInTheDocument();
-    expect(screen.getAllByText((content) => content.replace(/\s/g, '') === '3190₸')).toHaveLength(2);
+    expect(screen.getByText('Сладкий вечер').parentElement).toHaveTextContent(/3.?190 ₸ × 1/);
+    expect(screen.queryByRole('button', { name: 'Подробнее' })).not.toBeInTheDocument();
+  });
+
+  it('offers a way back to the catalog from an empty active state', () => {
+    useAppStore.setState({ orders: [] });
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
+    expect(screen.getByText('У вас пока нет активных заказов')).toBeInTheDocument();
+    const browseButton = screen.getByRole('button', { name: 'Найти предложения' });
+    expect(browseButton.querySelector('svg')).not.toBeInTheDocument();
+    fireEvent.click(browseButton);
+    expect(screen.getByRole('button', { name: 'Подробнее: Surprise Tatti-box, Tatti Bakery' })).toBeInTheDocument();
   });
 
   it('does not show the orders block in profile', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
-    expect(within(screen.getByRole('navigation')).queryByRole('button', { name: 'Профиль' })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Профиль' }));
+    const navigation = screen.getByRole('navigation');
+    expect(within(navigation).queryByRole('button', { name: 'Карта' })).not.toBeInTheDocument();
+    expect(within(navigation).getAllByRole('button').map((button) => button.textContent)).toEqual(['Главная', 'Заказы', 'Избранное', 'Профиль']);
+    fireEvent.click(within(navigation).getByRole('button', { name: 'Профиль' }));
     expect(screen.getByRole('heading', { name: 'Kimal' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Заказы' })).not.toBeInTheDocument();
     expect(screen.queryByText('У вас пока нет заказов')).not.toBeInTheDocument();
@@ -143,6 +177,7 @@ describe('orders tab', () => {
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
     const navigation = screen.getByRole('navigation');
+    expect(within(navigation).getAllByRole('button').map((button) => button.textContent)).toEqual(['Басты бет', 'Тапсырыстар', 'Таңдаулылар', 'Профиль']);
     expect(within(navigation).getByRole('button', { name: 'Таңдаулылар' })).toHaveTextContent('Таңдаулылар');
     expect(within(navigation).getByRole('button', { name: 'Тапсырыстар' })).toHaveTextContent('Тапсырыстар');
     fireEvent.click(within(navigation).getByRole('button', { name: 'Тапсырыстар' }));

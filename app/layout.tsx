@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { BRAND_COLOR } from '@/lib/design-tokens';
+import '@fontsource-variable/onest';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
   title: 'Algan — тиімді ұсыныстар жаныңызда',
   description: 'Шымкенттегі сүйікті мекемелерден тиімді бағамен бокстар.',
   icons: {
-    icon: '/algan-mark.svg?v=2',
+    icon: '/algan-mark.svg?v=3',
   },
   openGraph: {
     title: 'Algan — тиімді ұсыныстар жаныңызда',
