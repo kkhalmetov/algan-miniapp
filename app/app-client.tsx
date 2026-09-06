@@ -508,15 +508,14 @@ function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccept }: {
         <div className="relative mt-10 grid h-16 w-16 place-items-center rounded-[20px] bg-highlight text-brand shadow-action"><ShieldCheck size={30} /></div>
       </div>
       <div className="-mt-4 flex flex-1 flex-col rounded-t-sheet bg-surface px-page pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8 sm:px-page-wide">
-        <p className="text-xs font-extrabold uppercase tracking-[.08em] text-accent-strong">Algan</p>
-        <PageTitle className="mt-2">{t('legalUpdateTitle')}</PageTitle>
+        <PageTitle>{t('legalUpdateTitle')}</PageTitle>
         <p className="mt-3 text-sm leading-6 text-ink-secondary">{t('legalUpdateText')}</p>
         <div className="mt-6 space-y-3">
           <ProfileRow icon={<FileText size={18} />} label={t('termsTitle')} onClick={() => openLegal('terms')} />
           <ProfileRow icon={<FileCheck2 size={18} />} label={t('personalDataConsentTitle')} onClick={() => openLegal('personalDataConsent')} />
           <ProfileRow icon={<ShieldCheck size={18} />} label={t('privacyTitle')} onClick={() => openLegal('privacy')} />
         </div>
-        <PrimaryButton onClick={onAccept} className="mt-auto"><Check size={19} />{t('acceptAndContinue')}</PrimaryButton>
+        <PrimaryButton onClick={onAccept} className="mt-auto">{t('acceptAndContinue')}</PrimaryButton>
       </div>
     </main>
   );
