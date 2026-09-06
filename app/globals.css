@@ -84,7 +84,6 @@
   --text-section-title--font-weight: 900;
 
   --shadow-card: 0 9px 30px rgba(30, 72, 58, .07);
-  --shadow-card-hover: 0 14px 34px rgba(30, 72, 58, .12);
   --shadow-floating: 0 18px 50px rgba(23, 60, 49, .22);
   --shadow-shell: 0 26px 90px rgba(24, 61, 49, .18);
   --shadow-action: 0 12px 28px rgba(31, 92, 73, .22);
@@ -189,13 +188,6 @@ button:disabled { cursor: not-allowed; }
   border-radius: 50%;
   background: white;
   box-shadow: var(--shadow-marker);
-}
-
-.algan-brand-hero {
-  background:
-    radial-gradient(circle at 104% 38%, rgba(217, 237, 154, .12) 0 84px, transparent 85px),
-    radial-gradient(circle at 2% 104%, transparent 0 51px, rgba(217, 237, 154, .13) 52px 80px, transparent 81px),
-    linear-gradient(145deg, var(--color-brand) 0%, var(--color-brand-deep) 100%);
 }
 
 .algan-dialog-backdrop { animation: algan-dialog-fade-in var(--motion-fast) ease-out both; }

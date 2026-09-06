@@ -11,19 +11,11 @@ const createMask = (url: string): CSSProperties => ({
   maskSize: 'contain',
 });
 
+const markMask = createMask('/algan-mark.svg?v=2');
 const wordmarkMask = createMask('/algan-wordmark.svg');
 
-export function AlganMark({ light = false, className = '' }: { light?: boolean; className?: string }) {
-  return (
-    // The SVG is a tiny immutable brand asset; preserving it as-authored avoids an image optimizer request on splash.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      aria-hidden="true"
-      alt=""
-      src={light ? '/algan-mark-light.svg?v=3' : '/algan-mark.svg?v=3'}
-      className={`inline-block shrink-0 object-contain ${className}`}
-    />
-  );
+export function AlganMark({ className = '' }: { className?: string }) {
+  return <span aria-hidden="true" className={`inline-block shrink-0 bg-current ${className}`} style={markMask} />;
 }
 export function AlganWordmark({ className = '' }: { className?: string }) {
   return <span aria-hidden="true" className={`inline-block shrink-0 bg-current ${className}`} style={wordmarkMask} />;
@@ -45,7 +37,7 @@ export function AlganLogo({
       className={`flex items-center gap-2 ${light ? 'text-highlight' : 'text-brand'} ${className}`}
       aria-label="Algan"
     >
-      <AlganMark light={light} className={markClassName} />
+      <AlganMark className={markClassName} />
       <AlganWordmark className={wordmarkClassName} />
     </div>
   );

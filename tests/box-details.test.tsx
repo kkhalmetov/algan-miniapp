@@ -43,7 +43,7 @@ describe('store details presentation', () => {
     expect(screen.getAllByRole('article')).toHaveLength(stores.length);
     stores.forEach((store) => {
       const card = screen.getByRole('button', { name: `Подробнее: ${store.name}` });
-      expect(card.closest('article')?.querySelector(`img[src="${store.logo}"]`)).toHaveAttribute('alt', '');
+      expect(card.querySelector(`img[src="${store.logo}"]`)).toHaveAttribute('alt', '');
     });
     expect(screen.getAllByText('Tatti Bakery')).toHaveLength(1);
     expect(screen.queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
@@ -84,18 +84,17 @@ describe('store details presentation', () => {
     expect(boxPhoto).toHaveAttribute('src', '/images/bakery.jpg');
     expect(boxPhoto).toHaveClass('transition', 'duration-[var(--motion-slow)]', 'group-hover:scale-105');
     expect(within(boxImage).getByText('SURPRISE')).toBeInTheDocument();
-    expect(within(boxImage).queryByText('Осталось 4 бокса')).not.toBeInTheDocument();
+    expect(within(boxImage).getByText('Осталось 4 бокса')).toBeInTheDocument();
     expect(within(boxContent).queryByText('SURPRISE')).not.toBeInTheDocument();
-    expect(within(boxContent).getByText('Осталось 4 бокса')).toBeInTheDocument();
+    expect(within(boxContent).queryByText('Осталось 4 бокса')).not.toBeInTheDocument();
     expect(boxImage.compareDocumentPosition(boxContent) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(firstBoxCard).toHaveClass('grid', 'grid-cols-[6.75rem_minmax(0,1fr)]');
-    expect(boxImage).toHaveClass('min-h-[132px]');
+    expect(boxImage).toHaveClass('h-36', 'w-full');
     const regularBoxCard = within(scroll).getByRole('button', { name: 'Подробнее Tatti-box' });
     expect(within(regularBoxCard).queryByText('SURPRISE')).not.toBeInTheDocument();
-    expect(within(within(regularBoxCard).getByTestId('box-card-content')).getByText('Осталось 3 бокса')).toBeInTheDocument();
+    expect(within(within(regularBoxCard).getByTestId('box-card-image')).getByText('Осталось 3 бокса')).toBeInTheDocument();
     expect(within(regularBoxCard).getByTestId('box-card-content')).toHaveClass('relative');
-    expect(within(scroll).getAllByText('19:30–20:30').length).toBeGreaterThan(0);
-    expect(within(scroll).getByText('18:30–19:30')).toBeInTheDocument();
+    expect(within(scroll).getByText('Время выдачи: 19:30–20:30')).toHaveClass('whitespace-nowrap');
+    expect(within(scroll).getByText('Время выдачи: 18:30–19:30')).toBeInTheDocument();
     const appearanceNotice = within(scroll).getByTestId('store-appearance-notice');
     expect(within(appearanceNotice).getByRole('heading', { name: 'Внешний вид может отличаться' })).toBeInTheDocument();
     expect(within(appearanceNotice).getByText('Фактический внешний вид бокса и продуктов может отличаться от изображения.')).toBeInTheDocument();

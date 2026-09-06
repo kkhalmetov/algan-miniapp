@@ -38,7 +38,6 @@ describe('Algan design system', () => {
       '--text-page-title',
       '--text-section-title',
       '--shadow-card',
-      '--shadow-card-hover',
       '--shadow-floating',
       '--motion-fast',
       '--motion-medium',
@@ -51,18 +50,6 @@ describe('Algan design system', () => {
     expect(css).toContain("url('/fonts/inter-cyrillic-wght-normal.woff2')");
     expect(css).toContain("url('/fonts/inter-latin-wght-normal.woff2')");
     expect(css).toContain('--font-sans: "Inter Variable", sans-serif');
-  });
-
-  it('ships the approved two-colour SVG mark for light and brand surfaces', () => {
-    const mark = readFileSync(resolve(root, 'public/algan-mark.svg'), 'utf8');
-    const lightMark = readFileSync(resolve(root, 'public/algan-mark-light.svg'), 'utf8');
-    const component = readFileSync(resolve(root, 'components/algan-logo.tsx'), 'utf8');
-
-    expect(mark).toContain('#D9ED9A');
-    expect(mark).toContain('#1F5C49');
-    expect(lightMark).toContain('#D9ED9A');
-    expect(lightMark).toContain('#FFFDF8');
-    expect(component).toContain("light ? '/algan-mark-light.svg?v=3' : '/algan-mark.svg?v=3'");
   });
 
   it('documents the rules for extending the interface', () => {

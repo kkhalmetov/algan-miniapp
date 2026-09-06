@@ -45,12 +45,12 @@ function unlockElement(element: HTMLElement) {
   else element.setAttribute('aria-hidden', lock.ariaHidden);
 }
 
-const actionButtonBase = 'flex items-center justify-center gap-2 rounded-control px-4 text-center font-black leading-5 transition active:scale-[.99] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
-type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { size?: 'md' | 'lg'; fullWidth?: boolean };
+const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-4 text-center font-black leading-5 transition active:scale-[.99] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
+type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { size?: 'md' | 'lg' };
 const actionButtonSize = { md: 'min-h-11 text-sm', lg: 'min-h-14 text-[15px]' } as const;
 
-export function PrimaryButton({ className, type = 'button', size = 'lg', fullWidth = true, ...props }: ActionButtonProps) {
-  return <button type={type} className={cx(actionButtonBase, fullWidth && 'w-full', actionButtonSize[size], 'bg-brand text-white shadow-action hover:bg-brand-hover disabled:bg-surface-muted disabled:text-ink-subtle', className)} {...props} />;
+export function PrimaryButton({ className, type = 'button', size = 'lg', ...props }: ActionButtonProps) {
+  return <button type={type} className={cx(actionButtonBase, actionButtonSize[size], 'bg-brand text-white shadow-action hover:bg-brand-hover disabled:bg-surface-muted disabled:text-ink-subtle', className)} {...props} />;
 }
 
 export function PageTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
@@ -111,21 +111,21 @@ export function ScreenBody({ className, ...props }: HTMLAttributes<HTMLDivElemen
   return <div className={cx('bg-surface px-page pt-6', className)} {...props} />;
 }
 
-export function SecondaryButton({ className, type = 'button', size = 'lg', fullWidth = true, ...props }: ActionButtonProps) {
+export function SecondaryButton({ className, type = 'button', size = 'lg', ...props }: ActionButtonProps) {
   return (
     <button
       type={type}
-      className={cx(actionButtonBase, fullWidth && 'w-full', actionButtonSize[size], 'bg-brand-pale text-brand hover:bg-brand-soft', className)}
+      className={cx(actionButtonBase, actionButtonSize[size], 'bg-brand-pale text-brand hover:bg-brand-soft', className)}
       {...props}
     />
   );
 }
 
-export function DangerButton({ className, type = 'button', size = 'lg', fullWidth = true, ...props }: ActionButtonProps) {
+export function DangerButton({ className, type = 'button', size = 'lg', ...props }: ActionButtonProps) {
   return (
     <button
       type={type}
-      className={cx(actionButtonBase, fullWidth && 'w-full', actionButtonSize[size], 'bg-danger-soft text-danger hover:bg-danger/20', className)}
+      className={cx(actionButtonBase, actionButtonSize[size], 'bg-danger-soft text-danger hover:bg-danger/20', className)}
       {...props}
     />
   );
@@ -335,12 +335,8 @@ export function ScrollArea({ className, ...props }: HTMLAttributes<HTMLDivElemen
   return <div className={cx('hide-scrollbar min-h-0 overflow-y-auto overscroll-contain', className)} {...props} />;
 }
 
-export function SurfaceCard({ className, interactive = false, ...props }: HTMLAttributes<HTMLElement> & { interactive?: boolean }) {
-  return <article className={cx(
-    'rounded-card border border-border bg-panel shadow-card',
-    interactive && 'transition duration-[var(--motion-medium)] hover:-translate-y-0.5 hover:shadow-card-hover',
-    className,
-  )} {...props} />;
+export function SurfaceCard({ className, ...props }: HTMLAttributes<HTMLElement>) {
+  return <article className={cx('rounded-card border border-border bg-panel shadow-card', className)} {...props} />;
 }
 
 type InsetTone = 'soft' | 'panel' | 'brand' | 'brandSolid' | 'warning' | 'danger' | 'allergen';
@@ -444,13 +440,13 @@ export function MediaBadge({ children, size = 'md', className }: {
 
 export function AvatarFrame({ children, size = 'sm', className, ...props }: HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
-  size?: 'sm' | 'lg' | 'xl';
+  size?: 'sm' | 'lg';
 }) {
   return (
     <div
       className={cx(
         'grid shrink-0 place-items-center overflow-hidden rounded-full bg-highlight font-black text-ink',
-        size === 'xl' ? 'h-24 w-24 text-3xl' : size === 'lg' ? 'h-16 w-16 text-2xl' : 'h-12 w-12 text-lg',
+        size === 'lg' ? 'h-16 w-16 text-2xl' : 'h-12 w-12 text-lg',
         className,
       )}
       {...props}
@@ -530,7 +526,7 @@ export function ListRow({
   title: ReactNode;
   subtitle?: ReactNode;
   trailing?: ReactNode;
-  tone?: 'soft' | 'panel' | 'plain';
+  tone?: 'soft' | 'panel';
   subtitleWrap?: boolean;
 }) {
   return (
@@ -538,9 +534,7 @@ export function ListRow({
       type={type}
       className={cx(
         'flex min-h-17 w-full items-center gap-3 rounded-control p-4 text-left transition active:scale-[.99] disabled:opacity-100',
-        tone === 'panel'
-          ? 'border border-border bg-panel hover:bg-surface-soft'
-          : tone === 'plain' ? 'bg-panel hover:bg-surface-soft' : 'bg-surface-soft hover:bg-surface-muted',
+        tone === 'panel' ? 'border border-border bg-panel hover:bg-surface-soft' : 'bg-surface-soft hover:bg-surface-muted',
         className,
       )}
       {...props}
