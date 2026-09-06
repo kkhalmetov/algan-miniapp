@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  AlertTriangle, ArrowUpRight, Building2, CalendarDays, Check, CheckCircle2, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, FileText, Headphones, Heart, Home, Image as ImageIcon, Info, Languages, Mail,
+  AlertTriangle, ArrowUpRight, Building2, CalendarDays, Check, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, FileText, Headphones, Heart, Home, Image as ImageIcon, Info, Languages, Mail,
   MapPin, Package, PackageCheck, Phone, ReceiptText, RotateCcw, Settings2, ShieldCheck, ShoppingBag, Sparkles, UserRound,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -733,12 +733,7 @@ function OrdersTab({ t, locale, orders, onBrowseOffers }: { t: Translator; local
                   <div className="flex items-start gap-3">
                     {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="truncate text-sm font-extrabold text-ink">{store?.name}</p>
-                        <StatusBadge tone={isActive ? 'brand' : 'neutral'} icon={isActive ? <Clock3 size={12} /> : <CheckCircle2 size={12} />}>
-                          {t(isActive ? 'activeOrderStatus' : 'completedOrderStatus')}
-                        </StatusBadge>
-                      </div>
+                      <p className="truncate text-sm font-extrabold text-ink">{store?.name}</p>
                       <p className="mt-1 text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</p>
                     </div>
                   </div>
@@ -854,7 +849,6 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
             <div className="flex items-center gap-3">
               {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
               <div className="min-w-0 flex-1"><p className="truncate text-base font-extrabold">{store?.name}</p><p className="mt-1 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p></div>
-              <StatusBadge tone="neutral">{t('completedOrderStatus')}</StatusBadge>
             </div>
             <div className="mt-4 flex items-center gap-2 border-t border-brand/10 pt-3 text-xs font-bold text-ink-secondary"><CalendarDays size={15} />{orderDate}</div>
           </InsetSurface>

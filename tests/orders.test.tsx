@@ -45,7 +45,7 @@ describe('orders tab', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
     expect(screen.getByRole('heading', { name: 'Заказы' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Активные' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByText('Готов к получению')).toBeInTheDocument();
+    expect(screen.queryByText('Готов к получению')).not.toBeInTheDocument();
     expect(screen.getByText('Surprise Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Surprise Tatti-box').parentElement).toHaveTextContent(/2.?490 ₸ × 2/);
@@ -71,7 +71,7 @@ describe('orders tab', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Прошедшие' }));
     expect(screen.getByRole('button', { name: 'Прошедшие' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getAllByText('Получен').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Получен')).not.toBeInTheDocument();
     expect(screen.getByText('Кофе & булочки')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 87654321')).toBeInTheDocument();
     expect(screen.getByText('Кофе & булочки').parentElement).toHaveTextContent(/1.?990 ₸ × 2/);
