@@ -7,11 +7,11 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { AlganLogo } from '@/components/algan-logo';
+import { AlganLogo, AlganMark } from '@/components/algan-logo';
 import LocationMap from '@/components/location-map';
 import {
   AccordionItem, AvatarFrame, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
-  ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
+  ContentTitle, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow,
   MediaBadge, MediaSheetHeader, ModalBody, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, QuantityStepper, ScreenBody,
   ScrollArea, SecondaryButton, SectionTitle, SegmentedControl, SheetHeader, StatusBadge, StickyActionFooter, SurfaceCard, TertiaryButton, TextField,
   TextLinkButton, TopAppBar,
@@ -343,6 +343,7 @@ export default function AlganApp() {
           {tab === 'profile' && (
             <ProfileTab t={t} profile={profile} currency={currency}
               currencyLoading={currency === 'RUB' && !kztToRubRate} currencyRateError={currencyRateError} onToggleCurrency={toggleCurrency}
+              onBack={() => { setTab('home'); haptic('tap'); }}
               openSettings={() => setSettingsOpen(true)}
               openHelp={() => setHelpOpen(true)}
               openDocuments={() => setDocumentsOpen(true)}
@@ -466,16 +467,14 @@ function Onboarding(props: OnboardingProps) {
   const canContinue = Boolean(normalizeKazakhstanPhone(phone));
   return (
     <main className="flex min-h-dvh flex-col sm:min-h-[780px]">
-      <div className="relative overflow-hidden bg-brand px-page-wide pb-9 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
-        <div className="absolute -right-8 -top-6 h-40 w-40 rounded-full bg-warning-ink/20" />
-        <div className="absolute -bottom-14 -left-8 h-36 w-36 rounded-full border-[28px] border-highlight/20" />
+      <div className="algan-brand-hero relative overflow-hidden px-page-wide pb-12 pt-[max(1.5rem,env(safe-area-inset-top))] text-white">
         <div className="relative flex items-start justify-between">
-          <AlganLogo light />
+          <AlganLogo light markClassName="h-11 w-11" wordmarkClassName="h-7 w-[85px]" />
           <LanguagePill locale={locale} setLocale={setLocale} dark />
         </div>
-        <div className="relative mt-12">
-          <p className="text-sm font-bold text-highlight">{t('slogan')}</p>
-          <h1 className="mt-2 max-w-[340px] text-display">{t('hero')}</h1>
+        <div className="relative mt-16">
+          <h1 className="max-w-[330px] text-display text-white">{t('slogan')}</h1>
+          <p className="mt-4 max-w-[300px] text-base font-medium leading-6 text-white/80">{t('hero')}</p>
         </div>
       </div>
 
@@ -557,7 +556,7 @@ function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, toggleFavo
   const firstName = localizedFirstName(profile, t);
   return (
     <>
-      <BrandHeader>
+      <BrandHeader className="algan-brand-hero">
         <div className="mt-2 flex items-center justify-between gap-4">
           <div className="min-w-0"><p className="text-sm text-white/70">{t('greeting')},</p><PageTitle className="mt-0.5 truncate text-white">{firstName}!</PageTitle></div>
           <button type="button" onClick={openProfile} aria-label={t('profile')} className="shrink-0 rounded-full outline-none transition active:scale-95 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
@@ -582,14 +581,16 @@ function HomeTab({ t, locale, profile, openProfile, favoriteStoreIds, toggleFavo
 function StoreCard({ store, fallbackImage, t, locale, favorite, toggleFavorite, onOpen }: { store: Store; fallbackImage: string; t: Translator; locale: Locale; favorite: boolean; toggleFavorite: () => void; onOpen: () => void }) {
   const address = storeAddress(store, locale);
   return (
-    <SurfaceCard className="overflow-hidden">
-      <CardPressable onClick={onOpen} className="relative h-44 overflow-hidden" aria-label={`${t('details')}: ${store.name}`}>
-        <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover transition duration-[var(--motion-slow)] hover:scale-105" />
-        <MediaBadge className="absolute bottom-3 left-3 border-3 border-panel">
+    <SurfaceCard interactive className="relative">
+      <div className="relative">
+        <CardPressable onClick={onOpen} className="group h-44 overflow-hidden rounded-t-card" aria-label={`${t('details')}: ${store.name}`}>
+          <img src={store.coverImage ?? fallbackImage} alt="" className="h-full w-full object-cover transition duration-[var(--motion-slow)] group-hover:scale-105" />
+        </CardPressable>
+        <MediaBadge className="absolute bottom-0 left-4 z-10 translate-y-1/2 border-[3px] border-panel">
           <img src={store.logo} alt="" className="h-9 w-9 object-contain" />
         </MediaBadge>
-      </CardPressable>
-      <div className="p-4">
+      </div>
+      <div className="px-4 pb-4 pt-8">
         <div className="flex items-start gap-3">
           <CardPressable onClick={onOpen} className="min-w-0 flex-1 rounded-control" aria-label={`${store.name} ${address}`}>
             <CardTitle>{store.name}</CardTitle>
@@ -821,9 +822,9 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
   );
 }
 
-function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, onToggleCurrency, openSettings, openHelp, openDocuments, resetDemo }: {
+function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, onToggleCurrency, onBack, openSettings, openHelp, openDocuments, resetDemo }: {
   t: Translator; profile: UserProfile; currency: Currency; currencyLoading: boolean; currencyRateError: boolean;
-  onToggleCurrency: () => void; openSettings: () => void; openHelp: () => void; openDocuments: () => void; resetDemo: () => void;
+  onToggleCurrency: () => void; onBack: () => void; openSettings: () => void; openHelp: () => void; openDocuments: () => void; resetDemo: () => void;
 }) {
   const telegramUsername = telegramProfile().username.trim().replace(/^@/, '');
   const firstName = localizedFirstName(profile, t);
@@ -831,19 +832,21 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
   const [resetConfirmationOpen, setResetConfirmationOpen] = useState(false);
   return (
     <section className="pb-8">
-      <BrandHeader>
-        <div className="mt-2 flex items-center gap-4">
-          <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} fallbackName={firstName} />
-          <div><ContentTitle as="h1" className="text-white">{fullName}</ContentTitle><p className="mt-1 text-sm text-white/70">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
+      <BrandHeader className="algan-brand-hero relative pb-9">
+        <IconButton onClick={onBack} label={t('back')} tone="dark" className="absolute left-page top-[max(1.5rem,env(safe-area-inset-top))]"><ChevronRight className="rotate-180" size={20} /></IconButton>
+        <div className="flex flex-col items-center pt-10 text-center">
+          <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} fallbackName={firstName} hero />
+          <ContentTitle as="h1" className="mt-4 max-w-full text-white">{fullName}</ContentTitle>
+          <p className="mt-1 text-sm text-white/70">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p>
         </div>
       </BrandHeader>
 
       <ScreenBody>
-        <div className="space-y-2">
-          <ProfileRow icon={<Settings2 size={18} />} label={t('settings')} onClick={openSettings} />
-          <ProfileRow icon={<CircleHelp size={18} />} label={t('support')} onClick={openHelp} />
-          <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
-        </div>
+        <SurfaceCard className="overflow-hidden p-1 shadow-none">
+          <ProfileRow className="rounded-none border-b border-border" tone="plain" icon={<Settings2 size={18} />} label={t('settings')} onClick={openSettings} />
+          <ProfileRow className="rounded-none border-b border-border" tone="plain" icon={<CircleHelp size={18} />} label={t('support')} onClick={openHelp} />
+          <ProfileRow className="rounded-none" tone="plain" icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
+        </SurfaceCard>
         <DangerButton onClick={() => setResetConfirmationOpen(true)} className="mt-6">{t('signOutDemo')}</DangerButton>
         <SecondaryButton onClick={onToggleCurrency} disabled={currencyLoading} aria-busy={currencyLoading} className="mt-2">
           <CircleDollarSign size={19} />{currencyLoading ? t('currencyLoading') : currency === 'KZT' ? t('showRubles') : t('showTenge')}
@@ -866,7 +869,7 @@ function ProfileTab({ t, profile, currency, currencyLoading, currencyRateError, 
   );
 }
 
-function ProfileAvatar({ profile, fallbackName, compact = false }: { profile: UserProfile; fallbackName: string; compact?: boolean }) {
+function ProfileAvatar({ profile, fallbackName, compact = false, hero = false }: { profile: UserProfile; fallbackName: string; compact?: boolean; hero?: boolean }) {
   const [imageFailed, setImageFailed] = useState(false);
   const [reloadAttempt, setReloadAttempt] = useState(0);
   const initial = fallbackName.trim().charAt(0).toUpperCase() || 'A';
@@ -880,7 +883,7 @@ function ProfileAvatar({ profile, fallbackName, compact = false }: { profile: Us
   };
 
   return (
-    <AvatarFrame size={compact ? 'sm' : 'lg'}>
+    <AvatarFrame size={hero ? 'xl' : compact ? 'sm' : 'lg'} className={hero ? 'ring-2 ring-highlight ring-offset-4 ring-offset-brand-deep' : undefined}>
       {photoSource && !imageFailed
         ? <img src={photoSource} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" onError={retryImage} />
         : initial}
@@ -911,11 +914,13 @@ function PhoneEditor({ currentPhone, t, onClose, onSave }: {
   );
 }
 
-function ProfileRow({ icon, label, value, valueWrap = false, onClick }: {
+function ProfileRow({ icon, label, value, valueWrap = false, tone = 'soft', className, onClick }: {
   icon: React.ReactNode;
   label: string;
   value?: string;
   valueWrap?: boolean;
+  tone?: 'soft' | 'panel' | 'plain';
+  className?: string;
   onClick?: () => void;
 }) {
   return (
@@ -924,6 +929,8 @@ function ProfileRow({ icon, label, value, valueWrap = false, onClick }: {
       title={label}
       subtitle={value}
       subtitleWrap={valueWrap}
+      tone={tone}
+      className={className}
       onClick={onClick}
       disabled={!onClick}
       trailing={onClick ? <ChevronRight size={17} className="text-ink-subtle" /> : undefined}
@@ -1006,15 +1013,13 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
         </div>
         <div className="px-page-wide pb-6 pt-11">
           <PageTitle className="truncate">{store.name}</PageTitle>
-          <SurfaceCard className="mt-5 p-4">
-            <DetailRow icon={<MapPin size={19} />} label={t('addressLabel')} value={address} />
-            <SecondaryButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4">
+          <div className="mt-3 flex items-start gap-2 text-sm font-semibold leading-5 text-ink-secondary">
+            <MapPin size={17} className="mt-0.5 shrink-0 text-brand" />
+            <span>{address}</span>
+          </div>
+          <SecondaryButton size="md" fullWidth={false} onClick={() => { setRoutePickerOpen(true); haptic('tap'); }} className="mt-4 px-5">
               {t('buildRoute')}
-            </SecondaryButton>
-          </SurfaceCard>
-          <NoticeCard data-testid="store-appearance-notice" className="mt-4" icon={<ImageIcon size={18} />} title={t('appearanceMayDifferTitle')} titleAs="h2">
-            {t('appearanceMayDifferText')}
-          </NoticeCard>
+          </SecondaryButton>
 
           <div className="mt-6 space-y-3">
             {storeBoxes.map((box) => (
@@ -1023,6 +1028,9 @@ function StoreDetails({ store, locale, t, isFavorite, toggleFavorite, cartItems,
                 onOpen={() => onOpenBox(box)} />
             ))}
           </div>
+          <NoticeCard data-testid="store-appearance-notice" className="mt-4" icon={<ImageIcon size={18} />} title={t('appearanceMayDifferTitle')} titleAs="h2">
+            {t('appearanceMayDifferText')}
+          </NoticeCard>
         </div>
       </ScrollArea>
       {cartQuantity > 0 && (
@@ -1045,25 +1053,23 @@ function BoxOfferCard({ box, locale, t, available, onOpen }: {
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
   const name = boxName(box, locale);
   return (
-    <SurfaceCard className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
-      <CardPressable onClick={onOpen} className="group relative" aria-label={`${t('details')} ${name}`}>
-        <span data-testid="box-card-image" className="relative block h-36 w-full overflow-hidden bg-canvas">
-          <img src={box.image} alt={name} className="h-full w-full object-cover transition duration-[var(--motion-slow)] group-hover:scale-105" />
-          <span className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center gap-2">
-            {box.type === 'SURPRISE' && <SurpriseBadge compact />}
-            <StatusBadge tone={available > 0 ? 'accent' : 'danger'} icon={<Package size={14} />}>
-              {formatBoxesLeft(available, locale)}
-            </StatusBadge>
-          </span>
+    <SurfaceCard interactive className={`overflow-hidden ${available > 0 ? '' : 'border-danger/25'}`}>
+      <CardPressable onClick={onOpen} className="group grid min-h-[132px] grid-cols-[6.75rem_minmax(0,1fr)]" aria-label={`${t('details')} ${name}`}>
+        <span data-testid="box-card-image" className="relative block min-h-[132px] overflow-hidden bg-canvas">
+          <img src={box.image} alt={name} className={`h-full w-full object-cover transition duration-[var(--motion-slow)] group-hover:scale-105 ${available > 0 ? '' : 'grayscale'}`} />
+          {box.type === 'SURPRISE' && <span className="absolute left-2 top-2"><SurpriseBadge compact /></span>}
         </span>
-        <span data-testid="box-card-content" className="relative block p-4">
-          <span className="block min-w-0 pr-12 text-base font-black leading-5">{name}</span>
-          <DisclosureIndicator className="absolute right-4 top-4" />
+        <span data-testid="box-card-content" className="relative flex min-w-0 flex-col p-3">
+          <span className="block min-w-0 pr-9 text-sm font-black leading-5">{name}</span>
+          <DisclosureIndicator className="absolute right-2.5 top-2.5 h-8 w-8" />
+          <StatusBadge tone={available > 0 ? 'brand' : 'danger'} size="sm" icon={<Package size={12} />} className="mt-2 self-start">
+            {formatBoxesLeft(available, locale)}
+          </StatusBadge>
           <span className="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-[-0.02em] text-ink-secondary">
             <Clock3 size={14} className="shrink-0 text-brand" />
-            <span className="whitespace-nowrap">{t('pickupTime')}: {box.pickupFrom}–{box.pickupTo}</span>
+            <span className="truncate">{box.pickupFrom}–{box.pickupTo}</span>
           </span>
-          <span className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-2">
             <b className="text-base text-brand">{formatPrice(box.salePrice)}</b>
             <span className="text-[11px] text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
             <StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge>
@@ -1272,7 +1278,7 @@ function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: ()
   return (
     <DialogLayer onClose={onDone} closeLabel={t('close')} ariaLabel={t('ordersCreated')} variant="full">
       <FullScreenFeedback
-        icon={<><Check size={32} strokeWidth={3} /><Sparkles className="absolute -right-2 -top-1 text-accent" size={20} /></>}
+        icon={<AlganMark className="h-11 w-11" />}
         title={t('ordersCreated')}
         description={t('successText')}
       >

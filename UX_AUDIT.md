@@ -47,6 +47,9 @@ The audit covers onboarding, startup, home, map, favorites, active and past orde
 | Decorative media | Store and map-provider logos repeated adjacent visible labels to screen readers | Redundant logos now use empty alternative text while visible names remain the accessible label |
 | Supporting copy | Help working hours were truncated on a 320 px-wide screen | Rows can opt into wrapped supporting copy; complete working hours remain visible at compact widths |
 | Transaction transition | Closing store/cart layers while opening the successful-order screen could leave the app root inert | Dialog background locks are reference-counted, so replacing any number of nested sheets always restores interaction |
+| Brand identity | The previous checkmark did not express the generated Algan identity and could only render as one colour | `AlganLogo` now uses dedicated two-colour SVG marks for light and brand surfaces while retaining the established wordmark rhythm |
+| Venue cards | The venue logo sat inside the photo and competed with product imagery | The shared `MediaBadge` overlaps the image/content edge, creating a consistent venue identity anchor on home and favorites |
+| Box discovery | Full-width box photos made venue pages long and hid key price and pickup facts | Box offers now use compact horizontal cards with image, stock, pickup, price, discount and disclosure in one scan path |
 
 ## Governance
 

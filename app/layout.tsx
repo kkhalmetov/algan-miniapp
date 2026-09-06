@@ -5,20 +5,20 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'https://algan-bot.online'),
-  title: 'Algan — тиімді ұсыныстар жаныңызда',
-  description: 'Шымкенттегі сүйікті мекемелерден тиімді бағамен бокстар.',
+  title: 'Algan — тиімді бокстар жаныңызда',
+  description: 'Шымкенттегі сүйікті мекемелеріңізден бокстарды таңдаңыз.',
   icons: {
-    icon: '/algan-mark.svg?v=2',
+    icon: '/algan-mark.svg?v=3',
   },
   openGraph: {
-    title: 'Algan — тиімді ұсыныстар жаныңызда',
-    description: 'Шымкенттегі сүйікті мекемелерден тиімді бағамен бокстар.',
+    title: 'Algan — тиімді бокстар жаныңызда',
+    description: 'Шымкенттегі сүйікті мекемелеріңізден бокстарды таңдаңыз.',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'Algan — тиімді ұсыныстар жаныңызда',
-    description: 'Шымкенттегі сүйікті мекемелерден тиімді бағамен бокстар.',
+    title: 'Algan — тиімді бокстар жаныңызда',
+    description: 'Шымкенттегі сүйікті мекемелеріңізден бокстарды таңдаңыз.',
   },
 };
 

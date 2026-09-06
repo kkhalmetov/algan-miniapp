@@ -4,7 +4,7 @@ import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow, MediaBadge, MediaSheetHeader,
   AvatarFrame, ModalBody, ModalHeader, NoticeCard, PageSection, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SheetHeader,
-  ScrollArea, SegmentedControl, StatusBadge, StickyActionFooter, TextField, TextLinkButton, TertiaryButton, TopAppBar,
+  ScrollArea, SegmentedControl, StatusBadge, StickyActionFooter, SurfaceCard, TextField, TextLinkButton, TertiaryButton, TopAppBar,
 } from '../components/ui-kit';
 
 describe('Algan UI kit', () => {
@@ -24,6 +24,16 @@ describe('Algan UI kit', () => {
     expect(screen.getByRole('button', { name: 'Маршрут' })).toHaveClass('min-h-14', 'bg-brand-pale');
     expect(screen.getByRole('button', { name: 'Выйти' })).toHaveClass('min-h-14', 'bg-danger-soft');
     expect(screen.getByRole('button', { name: 'Удалить' })).toHaveClass('min-h-11', 'text-danger');
+  });
+
+  it('supports compact inline actions and shared interactive card elevation', () => {
+    render(<>
+      <SecondaryButton fullWidth={false}>Маршрут</SecondaryButton>
+      <SurfaceCard interactive>Карточка заведения</SurfaceCard>
+    </>);
+
+    expect(screen.getByRole('button', { name: 'Маршрут' })).not.toHaveClass('w-full');
+    expect(screen.getByText('Карточка заведения')).toHaveClass('hover:shadow-card-hover', 'hover:-translate-y-0.5');
   });
 
   it('gives every icon button a 44px touch target and accessible name', () => {
@@ -224,6 +234,9 @@ describe('Algan UI kit', () => {
 
     rerender(<AvatarFrame size="lg">K</AvatarFrame>);
     expect(screen.getByText('K')).toHaveClass('h-16', 'w-16', 'text-2xl');
+
+    rerender(<AvatarFrame size="xl">A</AvatarFrame>);
+    expect(screen.getByText('A')).toHaveClass('h-24', 'w-24', 'text-3xl');
   });
 
   it('shares compact branded app bars', () => {

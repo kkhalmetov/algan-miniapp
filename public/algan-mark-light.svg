@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Algan</title>
+  <path d="M13 34V29C13 18.5 21.5 10 32 10s19 8.5 19 19v23" stroke="#D9ED9A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M9 31.5c0 13.2 10.7 23.9 23.9 23.9 7.1 0 13.5-3.1 17.8-8V32.1L32 42.7 9 30.1v1.4Z" fill="#FFFDF8"/>
+  <path d="m15.2 30.9 16.8-9.6 16.8 9.6L32 40.5 15.2 30.9Z" fill="#1F5C49"/>
+</svg>

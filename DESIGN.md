@@ -2,7 +2,14 @@
 
 ## Direction
 
-Algan uses a warm, friendly food-rescue visual language: deep green for trust, coral for urgency, lime for positive confirmation, warm off-white surfaces, and rounded tactile controls. Mobile and Telegram Mini App layouts are the primary surfaces.
+Algan uses a warm, friendly marketplace visual language: deep green for trust, coral for urgency, lime for positive confirmation, warm off-white surfaces, and rounded tactile controls. Mobile and Telegram Mini App layouts are the primary surfaces. The approved visual boards live in `design/redesign-concepts/`.
+
+## Brand identity
+
+- The mark is an abstract lowercase `a` built from two rounded ribbons; the inner negative shape refers to a takeaway box without using literal food-rescue imagery.
+- `public/algan-mark.svg` is the default two-colour mark on light surfaces. `public/algan-mark-light.svg` is the contrast-safe version for brand-green surfaces.
+- `public/algan-wordmark.svg` remains a single-colour mask so it follows the foreground selected by `AlganLogo`.
+- Brand artwork remains SVG. Product UI never reconstructs the mark with CSS or a text glyph.
 
 ## Foundations and tokens
 
@@ -13,7 +20,7 @@ Algan uses a warm, friendly food-rescue visual language: deep green for trust, c
 - Structure: `border`, `border-strong`, `rounded-control`, `rounded-card`, `rounded-sheet`, `rounded-shell`.
 - Layout: `page` (20 px) and `page-wide` (24 px) horizontal gutters; safe-area additions remain explicit because they are supplied by Telegram/the operating system.
 - Typography: `display`, `page-title`, and `section-title` encode size, weight, line height, and tracking as a unit.
-- Elevation: `shadow-card`, `shadow-floating`, `shadow-shell`, `shadow-action`, `shadow-sheet`, `shadow-marker`, `shadow-control`.
+- Elevation: `shadow-card`, `shadow-card-hover`, `shadow-floating`, `shadow-shell`, `shadow-action`, `shadow-sheet`, `shadow-marker`, `shadow-control`.
 - Motion: `motion-fast`, `motion-medium`, `motion-slow`, `ease-standard`; control feedback, dialogs and media transitions use the shared scale.
 
 Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Components must use semantic utilities such as `bg-brand`, `text-ink-muted`, `border-border`, and `rounded-card`; new raw hex values are not allowed in application markup.
@@ -48,7 +55,7 @@ Tokens are declared in `app/globals.css` through Tailwind v4 `@theme`. Component
 - `IconBadge`: shared contextual icon container for informational cards.
 - `StatusBadge`: shared stock, discount, surprise and status treatment with semantic tones.
 - `CardActionButton` and `StickyActionFooter`: shared actions attached to cards and fixed content surfaces.
-- Cards: panel background, border token, `rounded-card`, card shadow only when separation from the surface is needed.
+- Cards: panel background, border token, `rounded-card`, card shadow only when separation from the surface is needed. Interactive marketplace cards opt into the shared `SurfaceCard` hover elevation. Venue cards use large edge-to-edge media and an overlapping `MediaBadge`; box cards use the compact horizontal media/content composition shown in the reference boards.
 - Sheets and modals: surface background, `rounded-sheet` top corners, dimmed brand-deep overlay.
 - Product detail sheet: 90% mobile height, edge-to-edge media hero, overlaid handle/close action, straight-edged overlapping surface content and a persistent purchase footer.
 - Inputs: 52 px height, panel background, border token, brand focus ring.
