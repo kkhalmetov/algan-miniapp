@@ -14,6 +14,8 @@ describe('production security configuration', () => {
     expect(bootstrap).toContain('--email "$LETSENCRYPT_EMAIL"');
     expect(bootstrap).not.toContain('--register-unsafely-without-email');
     expect(bootstrap).toContain('connect-src $CONNECT_SRC');
+    expect(bootstrap).toContain('geolocation=()');
+    expect(bootstrap).not.toContain('geolocation=(self)');
   });
 
   it('includes security headers in every cache-policy location', () => {

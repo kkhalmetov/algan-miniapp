@@ -8,7 +8,6 @@ describe('local MVP state', () => {
       onboardingDone: false,
       legalAcceptance: undefined,
       profile: { firstName: '' },
-      location: undefined,
       locale: 'ru',
       currency: 'KZT',
       tab: 'home',
@@ -165,5 +164,14 @@ describe('local MVP state', () => {
       'tatti-family',
       'tatti-evening-surprise',
     ]);
+  });
+
+  it('removes the retired map location from persisted state', () => {
+    const migrated = migratePersistedState({
+      location: { lat: 42.3184, lng: 69.5907, address: 'Шымкент' },
+      orders: [],
+    }) as Record<string, unknown>;
+
+    expect(migrated).not.toHaveProperty('location');
   });
 });

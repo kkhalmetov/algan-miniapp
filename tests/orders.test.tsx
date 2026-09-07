@@ -167,7 +167,6 @@ describe('orders tab', () => {
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
     const navigation = screen.getByRole('navigation');
-    expect(within(navigation).queryByRole('button', { name: 'Карта' })).not.toBeInTheDocument();
     expect(within(navigation).getAllByRole('button').map((button) => button.textContent)).toEqual(['Главная', 'Заказы', 'Избранное', 'Профиль']);
     fireEvent.click(within(navigation).getByRole('button', { name: 'Профиль' }));
     expect(screen.getByRole('heading', { name: 'Kimal' })).toBeInTheDocument();

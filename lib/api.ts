@@ -1,13 +1,12 @@
 import { telegram } from './telegram';
-import type { Box, Order, Store, UserLocation, UserProfile } from './types';
+import type { Box, Order, Store, UserProfile } from './types';
 
 export interface DataProvider {
   authenticateTelegram(initData: string): Promise<string>;
   getProfile(): Promise<UserProfile>;
   updateProfile(profile: UserProfile): Promise<UserProfile>;
-  saveLocation(location: UserLocation): Promise<UserLocation>;
-  listStores(location: UserLocation): Promise<Store[]>;
-  listBoxes(location: UserLocation): Promise<Box[]>;
+  listStores(): Promise<Store[]>;
+  listBoxes(): Promise<Box[]>;
   listFavoriteStores(): Promise<Store[]>;
   toggleFavoriteStore(storeId: string): Promise<void>;
   listOrders(): Promise<Order[]>;

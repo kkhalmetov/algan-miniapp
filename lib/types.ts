@@ -18,12 +18,6 @@ export interface LegalAcceptance {
   method: 'continue_button';
 }
 
-export interface UserLocation {
-  lat: number;
-  lng: number;
-  address: string;
-}
-
 export interface Store {
   id: string;
   name: string;
@@ -84,10 +78,4 @@ export interface Order {
 export interface CartItem {
   boxId: string;
   quantity: number;
-}
-
-export interface GeocodingResult {
-  display_name: string;
-  lat: string;
-  lon: string;
 }

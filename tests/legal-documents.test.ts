@@ -14,7 +14,7 @@ describe('legal documents', () => {
         expect(document.sections.every((section) => Boolean(section.heading))).toBe(true);
       }
     }
-    expect(LEGAL_DOCUMENT_VERSION).toBe('1.1');
+    expect(LEGAL_DOCUMENT_VERSION).toBe('1.2');
     expect(LEGAL_EFFECTIVE_DATE).toBe('07.09.2026');
   });
 

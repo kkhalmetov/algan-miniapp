@@ -4,14 +4,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { boxes } from './mock-data';
 import { normalizePickupCode } from './order-id';
-import type { CartItem, Currency, LegalAcceptance, Locale, Order, Tab, UserLocation, UserProfile } from './types';
+import type { CartItem, Currency, LegalAcceptance, Locale, Order, Tab, UserProfile } from './types';
 
 interface AppState {
   hydrated: boolean;
   onboardingDone: boolean;
   profile: UserProfile;
   legalAcceptance?: LegalAcceptance;
-  location?: UserLocation;
   locale: Locale;
   currency: Currency;
   tab: Tab;
@@ -25,7 +24,6 @@ interface AppState {
   acceptLegalDocuments: (legalAcceptance: LegalAcceptance) => void;
   syncTelegramProfile: (profile: Pick<UserProfile, 'telegramId' | 'firstName' | 'lastName' | 'photoUrl'>) => void;
   updatePhone: (phone: string) => void;
-  setLocation: (location: UserLocation) => void;
   setLocale: (locale: Locale) => void;
   setCurrency: (currency: Currency) => void;
   setTab: (tab: Tab) => void;
@@ -46,10 +44,12 @@ const isRecord = (value: unknown): value is Record<string, unknown> => Boolean(v
 
 export const migratePersistedState = (persistedState: unknown) => {
   if (!isRecord(persistedState)) return persistedState;
-  const legacyFavoriteStoreIds = Array.isArray(persistedState.favoriteStoreIds)
-    ? persistedState.favoriteStoreIds.filter((id): id is string => typeof id === 'string')
+  const migratedState = { ...persistedState };
+  delete migratedState.location;
+  const legacyFavoriteStoreIds = Array.isArray(migratedState.favoriteStoreIds)
+    ? migratedState.favoriteStoreIds.filter((id): id is string => typeof id === 'string')
     : [];
-  const orders = Array.isArray(persistedState.orders) ? persistedState.orders.flatMap((candidate): Order[] => {
+  const orders = Array.isArray(migratedState.orders) ? migratedState.orders.flatMap((candidate): Order[] => {
     if (!isRecord(candidate)) return [];
     if (Array.isArray(candidate.items)) {
       return [{ ...candidate, pickupCode: normalizePickupCode(String(candidate.pickupCode ?? '')) } as unknown as Order];
@@ -67,17 +67,17 @@ export const migratePersistedState = (persistedState: unknown) => {
       createdAt: legacy.createdAt,
       status: legacy.status,
     }];
-  }) : persistedState.orders;
-  const favoriteBoxIds = Array.isArray(persistedState.favoriteBoxIds)
-    ? [...new Set(persistedState.favoriteBoxIds.filter((id): id is string => typeof id === 'string' && boxes.some((box) => box.id === id)))]
+  }) : migratedState.orders;
+  const favoriteBoxIds = Array.isArray(migratedState.favoriteBoxIds)
+    ? [...new Set(migratedState.favoriteBoxIds.filter((id): id is string => typeof id === 'string' && boxes.some((box) => box.id === id)))]
     : legacyFavoriteStoreIds.length > 0
       ? boxes
           .filter((box) => legacyFavoriteStoreIds.includes(box.storeId))
           .map((box) => box.id)
       : [];
-  return Array.isArray(persistedState.orders)
-    ? { ...persistedState, orders, favoriteBoxIds }
-    : { ...persistedState, favoriteBoxIds };
+  return Array.isArray(migratedState.orders)
+    ? { ...migratedState, orders, favoriteBoxIds }
+    : { ...migratedState, favoriteBoxIds };
 };
 
 export const useAppStore = create<AppState>()(
@@ -117,7 +117,6 @@ export const useAppStore = create<AppState>()(
         return { profile };
       }),
       updatePhone: (phone) => set((state) => ({ profile: { ...state.profile, phone } })),
-      setLocation: (location) => set({ location }),
       setLocale: (locale) => set({ locale }),
       setCurrency: (currency) => set({ currency }),
       setTab: (tab) => set({ tab }),
@@ -150,16 +149,16 @@ export const useAppStore = create<AppState>()(
         };
       }),
       resetDemo: () => set({
-        onboardingDone: false, profile: { firstName: '' }, legalAcceptance: undefined, location: undefined, favoriteBoxIds: [], orders: [],
+        onboardingDone: false, profile: { firstName: '' }, legalAcceptance: undefined, favoriteBoxIds: [], orders: [],
         cartStoreId: undefined, cartItems: [], purchasedBoxQuantities: {}, tab: 'home',
       }),
     }),
     {
       name: 'algan-miniapp',
-      version: 4,
+      version: 5,
       migrate: (persistedState) => migratePersistedState(persistedState) as never,
-      partialize: ({ onboardingDone, profile, legalAcceptance, location, locale, currency, favoriteBoxIds, orders, cartStoreId, cartItems, purchasedBoxQuantities }) => ({
-        onboardingDone, profile, legalAcceptance, location, locale, currency, favoriteBoxIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
+      partialize: ({ onboardingDone, profile, legalAcceptance, locale, currency, favoriteBoxIds, orders, cartStoreId, cartItems, purchasedBoxQuantities }) => ({
+        onboardingDone, profile, legalAcceptance, locale, currency, favoriteBoxIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
       }),
       onRehydrateStorage: () => (state) => state?.setHydrated(true),
     },
