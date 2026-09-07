@@ -127,6 +127,7 @@ describe('onboarding legal consent', () => {
     expect(consent.compareDocumentPosition(privacy) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const acceptButton = screen.getByRole('button', { name: 'Принять и продолжить' });
     expect(acceptButton.querySelector('svg')).not.toBeInTheDocument();
+    expect(acceptButton.parentElement).toHaveClass('mt-auto', 'pt-6');
     expect(screen.queryByText((_, element) => element?.tagName === 'P' && element.textContent?.startsWith('Нажимая «Принять и продолжить»'))).not.toBeInTheDocument();
     expect(privacy.compareDocumentPosition(acceptButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fireEvent.click(acceptButton);

@@ -98,7 +98,7 @@ export function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccep
         <div className="relative flex items-start justify-between gap-4"><AlganLogo light /><LanguagePill locale={locale} setLocale={setLocale} dark /></div>
         <div className="relative mt-10 grid h-16 w-16 place-items-center rounded-[20px] bg-highlight text-brand shadow-action"><ShieldCheck size={30} /></div>
       </div>
-      <div className="-mt-4 flex flex-1 flex-col rounded-t-sheet bg-surface px-page pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8 sm:px-page-wide">
+      <div className="-mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto rounded-t-sheet bg-surface px-page pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-8 sm:px-page-wide">
         <PageTitle>{t('legalUpdateTitle')}</PageTitle>
         <p className="mt-3 text-sm leading-6 text-ink-secondary">{t('legalUpdateText')}</p>
         <div className="mt-6 space-y-3">
@@ -106,7 +106,9 @@ export function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccep
           <ProfileRow icon={<FileCheck2 size={18} />} label={t('personalDataConsentTitle')} onClick={() => openLegal('personalDataConsent')} />
           <ProfileRow icon={<ShieldCheck size={18} />} label={t('privacyTitle')} onClick={() => openLegal('privacy')} />
         </div>
-        <PrimaryButton onClick={onAccept} className="mt-auto">{t('acceptAndContinue')}</PrimaryButton>
+        <div className="mt-auto shrink-0 pt-6">
+          <PrimaryButton onClick={onAccept}>{t('acceptAndContinue')}</PrimaryButton>
+        </div>
       </div>
     </main>
   );

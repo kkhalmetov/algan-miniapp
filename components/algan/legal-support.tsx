@@ -38,12 +38,9 @@ export function DocumentsModal({ t, locale, subject, onClose }: { t: Translator;
         <SheetHeader data-testid="documents-modal-header" className="pb-3" title={title} onBack={selectedView ? () => setSelectedView(null) : undefined} backLabel={t('back')} onClose={onClose} closeLabel={t('close')} focusTitleOnChange />
         <ScrollArea data-testid="documents-modal-scroll" className="flex-1 pb-4">
           {selectedView === 'contacts' ? (
-            <><CompanyContacts t={t} /><PrimaryButton onClick={() => setSelectedView(null)} className="mt-5">{t('back')}</PrimaryButton></>
+            <CompanyContacts t={t} />
           ) : selectedView ? (
-            <>
-              <LegalDocumentView type={selectedView} t={t} locale={locale} subject={subject} />
-              {!isPublishedLegalDocument(selectedView) && <PrimaryButton onClick={() => setSelectedView(null)} className="mt-5">{t('back')}</PrimaryButton>}
-            </>
+            <LegalDocumentView type={selectedView} t={t} locale={locale} subject={subject} />
           ) : (
             <>
               <SectionTitle as="h3" className="mt-4 text-base">{t('agreements')}</SectionTitle>

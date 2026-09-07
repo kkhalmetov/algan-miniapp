@@ -77,6 +77,7 @@ describe('profile information sections', () => {
     expect(screen.queryByText('Ежедневно с 09:00 до 21:00')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /algansupport@gmail.com/ })).toHaveAttribute('href', 'mailto:algansupport@gmail.com');
     expect(screen.getByRole('link', { name: /\+7 705 976 80 00/ })).toHaveAttribute('href', 'tel:+77059768000');
+    expect(screen.getAllByRole('button', { name: 'Назад' })).toHaveLength(1);
     fireEvent.click(screen.getAllByRole('button', { name: 'Назад' })[0]!);
 
     fireEvent.click(screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' }));
@@ -97,8 +98,14 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Правила заказа, оплаты, самовывоза, отмены и возврата' }));
     expect(screen.getByRole('heading', { name: 'Правила заказа, оплаты, самовывоза, отмены и возврата' })).toBeInTheDocument();
     expect(screen.getByText(/Документ готовится/)).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Назад' })).toHaveLength(1);
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Назад' })[0]!);
+    fireEvent.click(screen.getByRole('button', { name: 'Публичная оферта' }));
+    expect(screen.getByRole('heading', { name: 'Публичная оферта' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Назад' })).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Назад' }));
     expect(screen.getByRole('heading', { name: 'Правовая информация' })).toBeInTheDocument();
   });
 
