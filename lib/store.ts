@@ -101,15 +101,20 @@ export const useAppStore = create<AppState>()(
         const isSameTelegramUser = Boolean(
           telegramProfile.telegramId && state.profile.telegramId === telegramProfile.telegramId,
         );
-        return {
-          profile: {
-            ...state.profile,
-            telegramId: telegramProfile.telegramId ?? state.profile.telegramId,
-            firstName: telegramProfile.firstName || state.profile.firstName,
-            lastName: telegramProfile.lastName || undefined,
-            photoUrl: telegramProfile.photoUrl || (isSameTelegramUser ? state.profile.photoUrl : undefined),
-          },
+        const profile = {
+          ...state.profile,
+          telegramId: telegramProfile.telegramId ?? state.profile.telegramId,
+          firstName: telegramProfile.firstName || state.profile.firstName,
+          lastName: telegramProfile.lastName || undefined,
+          photoUrl: telegramProfile.photoUrl || (isSameTelegramUser ? state.profile.photoUrl : undefined),
         };
+        if (
+          profile.telegramId === state.profile.telegramId
+          && profile.firstName === state.profile.firstName
+          && profile.lastName === state.profile.lastName
+          && profile.photoUrl === state.profile.photoUrl
+        ) return state;
+        return { profile };
       }),
       updatePhone: (phone) => set((state) => ({ profile: { ...state.profile, phone } })),
       setLocation: (location) => set({ location }),

@@ -31,7 +31,7 @@ describe('onboarding legal consent', () => {
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
   };
 
-  it('replaces checkboxes with three linked legal documents', () => {
+  it('replaces checkboxes with three linked legal documents', async () => {
     openOnboarding();
 
     expect(screen.getAllByRole('main')).toHaveLength(1);
@@ -42,6 +42,7 @@ describe('onboarding legal consent', () => {
     expect(screen.getByRole('button', { name: 'политикой конфиденциальности' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'согласие на сбор и обработку персональных данных' }));
+    await act(async () => { await vi.dynamicImportSettled(); });
     const legalDialog = screen.getByRole('dialog', { name: 'Согласие на сбор и обработку персональных данных' });
     const legalHeader = within(legalDialog).getByTestId('legal-modal-header');
     const legalScroll = within(legalDialog).getByTestId('legal-modal-scroll');
@@ -74,7 +75,7 @@ describe('onboarding legal consent', () => {
     });
   });
 
-  it('personalizes the consent with Telegram identity', () => {
+  it('personalizes the consent with Telegram identity', async () => {
     window.Telegram = {
       WebApp: {
         initData: 'signed-data',
@@ -85,15 +86,17 @@ describe('onboarding legal consent', () => {
     };
     openOnboarding();
     fireEvent.click(screen.getByRole('button', { name: 'согласие на сбор и обработку персональных данных' }));
+    await act(async () => { await vi.dynamicImportSettled(); });
 
     expect(screen.getByText('Алия Сейдахметова')).toBeInTheDocument();
     expect(screen.getByText('987654')).toBeInTheDocument();
   });
 
-  it('renders the full privacy policy in Kazakh', () => {
+  it('renders the full privacy policy in Kazakh', async () => {
     useAppStore.setState({ locale: 'kk' });
     openOnboarding();
     fireEvent.click(screen.getByRole('button', { name: 'құпиялылық саясатымен' }));
+    await act(async () => { await vi.dynamicImportSettled(); });
 
     expect(screen.getByRole('heading', { name: 'Құпиялылық саясаты' })).toBeInTheDocument();
     expect(screen.getByText('1. Algan қандай деректерді алады')).toBeInTheDocument();

@@ -39,7 +39,7 @@ Status colours have paired light surfaces and dark foregrounds. Never communicat
 
 ### Typography
 
-Onest Variable is bundled through `@fontsource-variable/onest` with Latin and Cyrillic Extended coverage.
+Onest Variable is self-hosted in `public/fonts` with only the Latin, Cyrillic and Cyrillic Extended subsets used by the product.
 
 - Display: 32/36, weight 800.
 - Page title: 28/32, weight 800.

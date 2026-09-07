@@ -5,8 +5,7 @@ import {
   AlertTriangle, ArrowUpRight, Building2, CalendarDays, ChevronRight, CircleDollarSign, CircleHelp, Clock3, FileCheck2, FileText, Headphones, Heart, Home, Image as ImageIcon, Info, Languages, Mail,
   MapPin, Package, PackageCheck, Phone, ReceiptText, RotateCcw, Settings2, ShieldCheck, ShoppingBag, Sparkles, UserRound,
 } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, lazy, memo, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AlganLogo, AlganMark } from '@/components/algan-logo';
 import {
   AccordionItem, AvatarFrame, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
@@ -18,10 +17,7 @@ import {
 import { authenticateTelegram } from '@/lib/api';
 import { boxAllergens, boxContentName, boxName, storeAddress } from '@/lib/catalog-localization';
 import { fetchKztToRubRate, formatCurrency } from '@/lib/currency';
-import {
-  createLegalAcceptance, getLegalDocument, hasCurrentLegalAcceptance, isPublishedLegalDocument,
-  legalDocumentMeta, LEGAL_DOCUMENT_VERSION, LEGAL_EFFECTIVE_DATE,
-} from '@/lib/legal-documents';
+import { createLegalAcceptance, hasCurrentLegalAcceptance, isPublishedLegalDocument } from '@/lib/legal-core';
 import { getRouteOptions, type RouteProvider } from '@/lib/maps';
 import { boxes, demoPastOrder, storeById, stores } from '@/lib/mock-data';
 import { createOrderId, createOrderQrPayload, createPickupCode, formatOrderId, formatPickupCode } from '@/lib/order-id';
@@ -47,6 +43,11 @@ const LEGAL_TITLE_KEYS: Record<LegalDocument, CopyKey> = {
   orderRules: 'orderRulesTitle', publicOffer: 'publicOfferTitle',
 };
 const DEMO_FALLBACK_NAMES = new Set(['Пользователь', 'Қолданушы']);
+const LazyPublishedLegalDocument = lazy(() => import('@/components/published-legal-document'));
+const LazyQRCodeSVG = lazy(async () => {
+  const { QRCodeSVG } = await import('qrcode.react');
+  return { default: QRCodeSVG };
+});
 
 const localizedFirstName = (profile: UserProfile, t: Translator) => {
   const firstName = profile.firstName.trim();
@@ -72,7 +73,7 @@ export default function AlganApp() {
     completeOnboarding, acceptLegalDocuments, syncTelegramProfile, updatePhone, setLocale, setCurrency, setTab, toggleFavoriteBox,
     setCartItemQuantity, clearCart, completePurchase, resetDemo,
   } = useAppStore();
-  const t = useCallback((key: CopyKey) => getCopy(locale)(key), [locale]);
+  const t = useMemo(() => getCopy(locale), [locale]);
   const liveTelegramProfile = telegramProfile();
   const [phone, setPhone] = useState('+7');
   const [legal, setLegal] = useState<LegalDocument | null>(null);
@@ -91,6 +92,8 @@ export default function AlganApp() {
   const [currencyRateError, setCurrencyRateError] = useState(false);
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
   const mainScrollRef = useRef<HTMLElement>(null);
+  const displayCurrency: Currency = currency === 'RUB' && kztToRubRate ? 'RUB' : 'KZT';
+  const priceContext = useMemo(() => ({ currency: displayCurrency, kztToRubRate }), [displayCurrency, kztToRubRate]);
   const legalSubject: LegalSubject = {
     fullName: [
       liveTelegramProfile.firstName || profile.firstName,
@@ -108,13 +111,14 @@ export default function AlganApp() {
   const syncFromTelegram = useCallback(() => {
     prepareTelegram();
     const tgProfile = telegramProfile();
-    if (!tgProfile.isTelegram || !onboardingDone) return;
+    if (!tgProfile.isTelegram || !onboardingDone) return false;
     syncTelegramProfile({
       telegramId: tgProfile.telegramId,
       firstName: tgProfile.firstName,
       lastName: tgProfile.lastName || undefined,
       photoUrl: tgProfile.photoUrl || undefined,
     });
+    return true;
   }, [onboardingDone, syncTelegramProfile]);
 
   useEffect(() => {
@@ -128,7 +132,10 @@ export default function AlganApp() {
       TELEGRAM_SYNC_DELAYS_MS.forEach((delay) => {
         const timer = window.setTimeout(() => {
           retryTimers.delete(timer);
-          syncFromTelegram();
+          if (syncFromTelegram()) {
+            retryTimers.forEach((pendingTimer) => window.clearTimeout(pendingTimer));
+            retryTimers.clear();
+          }
         }, delay);
         retryTimers.add(timer);
       });
@@ -200,11 +207,11 @@ export default function AlganApp() {
     completeOnboarding(nextProfile, createLegalAcceptance(locale, nextProfile.telegramId));
   };
 
-  const openBox = (box: Box) => {
+  const openBox = useCallback((box: Box) => {
     if (availableQuantity(box, purchasedBoxQuantities) < 1) return;
     haptic('tap');
     setSelectedBox(box);
-  };
+  }, [purchasedBoxQuantities]);
 
   const applyCartQuantity = (box: Box, nextQuantity: number) => {
     const quantity = Math.min(Math.max(0, nextQuantity), availableQuantity(box, purchasedBoxQuantities));
@@ -306,9 +313,8 @@ export default function AlganApp() {
       </PhoneShell>
     );
   }
-  const displayCurrency: Currency = currency === 'RUB' && kztToRubRate ? 'RUB' : 'KZT';
   return (
-    <PriceContext.Provider value={{ currency: displayCurrency, kztToRubRate }}>
+    <PriceContext.Provider value={priceContext}>
     <PhoneShell>
       <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-surface sm:h-[780px]">
         <main ref={mainScrollRef} className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
@@ -534,7 +540,7 @@ function LanguagePill({ locale, setLocale, dark = false }: { locale: Locale; set
   );
 }
 
-function HomeTab({ t, locale, profile, favoriteBoxIds, toggleFavoriteBox, openBox, purchasedBoxQuantities }: {
+const HomeTab = memo(function HomeTab({ t, locale, profile, favoriteBoxIds, toggleFavoriteBox, openBox, purchasedBoxQuantities }: {
   t: Translator; locale: Locale; profile: UserProfile; favoriteBoxIds: string[];
   toggleFavoriteBox: (id: string) => void; openBox: (box: Box) => void; purchasedBoxQuantities: Record<string, number>;
 }) {
@@ -554,7 +560,7 @@ function HomeTab({ t, locale, profile, favoriteBoxIds, toggleFavoriteBox, openBo
 
       <ScreenBody>
         <div className="space-y-4 pb-7">
-          {boxes.map((box) => (
+          {boxes.map((box, index) => (
             <MarketplaceBoxCard
               key={box.id}
               box={box}
@@ -565,17 +571,18 @@ function HomeTab({ t, locale, profile, favoriteBoxIds, toggleFavoriteBox, openBo
               toggleFavorite={() => toggleFavoriteBox(box.id)}
               onOpen={() => openBox(box)}
               available={availableQuantity(box, purchasedBoxQuantities)}
+              priority={index === 0}
             />
           ))}
         </div>
       </ScreenBody>
     </>
   );
-}
+});
 
-function MarketplaceBoxCard({ box, store, t, locale, favorite, toggleFavorite, onOpen, available }: {
+function MarketplaceBoxCard({ box, store, t, locale, favorite, toggleFavorite, onOpen, available, priority = false }: {
   box: Box; store: Store; t: Translator; locale: Locale; favorite: boolean;
-  toggleFavorite: () => void; onOpen: () => void; available: number;
+  toggleFavorite: () => void; onOpen: () => void; available: number; priority?: boolean;
 }) {
   const formatPrice = usePriceFormatter(locale);
   const discount = Math.round((1 - box.salePrice / box.originalPrice) * 100);
@@ -591,7 +598,16 @@ function MarketplaceBoxCard({ box, store, t, locale, favorite, toggleFavorite, o
         className="group overflow-hidden rounded-card disabled:cursor-default"
       >
         <span className={`relative block h-44 overflow-hidden bg-canvas ${soldOut ? 'opacity-55 grayscale' : ''}`}>
-          <img src={box.image} alt={name} className="h-full w-full object-cover transition duration-[var(--motion-slow)] group-hover:scale-[1.03] group-disabled:scale-100" />
+          <img
+            src={box.image}
+            alt={name}
+            width={920}
+            height={600}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding="async"
+            className="h-full w-full object-cover transition duration-[var(--motion-slow)] group-hover:scale-[1.03] group-disabled:scale-100"
+          />
           <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-brand-deep/55 to-transparent" />
           <MediaBadge className="absolute bottom-3 left-3 border-3 border-panel">
             <img src={store.logo} alt="" className="h-9 w-9 object-contain" />
@@ -786,15 +802,17 @@ function OrdersTab({ t, locale, orders, onBrowseOffers }: { t: Translator; local
 function OrderQr({ order, t }: { order: Order; t: Translator }) {
   return (
     <div className="mx-auto w-fit rounded-card border border-border bg-white p-4 text-brand shadow-card">
-      <QRCodeSVG
-        value={createOrderQrPayload(order.id, order.pickupCode)}
-        size={184}
-        level="M"
-        marginSize={1}
-        bgColor="white"
-        fgColor="currentColor"
-        title={t('qrCode')}
-      />
+      <Suspense fallback={<span role="status" className="grid h-[184px] w-[184px] place-items-center text-xs font-bold text-ink-muted">{t('loading')}</span>}>
+        <LazyQRCodeSVG
+          value={createOrderQrPayload(order.id, order.pickupCode)}
+          size={184}
+          level="M"
+          marginSize={1}
+          bgColor="white"
+          fgColor="currentColor"
+          title={t('qrCode')}
+        />
+      </Suspense>
     </div>
   );
 }
@@ -1159,10 +1177,10 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
 }
 
 const routeProviderLogo: Record<RouteProvider, string> = {
-  '2gis': '/images/map-providers/2gis.jpg',
-  yandex: '/images/map-providers/yandex-maps.jpg',
-  google: '/images/map-providers/google-maps.jpg',
-  apple: '/images/map-providers/apple-maps.jpg',
+  '2gis': '/images/map-providers/2gis.webp',
+  yandex: '/images/map-providers/yandex-maps.webp',
+  google: '/images/map-providers/google-maps.webp',
+  apple: '/images/map-providers/apple-maps.webp',
 };
 
 function RoutePicker({ lat, lng, t, onClose }: {
@@ -1444,47 +1462,10 @@ function LegalDocumentView({ type, t, locale, subject }: {
   subject: LegalSubject;
 }) {
   if (!isPublishedLegalDocument(type)) return <LegalDocumentNotice t={t} />;
-  const document = getLegalDocument(locale, type);
-  const meta = legalDocumentMeta[locale];
   return (
-    <article className="mt-4 text-sm leading-7 text-ink-secondary" data-legal-document={type}>
-      <InsetSurface tone="brand" radius="card" className="p-4">
-        <div className="mb-3 flex items-center gap-2 border-b border-brand/10 pb-3 text-brand"><FileText size={18} /><span className="text-xs font-extrabold uppercase tracking-[.06em]">{t(LEGAL_TITLE_KEYS[type])}</span></div>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
-          <dt className="font-black text-ink-muted">{meta.version}</dt><dd className="text-right font-bold text-ink">{LEGAL_DOCUMENT_VERSION}</dd>
-          <dt className="font-black text-ink-muted">{meta.effectiveDate}</dt><dd className="text-right font-bold text-ink">{LEGAL_EFFECTIVE_DATE}</dd>
-          <dt className="font-black text-ink-muted">{meta.operator}</dt><dd className="text-right font-bold text-ink">{t('companyName')}</dd>
-        </dl>
-      </InsetSurface>
-
-      {type === 'personalDataConsent' && (
-        <InsetSurface tone="brand" className="mt-3 p-4">
-          <h3 className="font-black text-brand">{meta.subject}</h3>
-          <dl className="mt-3 space-y-2 text-xs">
-            <div className="flex items-start justify-between gap-4"><dt className="font-bold text-ink-muted">{meta.fullName}</dt><dd className="text-right font-black text-ink">{subject.fullName}</dd></div>
-            <div className="flex items-start justify-between gap-4"><dt className="font-bold text-ink-muted">{meta.telegramId}</dt><dd className="text-right font-black text-ink">{subject.telegramId ?? meta.notProvided}</dd></div>
-            <div className="flex items-start justify-between gap-4"><dt className="font-bold text-ink-muted">{meta.phone}</dt><dd className="text-right font-black text-ink">{subject.phone ?? meta.notProvided}</dd></div>
-          </dl>
-        </InsetSurface>
-      )}
-
-      <div className="mt-6 space-y-4 text-ink-secondary">
-        {document.introduction.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-      </div>
-      <div className="mt-7 space-y-0">
-        {document.sections.map((section) => (
-          <section key={section.heading} className="border-t border-border py-6 first:border-t-0 first:pt-0">
-            <h3 className="text-base font-black leading-6 text-ink">{section.heading}</h3>
-            {section.paragraphs && (
-              <div className="mt-3 space-y-3">{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</div>
-            )}
-            {section.items && (
-              <ul className="mt-3 list-disc space-y-2 pl-5">{section.items.map((item) => <li key={item}>{item}</li>)}</ul>
-            )}
-          </section>
-        ))}
-      </div>
-    </article>
+    <Suspense fallback={<p role="status" className="mt-6 text-center text-sm font-bold text-ink-muted">{t('loading')}</p>}>
+      <LazyPublishedLegalDocument type={type} t={t} locale={locale} subject={subject} />
+    </Suspense>
   );
 }
 

@@ -83,11 +83,12 @@ describe('orders tab', () => {
     expect(screen.queryByText('Номер заказа: 12345678')).not.toBeInTheDocument();
   });
 
-  it('opens a focused pickup window with only QR, instructions and code', () => {
+  it('opens a focused pickup window with only QR, instructions and code', async () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
     fireEvent.click(screen.getByRole('button', { name: 'Получить заказ' }));
+    await act(async () => { await vi.dynamicImportSettled(); });
 
     const dialog = screen.getByRole('dialog', { name: 'Получить заказ' });
     expect(within(dialog).getByTitle('QR-код')).toBeInTheDocument();

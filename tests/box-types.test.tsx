@@ -36,6 +36,21 @@ describe('box types', () => {
     expect(boxes.filter((box) => box.type === 'DEFINED').every((box) => Boolean(box.contents?.length))).toBe(true);
   });
 
+  it('prioritizes only the first optimized catalog image', () => {
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+
+    const cards = screen.getAllByTestId('marketplace-box-card');
+    const firstImage = within(cards[0]!).getByRole('img', { name: 'Surprise Tatti-box' });
+    const secondImage = within(cards[1]!).getByRole('img', { name: 'Tatti-box' });
+    expect(firstImage).toHaveAttribute('src', '/images/bakery.webp');
+    expect(firstImage).toHaveAttribute('loading', 'eager');
+    expect(firstImage).toHaveAttribute('fetchpriority', 'high');
+    expect(firstImage).toHaveAttribute('decoding', 'async');
+    expect(secondImage).toHaveAttribute('loading', 'lazy');
+    expect(secondImage).toHaveAttribute('fetchpriority', 'auto');
+  });
+
   it('uses the localized surprise explanation in Kazakh', () => {
     useAppStore.setState({ locale: 'kk' });
     render(<AlganApp />);

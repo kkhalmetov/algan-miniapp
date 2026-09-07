@@ -68,6 +68,15 @@ describe('local MVP state', () => {
     });
   });
 
+  it('skips redundant Telegram profile updates', () => {
+    useAppStore.setState({ profile: { telegramId: 123, firstName: 'Kimal', lastName: 'A', phone: '+77001234567' } });
+    const stateBeforeSync = useAppStore.getState();
+
+    useAppStore.getState().syncTelegramProfile({ telegramId: 123, firstName: 'Kimal', lastName: 'A', photoUrl: undefined });
+
+    expect(useAppStore.getState()).toBe(stateBeforeSync);
+  });
+
   it('keeps the last working avatar when Telegram omits photo_url', () => {
     useAppStore.setState({ profile: { telegramId: 123, firstName: 'Kimal', photoUrl: 'https://example.test/avatar.jpg' } });
     useAppStore.getState().syncTelegramProfile({ telegramId: 123, firstName: 'Kimal', lastName: undefined, photoUrl: undefined });

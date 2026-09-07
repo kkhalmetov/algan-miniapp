@@ -49,7 +49,7 @@ describe('profile information sections', () => {
     expect(heading.parentElement).not.toHaveTextContent('+7 705 976 80 00');
   });
 
-  it('groups all legal documents under one profile action', () => {
+  it('groups all legal documents under one profile action', async () => {
     openProfile();
 
     expect(screen.queryByRole('button', { name: 'Условия использования' })).not.toBeInTheDocument();
@@ -80,6 +80,7 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getAllByRole('button', { name: 'Назад' })[0]!);
 
     fireEvent.click(screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' }));
+    await act(async () => { await vi.dynamicImportSettled(); });
     const consentDialog = screen.getByRole('dialog', { name: 'Правовая информация' });
     const documentHeader = within(consentDialog).getByTestId('documents-modal-header');
     const documentScroll = within(consentDialog).getByTestId('documents-modal-scroll');

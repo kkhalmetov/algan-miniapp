@@ -59,7 +59,7 @@ describe('Algan design system', () => {
     ];
 
     for (const token of requiredTokens) expect(css).toContain(token);
-    expect(layout).toContain("import '@fontsource-variable/onest'");
+    expect(layout).toContain("import './fonts.css'");
     expect(css).toContain('--font-sans: "Onest Variable", sans-serif');
   });
 

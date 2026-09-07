@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { BRAND_COLOR } from '@/lib/design-tokens';
-import '@fontsource-variable/onest';
+import './fonts.css';
 import './globals.css';
 
 export const metadata: Metadata = {

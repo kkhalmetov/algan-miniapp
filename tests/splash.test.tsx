@@ -79,6 +79,24 @@ describe('startup splash', () => {
     });
   });
 
+  it('stops Telegram retries after a successful profile sync', () => {
+    const ready = vi.fn();
+    useAppStore.setState({ onboardingDone: true, legalAcceptance: acceptedLegalDocuments, profile: { firstName: 'Пользователь' } });
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed-data',
+        initDataUnsafe: { user: { id: 123456, first_name: 'Kimal' } },
+        ready,
+        expand: () => undefined,
+      },
+    };
+
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(3000));
+
+    expect(ready).toHaveBeenCalledTimes(1);
+  });
+
   it('does not overwrite a manually selected onboarding language on Telegram retries', () => {
     window.Telegram = {
       WebApp: {

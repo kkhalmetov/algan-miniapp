@@ -143,8 +143,8 @@ describe('box-first catalog and details', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Построить маршрут' }));
     const picker = screen.getByRole('dialog', { name: 'Выберите карту' });
-    expect(within(picker).getByRole('button', { name: /2GIS/ }).querySelector('img')).toHaveAttribute('src', '/images/map-providers/2gis.jpg');
-    expect(within(picker).getByRole('button', { name: /Яндекс Карты/ }).querySelector('img')).toHaveAttribute('src', '/images/map-providers/yandex-maps.jpg');
+    expect(within(picker).getByRole('button', { name: /2GIS/ }).querySelector('img')).toHaveAttribute('src', '/images/map-providers/2gis.webp');
+    expect(within(picker).getByRole('button', { name: /Яндекс Карты/ }).querySelector('img')).toHaveAttribute('src', '/images/map-providers/yandex-maps.webp');
     fireEvent.click(within(picker).getByRole('button', { name: /Google Maps/ }));
     expect(open).toHaveBeenCalledWith(expect.stringContaining('destination=42.3184%2C69.5907'), '_blank', 'noopener,noreferrer');
     open.mockRestore();
