@@ -74,7 +74,10 @@ describe('Algan design system', () => {
   });
 
   it('routes shared controls through the UI kit', () => {
-    const app = readFileSync(resolve(root, 'app/app-client.tsx'), 'utf8');
+    const app = [
+      'app/app-client.tsx',
+      ...sourceFiles('components/algan'),
+    ].map((path) => readFileSync(resolve(root, path), 'utf8')).join('\n');
 
     expect(app).toContain("from '@/components/ui-kit'");
     expect(app).not.toContain('className="primary-button');
@@ -111,12 +114,20 @@ describe('Algan design system', () => {
 
   it('uses the primary Kazakh document language and keeps it synchronized at runtime', () => {
     const layout = readFileSync(resolve(root, 'app/layout.tsx'), 'utf8');
-    const app = readFileSync(resolve(root, 'app/app-client.tsx'), 'utf8');
+    const checkout = readFileSync(resolve(root, 'components/algan/checkout.tsx'), 'utf8');
 
     expect(layout).toContain('<html lang="kk">');
-    expect(app).toContain('document.documentElement.lang = locale');
-    expect(app).toContain('aria-busy={paymentPending}');
+    expect(readFileSync(resolve(root, 'hooks/use-app-runtime.ts'), 'utf8')).toContain('document.documentElement.lang = locale');
+    expect(checkout).toContain('aria-busy={paymentPending}');
     expect(layout).not.toContain('спасаем еду');
+  });
+
+  it('keeps the application entry point focused on orchestration', () => {
+    const app = readFileSync(resolve(root, 'app/app-client.tsx'), 'utf8');
+
+    expect(app.split('\n').length).toBeLessThan(350);
+    expect(app).not.toContain("from '@/components/ui-kit'");
+    expect(app).not.toMatch(/^function\s+(?:HomeTab|OrdersTab|ProfileTab|BoxDetails|CartSheet)/m);
   });
 
   it('keeps runtime platform colors aligned with CSS tokens', () => {
