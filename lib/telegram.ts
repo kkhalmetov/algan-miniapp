@@ -14,6 +14,9 @@ type TelegramWebApp = {
   HapticFeedback?: { impactOccurred: (style: 'light' | 'medium' | 'heavy') => void; notificationOccurred: (type: 'success' | 'error' | 'warning') => void };
   setHeaderColor?: (color: string) => void;
   setBackgroundColor?: (color: string) => void;
+  setBottomBarColor?: (color: string) => void;
+  enableClosingConfirmation?: () => void;
+  disableClosingConfirmation?: () => void;
   openLink?: (url: string, options?: { try_instant_view?: boolean }) => void;
   openTelegramLink?: (url: string) => void;
 };
@@ -48,7 +51,17 @@ export function prepareTelegram() {
     webApp.setHeaderColor?.(supportsTelegramVersion(webApp, '6.9') ? BRAND_COLOR : 'bg_color');
     webApp.setBackgroundColor?.(APP_SURFACE_COLOR);
   }
+  if (webApp && supportsTelegramVersion(webApp, '7.10')) {
+    webApp.setBottomBarColor?.(APP_SURFACE_COLOR);
+  }
   return webApp;
+}
+
+export function setTelegramClosingConfirmation(enabled: boolean) {
+  const webApp = telegram();
+  if (!webApp || !supportsTelegramVersion(webApp, '6.2')) return;
+  if (enabled) webApp.enableClosingConfirmation?.();
+  else webApp.disableClosingConfirmation?.();
 }
 
 export function telegramProfile() {

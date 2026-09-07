@@ -1,15 +1,16 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import { Clock3, Heart, MapPin, Package } from 'lucide-react';
+import { Clock3, FlaskConical, Heart, MapPin, Package } from 'lucide-react';
 import { memo } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import { usePriceFormatter } from '@/components/algan/price-context';
 import type { Translator } from '@/components/algan/types';
-import { BrandHeader, CardPressable, CardTitle, EmptyState, IconButton, MediaBadge, PageSection, PageTitle, ScreenBody, StatusBadge, SurfaceCard } from '@/components/ui-kit';
+import { BrandHeader, CardPressable, CardTitle, EmptyState, IconButton, MediaBadge, NoticeCard, PageSection, PageTitle, ScreenBody, StatusBadge, SurfaceCard } from '@/components/ui-kit';
 import { availableQuantity, localizedFirstName } from '@/lib/app-utils';
 import { boxName, storeAddress } from '@/lib/catalog-localization';
 import { boxes, storeById } from '@/lib/mock-data';
+import { IS_DEMO_RELEASE } from '@/lib/release';
 import { formatBoxesLeft } from '@/lib/stock';
 import type { Box, Locale, Store, UserProfile } from '@/lib/types';
 
@@ -35,6 +36,11 @@ export const HomeTab = memo(function HomeTab({ t, locale, profile, favoriteBoxId
       </BrandHeader>
 
       <ScreenBody>
+        {IS_DEMO_RELEASE && (
+          <NoticeCard className="mb-4" icon={<FlaskConical size={19} />} title={t('demoModeTitle')} tone="warning">
+            {t('demoModeText')}
+          </NoticeCard>
+        )}
         <div className="space-y-4 pb-7">
           {boxes.map((box, index) => (
             <MarketplaceBoxCard

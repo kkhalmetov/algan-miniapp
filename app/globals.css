@@ -73,6 +73,11 @@
 :root {
   --background: var(--color-canvas);
   --foreground: var(--color-ink);
+  --algan-viewport-height: var(--tg-viewport-stable-height, 100dvh);
+  --algan-safe-area-top: max(env(safe-area-inset-top, 0px), var(--tg-content-safe-area-inset-top, 0px));
+  --algan-safe-area-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-content-safe-area-inset-bottom, 0px));
+  --algan-safe-area-left: max(env(safe-area-inset-left, 0px), var(--tg-content-safe-area-inset-left, 0px));
+  --algan-safe-area-right: max(env(safe-area-inset-right, 0px), var(--tg-content-safe-area-inset-right, 0px));
 }
 
 * { box-sizing: border-box; }

@@ -92,7 +92,7 @@ export function PageSection({ title, children, className }: {
   className?: string;
 }) {
   return (
-    <section className={cx('min-h-full bg-canvas px-page pb-8 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-page-wide', className)}>
+    <section className={cx('min-h-full bg-canvas px-page pb-8 pt-[max(1.5rem,var(--algan-safe-area-top))] sm:px-page-wide', className)}>
       <PageTitle>{title}</PageTitle>
       {children}
     </section>
@@ -102,7 +102,7 @@ export function PageSection({ title, children, className }: {
 export function BrandHeader({ className, ...props }: HTMLAttributes<HTMLElement>) {
   return (
     <header
-      className={cx('relative overflow-hidden bg-brand px-page pb-6 pt-[max(1.25rem,env(safe-area-inset-top))] text-white sm:px-page-wide', className)}
+      className={cx('relative overflow-hidden bg-brand px-page pb-6 pt-[max(1.25rem,var(--algan-safe-area-top))] text-white sm:px-page-wide', className)}
       {...props}
     />
   );
@@ -114,7 +114,7 @@ export function TopAppBar({ leading, title, trailing, className, ...props }: HTM
   trailing: ReactNode;
 }) {
   return (
-    <header className={cx('shrink-0 border-b border-border bg-surface/96 px-page pb-2.5 pt-[max(.625rem,env(safe-area-inset-top))] text-ink backdrop-blur-xl sm:px-page-wide', className)} {...props}>
+    <header className={cx('shrink-0 border-b border-border bg-surface/96 px-page pb-2.5 pt-[max(.625rem,var(--algan-safe-area-top))] text-ink backdrop-blur-xl sm:px-page-wide', className)} {...props}>
       <div className="flex min-h-11 items-center gap-3">
         {leading}
         <div className="min-w-0 flex-1 truncate text-center text-sm font-extrabold">{title}</div>
@@ -358,7 +358,7 @@ export function MediaSheetHeader({ children, onClose, closeLabel, className, ...
 }
 
 export function ModalBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cx('px-page pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:px-page-wide', className)} {...props} />;
+  return <div className={cx('px-page pb-[max(1.25rem,var(--algan-safe-area-bottom))] pt-4 sm:px-page-wide', className)} {...props} />;
 }
 
 export function ScrollArea({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
@@ -732,7 +732,7 @@ export function StickyActionFooter({ className, density = 'default', ...props }:
     <footer
       className={cx(
         'shrink-0 border-t border-border bg-surface/96 px-page backdrop-blur-xl sm:px-page-wide',
-        density === 'compact' ? 'pb-[max(.625rem,env(safe-area-inset-bottom))] pt-2.5' : 'pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3',
+        density === 'compact' ? 'pb-[max(.625rem,var(--algan-safe-area-bottom))] pt-2.5' : 'pb-[max(.75rem,var(--algan-safe-area-bottom))] pt-3',
         className,
       )}
       {...props}
@@ -742,7 +742,7 @@ export function StickyActionFooter({ className, density = 'default', ...props }:
 
 export function BottomNavigation({ children }: { children: ReactNode }) {
   return (
-    <nav className="z-[800] shrink-0 border-t border-border bg-surface/96 px-2 pb-[max(.4rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl">
+    <nav className="z-[800] shrink-0 border-t border-border bg-surface/96 px-2 pb-[max(.4rem,var(--algan-safe-area-bottom))] pt-1.5 backdrop-blur-xl">
       <div className="grid grid-cols-4">{children}</div>
     </nav>
   );
@@ -780,7 +780,7 @@ export function FullScreenFeedback({ icon, title, description, children, centere
 }) {
   return (
     <div className={cx(
-      'hide-scrollbar flex min-h-dvh flex-col overflow-y-auto overscroll-contain px-page pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center sm:min-h-[780px] sm:px-page-wide',
+      'hide-scrollbar flex min-h-[var(--algan-viewport-height)] flex-col overflow-y-auto overscroll-contain px-page pb-[max(1.5rem,var(--algan-safe-area-bottom))] pt-[max(1.5rem,var(--algan-safe-area-top))] text-center sm:min-h-[780px] sm:px-page-wide',
       tone === 'coral' && 'bg-accent-soft',
       tone === 'danger' && 'bg-danger-soft/30',
       centered && 'justify-center',

@@ -11,7 +11,7 @@ import { openTelegramLink } from '@/lib/telegram';
 import type { CopyKey } from '@/lib/translations';
 import type { Locale } from '@/lib/types';
 
-const SUPPORT_TELEGRAM_URL = 'https://t.me/kkhalmetov';
+const SUPPORT_TELEGRAM_URL = 'https://t.me/alganonline_bot';
 const LEGAL_TITLE_KEYS: Record<LegalDocument, CopyKey> = {
   terms: 'termsTitle',
   personalDataConsent: 'personalDataConsentTitle',

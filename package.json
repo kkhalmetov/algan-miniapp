@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev": "vinext dev",
+    "validate:env": "node scripts/validate-env.mjs",
+    "prebuild": "npm run validate:env",
     "build": "node scripts/build.mjs",
     "start": "vinext start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
@@ -15,16 +17,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.102.3",
-    "i18next": "^26.4.0",
     "lucide-react": "^1.34.0",
     "next": "^16.3.2",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-hook-form": "^7.86.0",
-    "react-i18next": "^17.0.12",
-    "zod": "^4.4.3",
     "zustand": "^5.0.15"
   },
   "devDependencies": {

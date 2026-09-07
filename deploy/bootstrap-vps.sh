@@ -6,10 +6,21 @@ WWW_HOST="www.algan-bot.online"
 APP_ROOT="/var/www/algan-miniapp"
 ACME_ROOT="/var/www/letsencrypt"
 DEPLOY_USER="algan-deploy"
+API_ORIGIN="${API_ORIGIN:-}"
 
 if [[ -z "${DEPLOY_PUBLIC_KEY:-}" ]]; then
   echo "DEPLOY_PUBLIC_KEY is required" >&2
   exit 1
+fi
+
+if [[ -n "$API_ORIGIN" && ! "$API_ORIGIN" =~ ^https://[A-Za-z0-9.-]+(:[0-9]+)?$ ]]; then
+  echo "API_ORIGIN must be an HTTPS origin without a path" >&2
+  exit 1
+fi
+
+CONNECT_SRC="'self' https://open.er-api.com"
+if [[ -n "$API_ORIGIN" ]]; then
+  CONNECT_SRC="$CONNECT_SRC $API_ORIGIN"
 fi
 
 apt-get update
@@ -44,6 +55,7 @@ server {
     listen 80;
     listen [::]:80;
     server_name $APP_HOST $WWW_HOST;
+    server_tokens off;
     root $APP_ROOT/current;
     index index.html;
 
@@ -73,8 +85,8 @@ certbot certonly --webroot --webroot-path "$ACME_ROOT" \
   --non-interactive --agree-tos --register-unsafely-without-email --keep-until-expiring
 
 install -d -m 755 /etc/nginx/snippets
-cat > /etc/nginx/snippets/algan-security-headers.conf <<'SECURITY_HEADERS'
-add_header Content-Security-Policy "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'self' https://telegram.org https://*.telegram.org; form-action 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://open.er-api.com; manifest-src 'self'; media-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests" always;
+cat > /etc/nginx/snippets/algan-security-headers.conf <<SECURITY_HEADERS
+add_header Content-Security-Policy "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'self' https://telegram.org https://*.telegram.org; form-action 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src $CONNECT_SRC; manifest-src 'self'; media-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests" always;
 add_header Strict-Transport-Security "max-age=31536000" always;
 add_header X-Content-Type-Options "nosniff" always;
 add_header Referrer-Policy "strict-origin-when-cross-origin" always;
@@ -87,6 +99,7 @@ server {
     listen 80;
     listen [::]:80;
     server_name $APP_HOST $WWW_HOST;
+    server_tokens off;
 
     location ^~ /.well-known/acme-challenge/ {
         root $ACME_ROOT;
@@ -103,6 +116,7 @@ server {
     listen 443 ssl;
     listen [::]:443 ssl;
     server_name $WWW_HOST;
+    server_tokens off;
 
     ssl_certificate /etc/letsencrypt/live/$APP_HOST/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/$APP_HOST/privkey.pem;
@@ -117,6 +131,7 @@ server {
     listen 443 ssl;
     listen [::]:443 ssl;
     server_name $APP_HOST;
+    server_tokens off;
     root $APP_ROOT/current;
     index index.html;
 

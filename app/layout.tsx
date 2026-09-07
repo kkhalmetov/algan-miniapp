@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'https://algan-bot.online'),
   title: 'Algan — тиімді ұсыныстар жаныңызда',
   description: 'Шымкенттегі сүйікті мекемелерден тиімді бағамен бокстар.',
+  applicationName: 'Algan',
+  manifest: '/manifest.webmanifest',
   icons: {
     icon: '/algan-mark.svg?v=3',
   },
@@ -33,8 +35,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="kk">
+      <head>
+        <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
+      </head>
       <body>
-        <Script src="https://telegram.org/js/telegram-web-app.js" strategy="afterInteractive" />
         {children}
       </body>
     </html>

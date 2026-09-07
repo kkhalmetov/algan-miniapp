@@ -2,6 +2,8 @@
 
 Покупательский Telegram Mini App для сервиса food rescue в Шымкенте. Пользователь находит боксы нереализованной еды со скидкой, сохраняет конкретные предложения в избранное и проходит демонстрационный сценарий оплаты.
 
+Текущий публичный релиз — технически защищённый **demo production**: [algan-bot.online](https://algan-bot.online), запуск в Telegram — [@alganonline_bot](https://t.me/alganonline_bot?startapp). Режим `live` заблокирован автоматическим release gate до подключения серверного каталога, заказов, реальной оплаты и публикации двух оставшихся юридических документов. Полный статус и порядок запуска описаны в [PRODUCTION.md](./PRODUCTION.md).
+
 ## Возможности MVP
 
 - онбординг с номером телефона и версионированным подтверждением юридических документов;
@@ -29,6 +31,7 @@ npm run dev
 
 ```bash
 npm run typecheck
+npm run lint
 npm test
 npm run build
 ```
@@ -52,7 +55,7 @@ Content-Type: application/json
 
 ## Карты
 
-MVP использует стандартные OSM tiles и публичный Nominatim. Поиск выполняется только после явной отправки формы, без autocomplete, результаты не запрашиваются в фоне. Для массового коммерческого запуска endpoints необходимо заменить на выделенного OSM-провайдера.
+Приложение открывает маршрут к заведению через нативный Telegram API в 2GIS, Яндекс Картах, Google Maps или Apple Maps. Координаты не передаются сторонним сервисам до явного выбора пользователя.
 
 ## Фото
 
@@ -68,6 +71,7 @@ MVP использует стандартные OSM tiles и публичный 
 GitHub Actions проверяет и экспортирует приложение, загружает релиз на VPS и атомарно переключает symlink `current`. Нужны:
 
 - repository variables: `VPS_HOST=92.38.49.57`, `VPS_USER=algan-deploy`;
+- repository variables: `NEXT_PUBLIC_RELEASE_MODE=demo`, `NEXT_PUBLIC_DATA_MODE=mock`;
 - repository secrets: `VPS_SSH_PRIVATE_KEY`, `VPS_HOST_KEY`.
 
-Первичная настройка VPS выполняется скриптом `deploy/bootstrap-vps.sh` от root с публичным ключом в `DEPLOY_PUBLIC_KEY`. Production-адрес: `https://algan-bot.online`; `www` перенаправляется на основной домен.
+Каждая поставка проходит lint, typecheck, полный набор тестов, production build и внешний smoke test по `release.json` и security headers. При неуспешном smoke test workflow автоматически возвращает предыдущий релиз. Первичная настройка VPS выполняется скриптом `deploy/bootstrap-vps.sh` от root с публичным ключом в `DEPLOY_PUBLIC_KEY`. Production-адрес: `https://algan-bot.online`; `www` перенаправляется на основной домен.

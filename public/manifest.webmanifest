@@ -1,0 +1,19 @@
+{
+  "name": "Algan",
+  "short_name": "Algan",
+  "description": "Шымкенттегі сүйікті мекемелерден тиімді бағамен бокстар.",
+  "lang": "kk",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f4ee",
+  "theme_color": "#0d4f45",
+  "icons": [
+    {
+      "src": "/algan-mark.svg?v=3",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

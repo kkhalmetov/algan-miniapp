@@ -9,6 +9,8 @@ describe('production security configuration', () => {
     expect(bootstrap).toContain('Strict-Transport-Security');
     expect(bootstrap).toContain('X-Content-Type-Options');
     expect(bootstrap).toContain('frame-ancestors');
+    expect(bootstrap).toContain('API_ORIGIN must be an HTTPS origin without a path');
+    expect(bootstrap).toContain('connect-src $CONNECT_SRC');
   });
 
   it('includes security headers in every cache-policy location', () => {

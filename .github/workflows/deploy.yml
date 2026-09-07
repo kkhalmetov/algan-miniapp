@@ -15,12 +15,15 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://algan-bot.online
     env:
-      NEXT_PUBLIC_DATA_MODE: mock
+      NEXT_PUBLIC_DATA_MODE: ${{ vars.NEXT_PUBLIC_DATA_MODE || 'mock' }}
+      NEXT_PUBLIC_RELEASE_MODE: ${{ vars.NEXT_PUBLIC_RELEASE_MODE || 'demo' }}
+      NEXT_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_API_BASE_URL }}
       NEXT_PUBLIC_APP_ORIGIN: https://algan-bot.online
-      NEXT_PUBLIC_OSM_TILE_URL: https://tile.openstreetmap.org/{z}/{x}/{y}.png
-      NEXT_PUBLIC_GEOCODER_URL: https://nominatim.openstreetmap.org
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
@@ -28,6 +31,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
@@ -61,6 +65,9 @@ jobs:
 
           ssh "${SSH_ARGS[@]}" "$VPS_USER@$VPS_HOST" true
 
+          PREVIOUS_RELEASE="$(ssh "${SSH_ARGS[@]}" "$VPS_USER@$VPS_HOST" \
+            'target=$(readlink -f /var/www/algan-miniapp/current 2>/dev/null || true); if [ -n "$target" ]; then basename "$target"; fi')"
+
           for attempt in 1 2 3; do
             if rsync -az --delete -e "ssh ${SSH_ARGS[*]}" \
               dist/client/ "$VPS_USER@$VPS_HOST:/var/www/algan-miniapp/releases/$GITHUB_SHA/"; then
@@ -76,3 +83,31 @@ jobs:
 
           ssh "${SSH_ARGS[@]}" "$VPS_USER@$VPS_HOST" \
             "/usr/local/bin/algan-activate '$GITHUB_SHA'"
+
+          RELEASE_OK=false
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error --connect-timeout 5 --max-time 15 \
+              https://algan-bot.online/release.json | grep --fixed-strings --quiet "\"commit\":\"$GITHUB_SHA\""; then
+              RELEASE_OK=true
+              break
+            fi
+            sleep "$((attempt * 2))"
+          done
+
+          HEADERS="$(curl --fail --silent --show-error --head --connect-timeout 5 --max-time 15 \
+            https://algan-bot.online/)" || RELEASE_OK=false
+          for header in content-security-policy strict-transport-security x-content-type-options; do
+            if ! grep --ignore-case --quiet "^$header:" <<<"$HEADERS"; then
+              echo "Missing required production header: $header" >&2
+              RELEASE_OK=false
+            fi
+          done
+
+          if [ "$RELEASE_OK" != true ]; then
+            if [[ "$PREVIOUS_RELEASE" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "Smoke test failed; rolling back to $PREVIOUS_RELEASE" >&2
+              ssh "${SSH_ARGS[@]}" "$VPS_USER@$VPS_HOST" \
+                "/usr/local/bin/algan-activate '$PREVIOUS_RELEASE'"
+            fi
+            exit 1
+          fi

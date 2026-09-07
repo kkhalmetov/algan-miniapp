@@ -110,6 +110,7 @@ describe('profile information sections', () => {
   });
 
   it('opens help and FAQ answers without company details', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
     openProfile();
 
     const settings = screen.getByRole('button', { name: 'Настройки' });
@@ -122,9 +123,12 @@ describe('profile information sections', () => {
     expect(screen.getByRole('heading', { name: 'Помощь и поддержка' })).toBeInTheDocument();
     expect(screen.getByText(/Мы рядом, если появились вопросы/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'FAQ' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Связаться с поддержкой.*Ежедневно с 09:00 до 21:00/ })).toBeInTheDocument();
+    const contactSupport = screen.getByRole('button', { name: /Связаться с поддержкой.*Ежедневно с 09:00 до 21:00/ });
+    expect(contactSupport).toBeInTheDocument();
     expect(screen.queryByText('@kkhalmetov')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Реквизиты и контакты' })).not.toBeInTheDocument();
+    fireEvent.click(contactSupport);
+    expect(open).toHaveBeenCalledWith('https://t.me/alganonline_bot', '_blank', 'noopener,noreferrer');
 
     fireEvent.click(screen.getByRole('button', { name: 'FAQ' }));
     expect(screen.getByRole('heading', { name: 'FAQ', level: 2 })).toHaveFocus();

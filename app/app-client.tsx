@@ -19,7 +19,7 @@ import { processPayment } from '@/lib/payment';
 import { normalizeKazakhstanPhone } from '@/lib/phone';
 import { useAppStore } from '@/lib/store';
 import { getCopy } from '@/lib/translations';
-import { haptic, telegramProfile } from '@/lib/telegram';
+import { haptic, setTelegramClosingConfirmation, telegramProfile } from '@/lib/telegram';
 import type { Box, Currency, Order } from '@/lib/types';
 
 export { MINIMUM_SPLASH_MS } from '@/hooks/use-app-runtime';
@@ -66,6 +66,13 @@ export default function AlganApp() {
 
   useTelegramRuntime(onboardingDone, syncTelegramProfile);
   useDocumentLanguage(locale);
+
+  useEffect(() => {
+    setTelegramClosingConfirmation(paymentPending);
+    return () => {
+      if (paymentPending) setTelegramClosingConfirmation(false);
+    };
+  }, [paymentPending]);
 
   useEffect(() => {
     if (mainScrollRef.current) mainScrollRef.current.scrollTop = 0;
@@ -185,7 +192,7 @@ export default function AlganApp() {
   return (
     <PriceProvider currency={displayCurrency} kztToRubRate={kztToRubRate}>
     <PhoneShell>
-      <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-surface sm:h-[780px]">
+      <div className="relative flex h-[var(--algan-viewport-height)] min-h-0 flex-col overflow-hidden bg-surface sm:h-[780px]">
         <main ref={mainScrollRef} className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
           {tab === 'home' && (
             <HomeTab

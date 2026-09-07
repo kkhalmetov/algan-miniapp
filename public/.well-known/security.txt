@@ -1,0 +1,4 @@
+Contact: mailto:algansupport@gmail.com
+Expires: 2027-09-07T00:00:00Z
+Preferred-Languages: kk, ru
+Canonical: https://algan-bot.online/.well-known/security.txt

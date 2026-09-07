@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { haptic, openExternalLink, openTelegramLink, prepareTelegram, telegramProfile } from '../lib/telegram';
+import { haptic, openExternalLink, openTelegramLink, prepareTelegram, setTelegramClosingConfirmation, telegramProfile } from '../lib/telegram';
 
 describe('Telegram profile adapter', () => {
   afterEach(() => {
@@ -145,5 +145,35 @@ describe('Telegram version compatibility', () => {
 
     expect(setHeaderColor).toHaveBeenCalledWith('#0d4f45');
     expect(setBackgroundColor).toHaveBeenCalledWith('#ffffff');
+  });
+
+  it('configures the Telegram bottom bar in clients supporting Bot API 7.10', () => {
+    const setBottomBarColor = vi.fn();
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed', version: '7.10', ready: vi.fn(), expand: vi.fn(), setBottomBarColor,
+      },
+    };
+
+    prepareTelegram();
+
+    expect(setBottomBarColor).toHaveBeenCalledWith('#ffffff');
+  });
+
+  it('protects an in-progress checkout from accidental closing', () => {
+    const enableClosingConfirmation = vi.fn();
+    const disableClosingConfirmation = vi.fn();
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed', version: '6.2', ready: vi.fn(), expand: vi.fn(),
+        enableClosingConfirmation, disableClosingConfirmation,
+      },
+    };
+
+    setTelegramClosingConfirmation(true);
+    setTelegramClosingConfirmation(false);
+
+    expect(enableClosingConfirmation).toHaveBeenCalledOnce();
+    expect(disableClosingConfirmation).toHaveBeenCalledOnce();
   });
 });
