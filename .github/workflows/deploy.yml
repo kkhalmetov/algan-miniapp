@@ -111,3 +111,42 @@ jobs:
             fi
             exit 1
           fi
+
+      - name: Prune old releases
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_PORT: ${{ vars.VPS_PORT }}
+          VPS_USER: ${{ vars.VPS_USER }}
+        run: |
+          SSH_ARGS=(
+            -i ~/.ssh/algan_deploy
+            -p "$VPS_PORT"
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o KexAlgorithms=curve25519-sha256
+            -o ConnectTimeout=15
+          )
+
+          ssh "${SSH_ARGS[@]}" "$VPS_USER@$VPS_HOST" 'bash -s' <<'PRUNE_RELEASES'
+          set -Eeuo pipefail
+          release_root='/var/www/algan-miniapp/releases'
+          current_link='/var/www/algan-miniapp/current'
+          resolved_root="$(realpath -e -- "$release_root")"
+          current_release="$(realpath -e -- "$current_link")"
+
+          [[ "$resolved_root" == "$release_root" ]]
+          [[ "$current_release" == "$resolved_root/"* ]]
+
+          find "$resolved_root" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %f\n' \
+            | sort --numeric-sort --reverse \
+            | awk 'NR > 5 { print $2 }' \
+            | while IFS= read -r release_name; do
+                [[ "$release_name" =~ ^[0-9a-f]{40}$ ]] || continue
+                candidate="$resolved_root/$release_name"
+                resolved_candidate="$(realpath -e -- "$candidate")"
+                [[ "$resolved_candidate" == "$candidate" ]]
+                [[ "$resolved_candidate" != "$current_release" ]] || continue
+                echo "Removing superseded release $release_name"
+                rm -rf -- "$resolved_candidate"
+              done
+          PRUNE_RELEASES

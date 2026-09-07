@@ -47,6 +47,9 @@ describe('production release gates', () => {
     expect(workflow).toContain('release.json');
     expect(workflow).toContain('rolling back');
     expect(workflow).toContain('content-security-policy');
+    expect(workflow).toContain("release_root='/var/www/algan-miniapp/releases'");
+    expect(workflow).toContain("[[ \"$release_name\" =~ ^[0-9a-f]{40}$ ]]");
+    expect(workflow).toContain('NR > 5');
     expect(pullRequestWorkflow).toContain('pull_request:');
     expect(pullRequestWorkflow).toContain('npm run build');
     expect(productionSmokeWorkflow).toContain('schedule:');

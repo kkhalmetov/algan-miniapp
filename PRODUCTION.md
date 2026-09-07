@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | HTTPS-домен | Готов | `https://algan-bot.online`, редирект с `www` |
 | Telegram Main Mini App | Готов | `https://t.me/alganonline_bot?startapp` открывается как `Open App` |
-| CI/CD на VPS | Готов | атомарные релизы, проверка commit marker и rollback после неуспешного smoke test |
+| CI/CD на VPS | Готов | атомарные релизы, проверка commit marker, rollback после неуспешного smoke test и хранение пяти последних сборок |
 | Frontend availability monitoring | Готов | GitHub Actions каждые два часа сверяет production SHA с `main`, служебные URL и security headers |
 | Browser security | Готов для demo | CSP, HSTS, `nosniff`, referrer и permissions policy |
 | Dependency hygiene | Готов | npm audit без уязвимостей, weekly Dependabot для npm и GitHub Actions |
@@ -85,7 +85,7 @@ Frontend уже поддерживает обмен сырой строкой `T
 2. Backend-команда публикует OpenAPI и staging API, затем проходит security/integration review.
 3. Frontend заменяет mock data/store/payment на API provider и добавляет contract/e2e тесты.
 4. `NEXT_PUBLIC_API_BASE_URL` добавляется как GitHub repository variable.
-5. VPS bootstrap повторно запускается от root с `API_ORIGIN=https://<api-host>`, чтобы точный API origin попал в CSP `connect-src`.
+5. VPS bootstrap повторно запускается от root с `API_ORIGIN=https://<api-host>` и контактным `LETSENCRYPT_EMAIL`, чтобы точный API origin попал в CSP `connect-src`, а Certbot мог отправлять уведомления о сертификате.
 6. В staging запускается реальная тестовая оплата, проверяются success, decline, retry, duplicate webhook, cancel и refund.
 7. Release gate должен пройти с `NEXT_PUBLIC_RELEASE_MODE=live` и `NEXT_PUBLIC_DATA_MODE=api`.
 8. Переменные production переключаются на live; GitHub Actions публикует релиз и проверяет точный commit marker.

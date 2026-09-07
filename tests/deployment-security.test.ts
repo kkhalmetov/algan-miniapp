@@ -10,6 +10,9 @@ describe('production security configuration', () => {
     expect(bootstrap).toContain('X-Content-Type-Options');
     expect(bootstrap).toContain('frame-ancestors');
     expect(bootstrap).toContain('API_ORIGIN must be an HTTPS origin without a path');
+    expect(bootstrap).toContain('LETSENCRYPT_EMAIL must be a valid contact email');
+    expect(bootstrap).toContain('--email "$LETSENCRYPT_EMAIL"');
+    expect(bootstrap).not.toContain('--register-unsafely-without-email');
     expect(bootstrap).toContain('connect-src $CONNECT_SRC');
   });
 
