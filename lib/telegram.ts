@@ -4,9 +4,11 @@ type TelegramUser = { id?: number; first_name?: string; last_name?: string; user
 
 type TelegramWebApp = {
   initData: string;
+  version?: string;
   initDataUnsafe?: { user?: TelegramUser };
   ready: () => void;
   expand: () => void;
+  isVersionAtLeast?: (version: string) => boolean;
   close?: () => void;
   BackButton?: { show: () => void; hide: () => void; onClick: (handler: () => void) => void; offClick: (handler: () => void) => void };
   HapticFeedback?: { impactOccurred: (style: 'light' | 'medium' | 'heavy') => void; notificationOccurred: (type: 'success' | 'error' | 'warning') => void };
@@ -24,12 +26,28 @@ declare global {
 
 export const telegram = () => (typeof window === 'undefined' ? undefined : window.Telegram?.WebApp);
 
+const supportsTelegramVersion = (webApp: TelegramWebApp, minimumVersion: string) => {
+  if (webApp.isVersionAtLeast) return webApp.isVersionAtLeast(minimumVersion);
+  if (!webApp.version) return false;
+  const current = webApp.version.split('.').map(Number);
+  const minimum = minimumVersion.split('.').map(Number);
+  const length = Math.max(current.length, minimum.length);
+  for (let index = 0; index < length; index += 1) {
+    const currentPart = current[index] ?? 0;
+    const minimumPart = minimum[index] ?? 0;
+    if (currentPart !== minimumPart) return currentPart > minimumPart;
+  }
+  return true;
+};
+
 export function prepareTelegram() {
   const webApp = telegram();
   webApp?.ready();
   webApp?.expand();
-  webApp?.setHeaderColor?.(BRAND_COLOR);
-  webApp?.setBackgroundColor?.(APP_SURFACE_COLOR);
+  if (webApp && supportsTelegramVersion(webApp, '6.1')) {
+    webApp.setHeaderColor?.(supportsTelegramVersion(webApp, '6.9') ? BRAND_COLOR : 'bg_color');
+    webApp.setBackgroundColor?.(APP_SURFACE_COLOR);
+  }
   return webApp;
 }
 
@@ -47,14 +65,15 @@ export function telegramProfile() {
 }
 
 export const haptic = (kind: 'tap' | 'success' | 'error') => {
-  const feedback = telegram()?.HapticFeedback;
+  const webApp = telegram();
+  const feedback = webApp && supportsTelegramVersion(webApp, '6.1') ? webApp.HapticFeedback : undefined;
   if (kind === 'tap') feedback?.impactOccurred('light');
   else feedback?.notificationOccurred(kind);
 };
 
 export function openTelegramLink(url: string) {
   const webApp = telegram();
-  if (webApp?.openTelegramLink) {
+  if (webApp?.openTelegramLink && supportsTelegramVersion(webApp, '6.1')) {
     webApp.openTelegramLink(url);
     return;
   }
@@ -63,7 +82,7 @@ export function openTelegramLink(url: string) {
 
 export function openExternalLink(url: string) {
   const webApp = telegram();
-  if (webApp?.openLink) {
+  if (webApp?.openLink && supportsTelegramVersion(webApp, '6.1')) {
     webApp.openLink(url);
     return;
   }

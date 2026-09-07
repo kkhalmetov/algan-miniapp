@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { openExternalLink, openTelegramLink, telegramProfile } from '../lib/telegram';
+import { haptic, openExternalLink, openTelegramLink, prepareTelegram, telegramProfile } from '../lib/telegram';
 
 describe('Telegram profile adapter', () => {
   afterEach(() => {
@@ -46,7 +46,7 @@ describe('Telegram links', () => {
     const openTelegramLinkMock = vi.fn();
     window.Telegram = {
       WebApp: {
-        initData: 'signed', ready: vi.fn(), expand: vi.fn(), openTelegramLink: openTelegramLinkMock,
+        initData: 'signed', version: '6.1', ready: vi.fn(), expand: vi.fn(), openTelegramLink: openTelegramLinkMock,
       },
     };
 
@@ -69,12 +69,81 @@ describe('Telegram links', () => {
     const openLink = vi.fn();
     window.Telegram = {
       WebApp: {
-        initData: 'signed', ready: vi.fn(), expand: vi.fn(), openLink,
+        initData: 'signed', version: '6.1', ready: vi.fn(), expand: vi.fn(), openLink,
       },
     };
 
     openExternalLink('https://www.google.com/maps/dir/?api=1');
 
     expect(openLink).toHaveBeenCalledWith('https://www.google.com/maps/dir/?api=1');
+  });
+});
+
+describe('Telegram version compatibility', () => {
+  it('does not call Bot API 6.1 methods in a 6.0 client', () => {
+    const setHeaderColor = vi.fn();
+    const setBackgroundColor = vi.fn();
+    const impactOccurred = vi.fn();
+    const isVersionAtLeast = vi.fn(() => false);
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed',
+        version: '6.0',
+        isVersionAtLeast,
+        ready: vi.fn(),
+        expand: vi.fn(),
+        setHeaderColor,
+        setBackgroundColor,
+        HapticFeedback: { impactOccurred, notificationOccurred: vi.fn() },
+      },
+    };
+
+    prepareTelegram();
+    haptic('tap');
+
+    expect(setHeaderColor).not.toHaveBeenCalled();
+    expect(setBackgroundColor).not.toHaveBeenCalled();
+    expect(impactOccurred).not.toHaveBeenCalled();
+    expect(isVersionAtLeast).toHaveBeenCalledWith('6.1');
+  });
+
+  it('uses a theme header color before custom colors are supported', () => {
+    const setHeaderColor = vi.fn();
+    const setBackgroundColor = vi.fn();
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed',
+        version: '6.1',
+        ready: vi.fn(),
+        expand: vi.fn(),
+        setHeaderColor,
+        setBackgroundColor,
+      },
+    };
+
+    prepareTelegram();
+
+    expect(setHeaderColor).toHaveBeenCalledWith('bg_color');
+    expect(setBackgroundColor).toHaveBeenCalledWith('#ffffff');
+  });
+
+  it('configures the custom header color in clients supporting Bot API 6.9', () => {
+    const setHeaderColor = vi.fn();
+    const setBackgroundColor = vi.fn();
+    window.Telegram = {
+      WebApp: {
+        initData: 'signed',
+        version: '6.9',
+        ready: vi.fn(),
+        expand: vi.fn(),
+        setHeaderColor,
+        setBackgroundColor,
+      },
+    };
+
+    prepareTelegram();
+
+    expect(setHeaderColor).toHaveBeenCalledWith('#0d4f45');
+    expect(setBackgroundColor).toHaveBeenCalledWith('#ffffff');
   });
 });
