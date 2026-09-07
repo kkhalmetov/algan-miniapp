@@ -1,7 +1,13 @@
 const ORDER_ID_MIN = 10_000_000;
 const ORDER_ID_RANGE = 90_000_000;
 
-export const createOrderId = (existingIds: string[] = [], random = Math.random) => {
+const secureRandom = () => {
+  const value = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(value);
+  return value[0] / 0x1_0000_0000;
+};
+
+export const createOrderId = (existingIds: string[] = [], random = secureRandom) => {
   const existing = new Set(existingIds);
 
   for (let attempt = 0; attempt < 100; attempt += 1) {
@@ -33,7 +39,7 @@ export const formatPickupCode = (code: string) => {
   return `${normalized.slice(0, 3)}-${normalized.slice(3)}`;
 };
 
-export const createPickupCode = (existingCodes: string[] = [], random = Math.random) => {
+export const createPickupCode = (existingCodes: string[] = [], random = secureRandom) => {
   const existing = new Set(existingCodes.map(normalizePickupCode));
   for (let attempt = 0; attempt < 100; attempt += 1) {
     const code = String(Math.floor(random() * 1_000_000)).padStart(6, '0');

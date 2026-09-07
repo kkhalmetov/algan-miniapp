@@ -72,6 +72,16 @@ certbot certonly --webroot --webroot-path "$ACME_ROOT" \
   -d "$APP_HOST" -d "$WWW_HOST" \
   --non-interactive --agree-tos --register-unsafely-without-email --keep-until-expiring
 
+install -d -m 755 /etc/nginx/snippets
+cat > /etc/nginx/snippets/algan-security-headers.conf <<'SECURITY_HEADERS'
+add_header Content-Security-Policy "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'self' https://telegram.org https://*.telegram.org; form-action 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://open.er-api.com; manifest-src 'self'; media-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests" always;
+add_header Strict-Transport-Security "max-age=31536000" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=(self)" always;
+add_header X-Permitted-Cross-Domain-Policies "none" always;
+SECURITY_HEADERS
+
 cat > /etc/nginx/sites-available/algan-miniapp <<NGINX_HTTPS
 server {
     listen 80;
@@ -99,6 +109,7 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
+    include /etc/nginx/snippets/algan-security-headers.conf;
     return 301 https://$APP_HOST\$request_uri;
 }
 
@@ -114,8 +125,11 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
+    include /etc/nginx/snippets/algan-security-headers.conf;
+
     location / {
         try_files \$uri \$uri/ /index.html;
+        include /etc/nginx/snippets/algan-security-headers.conf;
         add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
         add_header Pragma "no-cache" always;
         add_header Expires "0" always;
@@ -123,19 +137,17 @@ server {
 
     location /_next/static/ {
         try_files \$uri =404;
+        include /etc/nginx/snippets/algan-security-headers.conf;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
 
     location /images/ {
         try_files \$uri =404;
+        include /etc/nginx/snippets/algan-security-headers.conf;
         expires 30d;
         add_header Cache-Control "public";
     }
-
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(self)" always;
 }
 NGINX_HTTPS
 

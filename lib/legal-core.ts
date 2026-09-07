@@ -1,7 +1,7 @@
 import type { LegalAcceptance, Locale } from './types';
 
-export const LEGAL_DOCUMENT_VERSION = '1.0';
-export const LEGAL_EFFECTIVE_DATE = '30.08.2026';
+export const LEGAL_DOCUMENT_VERSION = '1.1';
+export const LEGAL_EFFECTIVE_DATE = '07.09.2026';
 
 export const createLegalAcceptance = (
   locale: Locale,

@@ -14,8 +14,8 @@ describe('legal documents', () => {
         expect(document.sections.every((section) => Boolean(section.heading))).toBe(true);
       }
     }
-    expect(LEGAL_DOCUMENT_VERSION).toBe('1.0');
-    expect(LEGAL_EFFECTIVE_DATE).toBe('30.08.2026');
+    expect(LEGAL_DOCUMENT_VERSION).toBe('1.1');
+    expect(LEGAL_EFFECTIVE_DATE).toBe('07.09.2026');
   });
 
   it('requires renewed acceptance after a version or Telegram-account change', () => {

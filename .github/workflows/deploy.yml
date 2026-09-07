@@ -22,8 +22,8 @@ jobs:
       NEXT_PUBLIC_OSM_TILE_URL: https://tile.openstreetmap.org/{z}/{x}/{y}.png
       NEXT_PUBLIC_GEOCODER_URL: https://nominatim.openstreetmap.org
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 22
           cache: npm

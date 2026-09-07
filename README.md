@@ -46,7 +46,7 @@ Content-Type: application/json
 { "init_data": "<Telegram.WebApp.initData>" }
 ```
 
-Ответ: `{ "access_token": "..." }`. В API-режиме задайте `NEXT_PUBLIC_DATA_MODE=api` и `NEXT_PUBLIC_API_BASE_URL`.
+Ответ: `{ "access_token": "..." }`. В API-режиме задайте `NEXT_PUBLIC_DATA_MODE=api` и HTTPS-адрес в `NEXT_PUBLIC_API_BASE_URL`. Токен хранится только в памяти вкладки и после перезагрузки получается заново из подписанных Telegram `initData`.
 
 Для последующей интеграции backend должен предоставить профиль и серверное подтверждение версии юридических документов, геолокацию, каталог заведений/боксов, избранное, оплаченные заказы и Telegram invoice flow. Текущая backend-семантика `RESERVED` не соответствует продуктовому требованию «без брони»: production-заказ должен фиксироваться только после подтверждённой оплаты.
 
