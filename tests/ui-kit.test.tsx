@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
   ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow, MediaBadge, MediaSheetHeader,
-  AvatarFrame, ModalBody, ModalHeader, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SheetHeader,
+  AvatarFrame, ModalBody, ModalHeader, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SectionTitle, SheetHeader,
   ScrollArea, SegmentedControl, StatusBadge, StickyActionFooter, SurfaceCard, TextField, TextLinkButton, TertiaryButton, TopAppBar,
 } from '../components/ui-kit';
 
@@ -108,6 +108,17 @@ describe('Algan UI kit', () => {
     expect(screen.getByText('Боксы закончились')).toHaveClass('bg-danger-soft', 'text-danger');
   });
 
+  it('moves focus to a changed sheet title and supports nested heading levels', () => {
+    const onClose = vi.fn();
+    const { rerender } = render(<SheetHeader title="Документы" onClose={onClose} closeLabel="Закрыть" />);
+
+    rerender(<SheetHeader title="Условия" onClose={onClose} closeLabel="Закрыть" focusTitleOnChange />);
+    expect(screen.getByRole('heading', { name: 'Условия', level: 2 })).toHaveFocus();
+
+    rerender(<SectionTitle as="h3">Раздел окна</SectionTitle>);
+    expect(screen.getByRole('heading', { name: 'Раздел окна', level: 3 })).toHaveClass('text-section-title');
+  });
+
   it('owns semantic visual variants inside the kit', () => {
     render(<>
       <PageTitle tone="inverse">Светлый заголовок</PageTitle>
@@ -136,7 +147,7 @@ describe('Algan UI kit', () => {
 
     expect(screen.getByRole('dialog', { name: 'Корзина' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Получить заказ' })).toHaveClass('border-t');
-    fireEvent.click(screen.getByRole('button', { name: 'Закрыть (Корзина)' }));
+    fireEvent.click(screen.getByRole('dialog', { name: 'Корзина' }).firstElementChild as HTMLButtonElement);
     expect(onClose).toHaveBeenCalledOnce();
   });
 
@@ -201,7 +212,7 @@ describe('Algan UI kit', () => {
 
     expect(screen.getByRole('navigation')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Главная' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('button', { name: 'Главная' })).toHaveClass('text-xs');
+    expect(screen.getByRole('button', { name: 'Главная' })).toHaveClass('text-[10px]');
     expect(screen.getByRole('heading', { name: 'Ошибка' })).toHaveClass('text-page-title');
     expect(screen.getByText('!')).toHaveClass('bg-danger-soft');
   });
@@ -239,6 +250,8 @@ describe('Algan UI kit', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Подтверждение' });
     expect(dialog.firstElementChild).toHaveClass('absolute');
+    expect(dialog.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+    expect(dialog.firstElementChild).toHaveAttribute('tabindex', '-1');
     expect(dialog.querySelector('section')).toHaveClass('rounded-sheet', 'max-w-sm');
     expect(dialog.querySelector('section')).toHaveFocus();
   });

@@ -90,6 +90,7 @@ export default function AlganApp() {
   const [kztToRubRate, setKztToRubRate] = useState<number | null>(null);
   const [currencyRateError, setCurrencyRateError] = useState(false);
   const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
+  const mainScrollRef = useRef<HTMLElement>(null);
   const legalSubject: LegalSubject = {
     fullName: [
       liveTelegramProfile.firstName || profile.firstName,
@@ -155,6 +156,10 @@ export default function AlganApp() {
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
+
+  useEffect(() => {
+    if (mainScrollRef.current) mainScrollRef.current.scrollTop = 0;
+  }, [tab]);
 
   useEffect(() => {
     if (currency !== 'RUB') return;
@@ -306,7 +311,7 @@ export default function AlganApp() {
     <PriceContext.Provider value={{ currency: displayCurrency, kztToRubRate }}>
     <PhoneShell>
       <div className="relative flex h-dvh min-h-0 flex-col overflow-hidden bg-surface sm:h-[780px]">
-        <main className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
+        <main ref={mainScrollRef} className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
           {tab === 'home' && (
             <HomeTab
               t={t} locale={locale} profile={profile}
@@ -853,7 +858,7 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
             <div className="mt-4 flex items-center gap-2 border-t border-brand/10 pt-3 text-xs font-bold text-ink-secondary"><CalendarDays size={15} />{orderDate}</div>
           </InsetSurface>
 
-          <SectionTitle className="mt-7 text-base">{t('orderContents')}</SectionTitle>
+          <SectionTitle as="h3" className="mt-7 text-base">{t('orderContents')}</SectionTitle>
           <div className="mt-3"><OrderItemsList order={order} locale={locale} /></div>
           <InsetSurface radius="card" className="mt-4 flex items-center justify-between p-4"><span className="text-sm font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-brand">{formatPrice(order.total)}</b></InsetSurface>
         </ScrollArea>
@@ -1032,9 +1037,9 @@ function SettingsModal({ t, locale, setLocale, phone, onEditPhone, onClose }: {
       <ModalBody>
         <SheetHeader title={t('settings')} onClose={onClose} closeLabel={t('close')} />
         <div className="pb-1">
-          <SectionTitle className="mt-4 text-base">{t('accountDetails')}</SectionTitle>
+          <SectionTitle as="h3" className="mt-4 text-base">{t('accountDetails')}</SectionTitle>
           <div className="mt-3"><ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={phone ? formatKazakhstanPhoneInput(phone) : undefined} onClick={onEditPhone} /></div>
-          <SectionTitle className="mt-6 text-base">{t('languageChoice')}</SectionTitle>
+          <SectionTitle as="h3" className="mt-6 text-base">{t('languageChoice')}</SectionTitle>
           <div className="mt-3"><SegmentedControl value={locale} label={t('languageChoice')} items={[{ value: 'ru', label: t('russianLanguage') }, { value: 'kk', label: t('kazakhLanguage') }]} onChange={(nextLocale) => { if (nextLocale !== locale) { setLocale(nextLocale); haptic('tap'); } }} /></div>
         </div>
       </ModalBody>
@@ -1056,6 +1061,7 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
   const [selectedQuantity, setSelectedQuantity] = useState(() =>
     Math.min(Math.max(cartQuantity, 1), Math.max(available, 1)),
   );
+  const selectedTotal = formatPrice(box.salePrice * selectedQuantity);
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={name} sheetHeight="tall">
       <div data-testid="box-details-sheet" className="flex h-full min-h-0 flex-col">
@@ -1132,12 +1138,16 @@ function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQuantity,
             <div className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-2">
               <QuantityStepper quantity={selectedQuantity} min={1} max={Math.max(available, cartQuantity)}
                 label={t('quantity')} onChange={setSelectedQuantity} />
-              <PrimaryButton size="md" className="whitespace-nowrap px-2 text-center text-[13px]" onClick={() => {
+              <PrimaryButton size="md" className="whitespace-nowrap px-2 text-center" onClick={() => {
                 onChangeQuantity(selectedQuantity);
                 onClose();
               }}
-                aria-label={`${t('addToCartFull')} ${name}`}>
-                {t('addToCartFull')}
+                aria-label={`${t('addToCartFull')} ${name}`}
+                aria-describedby="box-selected-total">
+                <span className="flex min-w-0 flex-col items-center">
+                  <span className="text-[11px] leading-4">{t('addToCartFull')}</span>
+                  <span id="box-selected-total" className="text-sm leading-4">{selectedTotal}</span>
+                </span>
               </PrimaryButton>
             </div>
           </StickyActionFooter>
@@ -1300,6 +1310,7 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
           backLabel={t('back')}
           onClose={onClose}
           closeLabel={t('close')}
+          focusTitleOnChange
         />
         <ScrollArea data-testid="documents-modal-scroll" className="flex-1 pb-4">
           {selectedView === 'contacts' ? (
@@ -1316,13 +1327,13 @@ function DocumentsModal({ t, locale, subject, onClose }: { t: Translator; locale
             </>
           ) : (
             <>
-              <SectionTitle className="mt-4 text-base">{t('agreements')}</SectionTitle>
+              <SectionTitle as="h3" className="mt-4 text-base">{t('agreements')}</SectionTitle>
               <div className="mt-3 space-y-2">
                 {documents.map((document) => (
                   <ProfileRow density="compact" key={document.type} icon={document.icon} label={t(LEGAL_TITLE_KEYS[document.type])} onClick={() => setSelectedView(document.type)} />
                 ))}
               </div>
-              <SectionTitle className="mt-4 text-base">{t('companyInformation')}</SectionTitle>
+              <SectionTitle as="h3" className="mt-4 text-base">{t('companyInformation')}</SectionTitle>
               <div className="mb-1 mt-2"><ProfileRow density="compact" icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setSelectedView('contacts')} /></div>
             </>
           )}
@@ -1337,7 +1348,7 @@ function CompanyContacts({ t }: { t: Translator }) {
     <div className="mt-4 space-y-3">
       <InsetSurface tone="brandSolid" radius="card" className="relative overflow-hidden p-5 text-sm">
         <div aria-hidden="true" className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-brand-hover" />
-        <div className="relative"><AlganLogo light markClassName="h-8 w-8" wordmarkClassName="h-6 w-[73px]" /><SectionTitle tone="inverse" className="mt-5">{t('companyName')}</SectionTitle><p className="mt-1 font-bold text-white/70">{t('companyId')}</p></div>
+        <div className="relative"><AlganLogo light markClassName="h-8 w-8" wordmarkClassName="h-6 w-[73px]" /><SectionTitle as="h3" tone="inverse" className="mt-5">{t('companyName')}</SectionTitle><p className="mt-1 font-bold text-white/70">{t('companyId')}</p></div>
       </InsetSurface>
       <InsetSurface tone="panel" radius="card" className="p-4"><p className="text-xs font-black uppercase tracking-[.06em] text-ink-muted">{t('contactLegalAddressLabel')}</p><p className="mt-2 text-sm leading-6 text-ink">{t('companyAddress')}</p></InsetSurface>
       <LinkRow tone="panel" href="mailto:algansupport@gmail.com" icon={<Mail size={18} />} title={t('emailLabel')} subtitle="algansupport@gmail.com" trailing={<ArrowUpRight size={17} className="text-ink-subtle" />} />
@@ -1368,6 +1379,7 @@ function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }) {
           backLabel={t('back')}
           onClose={onClose}
           closeLabel={t('close')}
+          focusTitleOnChange
         />
 
         <ScrollArea className="flex-1 pb-1">

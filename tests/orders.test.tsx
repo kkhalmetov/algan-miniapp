@@ -42,7 +42,10 @@ describe('orders tab', () => {
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
     expect(screen.getAllByRole('main')).toHaveLength(1);
+    const main = screen.getByRole('main');
+    main.scrollTop = 240;
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
+    expect(main.scrollTop).toBe(0);
     expect(screen.getByRole('heading', { name: 'Заказы' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Активные' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.queryByText('Готов к получению')).not.toBeInTheDocument();

@@ -2,7 +2,7 @@
 
 ## Scope
 
-The audit covers onboarding, startup, home, map, favorites, active and past orders, profile, settings, help, legal information, store details, box details, cart, routing, successful payment and failed payment in Russian and Kazakh.
+The audit covers onboarding, startup, home, favorites, active and past orders, profile, settings, help, legal information, box details, cart, routing, successful payment and failed payment in Russian and Kazakh. Responsive verification covers 320, 390 and 460 px mobile widths plus the 460 × 780 px desktop preview shell.
 
 ## Resolved discrepancies
 
@@ -47,6 +47,12 @@ The audit covers onboarding, startup, home, map, favorites, active and past orde
 | Decorative media | Store and map-provider logos repeated adjacent visible labels to screen readers | Redundant logos now use empty alternative text while visible names remain the accessible label |
 | Supporting copy | Help working hours were truncated on a 320 px-wide screen | Rows can opt into wrapped supporting copy; complete working hours remain visible at compact widths |
 | Transaction transition | Closing store/cart layers while opening the successful-order screen could leave the app root inert | Dialog background locks are reference-counted, so replacing any number of nested sheets always restores interaction |
+| Tab navigation | The shared scrolling viewport retained its old offset when a user switched tabs, so a new screen could open below its title and controls | Every tab change resets the canonical application viewport to the top while preserving scrolling inside dialogs |
+| Compact navigation | Long Kazakh labels touched or clipped at 320 px despite fitting at larger widths | Bottom-navigation typography now uses the documented compact 10 px label token; all four complete labels have measurable separation at 320 px |
+| Modal dismissal | The full-screen backdrop was exposed as an extra keyboard and screen-reader close button outside the dialog panel | The backdrop remains pointer-dismissable but is removed from sequential focus and the accessibility tree; the visible 44 px close action remains canonical |
+| In-modal navigation | Opening FAQ or a legal sub-view removed the triggering row and left keyboard focus on the document root | Shared sheet headers can focus a changed title; FAQ and legal views now announce and focus their new `h2` title without scrolling |
+| Nested headings | Settings, legal groups, company details and order-detail sections reused `h2` beside the modal title | `SectionTitle` owns contextual `h2`/`h3` semantics; sections nested below a sheet title now use `h3` without changing their visual token |
+| Box purchase summary | The persistent box action showed quantity and an action but omitted the selected total described by the commerce pattern | The action now presents the localized selected total and updates it with the quantity while retaining a concise accessible action name |
 
 ## Governance
 

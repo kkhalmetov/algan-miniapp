@@ -71,8 +71,11 @@ export function PageTitle({ className, tone = 'default', ...props }: HTMLAttribu
   return <h1 className={cx('text-page-title', titleTone[tone], className)} {...props} />;
 }
 
-export function SectionTitle({ className, tone = 'default', ...props }: HTMLAttributes<HTMLHeadingElement> & { tone?: TitleTone }) {
-  return <h2 className={cx('text-section-title', titleTone[tone], className)} {...props} />;
+export function SectionTitle({ as: Component = 'h2', className, tone = 'default', ...props }: HTMLAttributes<HTMLHeadingElement> & {
+  as?: 'h2' | 'h3';
+  tone?: TitleTone;
+}) {
+  return <Component className={cx('text-section-title', titleTone[tone], className)} {...props} />;
 }
 
 export function ContentTitle({ as: Component = 'h2', className, tone = 'default', ...props }: HTMLAttributes<HTMLHeadingElement> & { as?: 'h1' | 'h2'; tone?: TitleTone }) {
@@ -263,13 +266,21 @@ export function ModalHeader({
   backLabel,
   onClose,
   closeLabel,
+  focusTitleOnChange = false,
 }: {
   title: ReactNode;
   onBack?: () => void;
   backLabel?: string;
   onClose: () => void;
   closeLabel: string;
+  focusTitleOnChange?: boolean;
 }) {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (focusTitleOnChange) titleRef.current?.focus({ preventScroll: true });
+  }, [focusTitleOnChange, title]);
+
   return (
     <div className="flex min-h-11 items-center gap-3">
       {onBack && (
@@ -277,7 +288,7 @@ export function ModalHeader({
           <ArrowLeft size={18} />
         </IconButton>
       )}
-      <h2 className="min-w-0 flex-1 text-xl font-extrabold tracking-[-0.025em]">{title}</h2>
+      <h2 ref={titleRef} tabIndex={focusTitleOnChange ? -1 : undefined} className="min-w-0 flex-1 text-xl font-extrabold tracking-[-0.025em]">{title}</h2>
       <IconButton onClick={onClose} label={closeLabel}>
         <X size={18} />
       </IconButton>
@@ -296,6 +307,7 @@ export function SheetHeader({
   onClose,
   closeLabel,
   compact = false,
+  focusTitleOnChange = false,
   className,
   ...props
 }: Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
@@ -305,13 +317,14 @@ export function SheetHeader({
   onClose: () => void;
   closeLabel: string;
   compact?: boolean;
+  focusTitleOnChange?: boolean;
 }) {
   return (
     <div className={cx('shrink-0 bg-surface', className)} {...props}>
       <SheetHandle />
       <div className={compact ? 'mt-2' : 'mt-4'}>
         {title !== undefined ? (
-          <ModalHeader title={title} onBack={onBack} backLabel={backLabel} onClose={onClose} closeLabel={closeLabel} />
+          <ModalHeader title={title} onBack={onBack} backLabel={backLabel} onClose={onClose} closeLabel={closeLabel} focusTitleOnChange={focusTitleOnChange} />
         ) : (
           <div className="flex min-h-11 justify-end">
             <IconButton onClick={onClose} label={closeLabel}><X size={18} /></IconButton>
@@ -745,7 +758,7 @@ export function BottomNavigationItem({ active, icon, label, ...props }: ButtonHT
       type="button"
       aria-current={active ? 'page' : undefined}
       className={cx(
-        'flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-control text-xs font-bold tracking-[-0.02em] transition hover:bg-surface-soft',
+        'flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-control text-[10px] font-bold tracking-[-0.02em] transition hover:bg-surface-soft',
         active ? 'text-brand' : 'text-ink-subtle',
       )}
       {...props}
@@ -855,7 +868,7 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
       resolvedVariant === 'center' ? 'items-center p-page' : 'items-end',
       className,
     )} role="dialog" aria-modal="true" aria-label={ariaLabel}>
-      {resolvedVariant !== 'full' && <button type="button" onClick={onClose} className="absolute inset-0" aria-label={`${closeLabel} (${ariaLabel ?? 'dialog'})`} />}
+      {resolvedVariant !== 'full' && <button type="button" onClick={onClose} className="absolute inset-0" aria-label={`${closeLabel} (${ariaLabel ?? 'dialog'})`} aria-hidden="true" tabIndex={-1} />}
       <section ref={panelRef} tabIndex={-1} data-dialog-variant={resolvedVariant} className={cx(
         'algan-dialog-panel relative z-10 w-full overflow-hidden bg-surface outline-none',
         resolvedVariant === 'full' && 'h-full min-h-0',

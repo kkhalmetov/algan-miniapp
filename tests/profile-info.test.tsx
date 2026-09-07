@@ -58,6 +58,8 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Правовая информация' }));
 
     expect(screen.getByRole('heading', { name: 'Правовая информация' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Документы и соглашения', level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'О компании', level: 3 })).toBeInTheDocument();
     expect(screen.queryByText(/Документы, которые регулируют использование Algan/)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Условия использования' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Согласие на сбор и обработку персональных данных' })).toBeInTheDocument();
@@ -66,7 +68,8 @@ describe('profile information sections', () => {
     expect(screen.getByRole('button', { name: 'Реквизиты и контакты' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Реквизиты и контакты' }));
-    expect(screen.getByRole('heading', { name: 'Реквизиты и контакты' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Реквизиты и контакты', level: 2 })).toHaveFocus();
+    expect(screen.getByRole('heading', { name: 'ИП «ALGAN»', level: 3 })).toBeInTheDocument();
     expect(screen.getByText('ИП «ALGAN»')).toBeInTheDocument();
     expect(screen.getByText('ИИН: 030705500040')).toBeInTheDocument();
     expect(screen.getByText('Адрес')).toBeInTheDocument();
@@ -116,6 +119,7 @@ describe('profile information sections', () => {
     expect(screen.queryByRole('button', { name: 'Реквизиты и контакты' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'FAQ' }));
+    expect(screen.getByRole('heading', { name: 'FAQ', level: 2 })).toHaveFocus();
     const question = screen.getByRole('button', { name: 'Как купить бокс?' });
     expect(question).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(question);
@@ -133,6 +137,8 @@ describe('profile information sections', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Настройки' }));
 
     expect(screen.getByRole('heading', { name: 'Настройки' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Контактные данные', level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Язык приложения', level: 3 })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Номер телефона.*\+7 705 976 80 00/ }));
     const phoneDialog = screen.getByRole('dialog', { name: 'Сменить номер телефона' });
     const phoneInput = within(phoneDialog).getByDisplayValue('+7 705 976 80 00');

@@ -109,9 +109,9 @@ describe('box-first catalog and details', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Surprise Tatti-box' });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Количество +' }));
-    const addButton = within(dialog).getByRole('button', { name: 'Добавить в корзину Surprise Tatti-box' });
+    const addButton = within(dialog).getByRole('button', { name: /Добавить в корзину Surprise Tatti-box/ });
     expect(addButton).toHaveTextContent('Добавить в корзину');
-    expect(addButton).not.toHaveTextContent('4 980 ₸');
+    expect(addButton).toHaveTextContent('4 980 ₸');
     fireEvent.click(addButton);
 
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 2 }]);
