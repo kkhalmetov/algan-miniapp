@@ -9,6 +9,7 @@
 | HTTPS-домен | Готов | `https://algan-bot.online`, редирект с `www` |
 | Telegram Main Mini App | Готов | `https://t.me/alganonline_bot?startapp` открывается как `Open App` |
 | CI/CD на VPS | Готов | атомарные релизы, проверка commit marker и rollback после неуспешного smoke test |
+| Frontend availability monitoring | Готов | GitHub Actions каждые два часа сверяет production SHA с `main`, служебные URL и security headers |
 | Browser security | Готов для demo | CSP, HSTS, `nosniff`, referrer и permissions policy |
 | Dependency hygiene | Готов | npm audit без уязвимостей, weekly Dependabot для npm и GitHub Actions |
 | Telegram UI runtime | Готов | SDK до клиентского кода, `ready`, `expand`, stable viewport, content safe area, цвета и защита закрытия во время оплаты |
@@ -102,3 +103,5 @@ npm run build
 ```
 
 После сборки `dist/client/release.json` содержит SHA, release mode и data mode. Workflow принимает релиз только если production возвращает SHA текущего GitHub commit и обязательные security headers.
+
+Плановый workflow `Production smoke` каждые два часа повторяет внешнюю проверку. Его ошибка означает, что production недоступен, отстаёт от `main` или потерял обязательные Telegram/discovery/security элементы; уведомления о failed runs настраиваются владельцем репозитория в GitHub.

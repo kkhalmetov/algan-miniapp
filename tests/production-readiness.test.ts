@@ -41,6 +41,7 @@ describe('production release gates', () => {
   it('smoke-tests the activated commit and required security headers', () => {
     const workflow = readFileSync('.github/workflows/deploy.yml', 'utf8');
     const pullRequestWorkflow = readFileSync('.github/workflows/ci.yml', 'utf8');
+    const productionSmokeWorkflow = readFileSync('.github/workflows/production-smoke.yml', 'utf8');
 
     expect(workflow).toContain('npm run lint');
     expect(workflow).toContain('release.json');
@@ -48,6 +49,11 @@ describe('production release gates', () => {
     expect(workflow).toContain('content-security-policy');
     expect(pullRequestWorkflow).toContain('pull_request:');
     expect(pullRequestWorkflow).toContain('npm run build');
+    expect(productionSmokeWorkflow).toContain('schedule:');
+    expect(productionSmokeWorkflow).toContain('$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/commits/main');
+    expect(productionSmokeWorkflow).toContain('.commit == $sha');
+    expect(productionSmokeWorkflow).toContain('.well-known/security.txt');
+    expect(productionSmokeWorkflow).toContain('content-security-policy');
   });
 
   it('ships Telegram and web discovery metadata', () => {
