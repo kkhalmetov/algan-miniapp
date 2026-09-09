@@ -26,7 +26,7 @@ describe('startup splash', () => {
     vi.useRealTimers();
   });
 
-  it('stays visible for at least 900 milliseconds', () => {
+  it('stays visible for at least 750 milliseconds', () => {
     render(<AlganApp />);
 
     expect(screen.getByLabelText('Algan — Загрузка')).toBeInTheDocument();

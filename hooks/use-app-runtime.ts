@@ -6,7 +6,7 @@ import { fetchKztToRubRate } from '@/lib/currency';
 import { prepareTelegram, telegramProfile } from '@/lib/telegram';
 import type { Currency, Locale, UserProfile } from '@/lib/types';
 
-export const MINIMUM_SPLASH_MS = 900;
+export const MINIMUM_SPLASH_MS = 750;
 const TELEGRAM_SYNC_DELAYS_MS = [0, 250, 750, 1500, 3000] as const;
 
 type SyncTelegramProfile = (
