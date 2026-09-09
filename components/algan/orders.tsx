@@ -1,15 +1,16 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import { CalendarDays, Clock3, PackageCheck, ShoppingBag } from 'lucide-react';
-import { lazy, Suspense, useState } from 'react';
+import { CalendarDays, CheckCircle2, Clock3, PackageCheck, ShoppingBag, XCircle } from 'lucide-react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { usePriceFormatter } from '@/components/algan/price-context';
 import { RoutePicker } from '@/components/algan/route-picker';
 import type { Translator } from '@/components/algan/types';
-import { CardActionButton, DialogLayer, EmptyState, InsetSurface, MediaBadge, ModalBody, PageSection, PrimaryButton, ScrollArea, SecondaryButton, SectionTitle, SegmentedControl, SheetHeader, StatusBadge, SurfaceCard } from '@/components/ui-kit';
+import { ConfirmationDialog, DangerButton, DialogLayer, EmptyState, InsetSurface, MediaBadge, ModalBody, PageSection, PrimaryButton, ScrollArea, SecondaryButton, SegmentedControl, SheetHeader, StatusBadge, SurfaceCard } from '@/components/ui-kit';
 import { boxName } from '@/lib/catalog-localization';
-import { formatOrderDate } from '@/lib/date';
+import { formatOrderDate, formatShymkentTime } from '@/lib/date';
 import { boxes, demoPastOrder, stores } from '@/lib/mock-data';
+import { canCancelOrder, orderCancellationDeadline } from '@/lib/order-cancellation';
 import { createOrderQrPayload, formatOrderId, formatPickupCode } from '@/lib/order-id';
 import { haptic } from '@/lib/telegram';
 import type { Locale, Order, Store } from '@/lib/types';
@@ -20,6 +21,10 @@ const LazyQRCodeSVG = lazy(async () => {
 });
 
 function orderPickupWindow(order: Order) {
+  const snapshotFrom = formatShymkentTime(order.pickupStartsAt);
+  const snapshotTo = formatShymkentTime(order.pickupEndsAt);
+  if (snapshotFrom && snapshotTo) return `${snapshotFrom}–${snapshotTo}`;
+
   const orderBoxes = order.items.flatMap((item) => {
     const box = boxes.find((candidate) => candidate.id === item.boxId);
     return box ? [box] : [];
@@ -29,15 +34,40 @@ function orderPickupWindow(order: Order) {
   return from && to ? `${from}–${to}` : undefined;
 }
 
-export function OrdersTab({ t, locale, orders, onBrowseOffers }: { t: Translator; locale: Locale; orders: Order[]; onBrowseOffers: () => void }) {
+function OrderStatus({ order, t }: { order: Order; t: Translator }) {
+  if (order.status === 'paid') {
+    return <StatusBadge tone="brand" icon={<Clock3 size={12} />}>{t('activeOrderStatus')}</StatusBadge>;
+  }
+  if (order.status === 'cancelled') {
+    return <StatusBadge tone="danger" icon={<XCircle size={12} />}>{t('cancelledOrderStatus')}</StatusBadge>;
+  }
+  return <StatusBadge tone="neutral" icon={<CheckCircle2 size={12} />}>{t('collectedStatus')}</StatusBadge>;
+}
+
+export function OrdersTab({ t, locale, orders, onCancelOrder, onBrowseOffers }: { t: Translator; locale: Locale; orders: Order[]; onCancelOrder: (orderId: string) => boolean; onBrowseOffers: () => void }) {
   const formatPrice = usePriceFormatter(locale);
   const [view, setView] = useState<'active' | 'past'>('active');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [cancellationOrderId, setCancellationOrderId] = useState<string | null>(null);
   const [routeStore, setRouteStore] = useState<Store | null>(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const ordersWithDemoHistory = orders.some((order) => order.id === demoPastOrder.id) ? orders : [...orders, demoPastOrder];
-  const visibleOrders = ordersWithDemoHistory.filter((order) => view === 'active' ? order.status === 'paid' : order.status === 'collected');
+  const visibleOrders = ordersWithDemoHistory.filter((order) => view === 'active' ? order.status === 'paid' : order.status !== 'paid');
   const emptyTitle = view === 'active' ? t('noActiveOrders') : t('noPastOrders');
   const emptyText = view === 'active' ? t('noActiveOrdersText') : t('noPastOrdersText');
+  const cancellationOrder = cancellationOrderId ? orders.find((order) => order.id === cancellationOrderId) : undefined;
+
+  useEffect(() => {
+    const currentTime = Date.now();
+    const nextDeadline = orders
+      .filter((order) => order.status === 'paid')
+      .map(orderCancellationDeadline)
+      .flatMap((deadline) => deadline && deadline.getTime() >= currentTime ? [deadline.getTime()] : [])
+      .sort((a, b) => a - b)[0];
+    if (nextDeadline === undefined) return;
+    const timeout = window.setTimeout(() => setNowMs(Date.now()), Math.min(nextDeadline - currentTime + 1, 2_147_483_647));
+    return () => window.clearTimeout(timeout);
+  }, [orders, nowMs]);
 
   return (
     <PageSection title={t('orders')}>
@@ -55,23 +85,19 @@ export function OrdersTab({ t, locale, orders, onBrowseOffers }: { t: Translator
             const store = stores.find((item) => item.id === order.storeId);
             const orderDate = formatOrderDate(order.createdAt, locale);
             const pickupWindow = orderPickupWindow(order);
-            const isActive = view === 'active';
+            const isActive = order.status === 'paid';
+            const cancellationAllowed = canCancelOrder(order, new Date(nowMs));
+            const cancellationHelpId = `order-cancellation-${order.id}`;
             return (
               <SurfaceCard key={order.id} data-order-status={order.status} className="overflow-hidden tabular-nums">
                 <div className="p-4">
                   <div className="flex items-start gap-3">
                     {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
-                    <div className="min-w-0 flex-1"><p className="break-words text-sm font-extrabold leading-5 text-ink">{store?.name}</p><p className="mt-1 text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</p></div>
-                  </div>
-
-                  {isActive ? (
-                    <div data-testid="active-order-pickup" className="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs font-bold">
-                      <span className="flex items-center gap-2 text-brand"><Clock3 size={16} />{t('pickupToday')} · {pickupWindow}</span>
-                      <span className="flex items-center gap-2 text-ink-muted"><CalendarDays size={16} />{orderDate}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center justify-between gap-2"><p className="break-words text-sm font-extrabold leading-5 text-ink">{store?.name}</p><OrderStatus order={order} t={t} /></div>
+                      <p className="mt-1 text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</p>
                     </div>
-                  ) : (
-                    <div className="mt-4 flex items-center gap-2 text-xs font-bold text-ink-muted"><CalendarDays size={16} />{orderDate}</div>
-                  )}
+                  </div>
 
                   <div className="mt-4 space-y-2">
                     {order.items.map((item) => {
@@ -84,25 +110,54 @@ export function OrdersTab({ t, locale, orders, onBrowseOffers }: { t: Translator
                       );
                     })}
                   </div>
+                  <div data-testid="order-schedule" className="mt-4 space-y-2 border-t border-border pt-3 text-xs font-bold">
+                    {isActive && <div data-testid="active-order-pickup" className="flex items-center gap-2 text-brand"><Clock3 size={16} />{t('pickupToday')} · {pickupWindow}</div>}
+                    <div className="flex items-center gap-2 text-ink-muted"><CalendarDays size={16} />{orderDate}</div>
+                  </div>
                   <div className="mt-4 flex items-center justify-between border-t border-border pt-4"><span className="text-xs font-bold text-ink-muted">{t('total')}</span><b className="text-lg text-brand">{formatPrice(order.total)}</b></div>
                 </div>
 
                 {isActive && (
-                  <div className={`grid gap-2 border-t border-border bg-surface-soft p-3 ${store ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                    <PrimaryButton size="md" onClick={() => { setSelectedOrder(order); haptic('tap'); }}>{t('showQr')}</PrimaryButton>
-                    {store && <SecondaryButton size="md" onClick={() => { setRouteStore(store); haptic('tap'); }}>{t('buildRoute')}</SecondaryButton>}
+                  <div className="border-t border-border bg-surface-soft p-3">
+                    <div className={`grid gap-2 ${store ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                      <PrimaryButton size="md" onClick={() => { setSelectedOrder(order); haptic('tap'); }}>{t('showQr')}</PrimaryButton>
+                      {store && <SecondaryButton size="md" onClick={() => { setRouteStore(store); haptic('tap'); }}>{t('buildRoute')}</SecondaryButton>}
+                    </div>
+                    <DangerButton size="md" className="mt-2" disabled={!cancellationAllowed} aria-describedby={cancellationHelpId} onClick={() => { setCancellationOrderId(order.id); haptic('tap'); }}>{t('cancelOrder')}</DangerButton>
+                    <p id={cancellationHelpId} className="mt-2 text-center text-[11px] font-semibold leading-4 text-ink-muted">{t(cancellationAllowed ? 'cancellationAvailable' : 'cancellationUnavailable')}</p>
                   </div>
-                )}
-                {!isActive && (
-                  <CardActionButton onClick={() => { setSelectedOrder(order); haptic('tap'); }}>{t('orderDetails')}</CardActionButton>
                 )}
               </SurfaceCard>
             );
           })}
         </div>
       )}
-      {selectedOrder && <OrderDetails order={selectedOrder} locale={locale} t={t} onClose={() => setSelectedOrder(null)} />}
+      {selectedOrder && <OrderDetails order={selectedOrder} t={t} onClose={() => setSelectedOrder(null)} />}
       {routeStore && <RoutePicker lat={routeStore.lat} lng={routeStore.lng} t={t} onClose={() => setRouteStore(null)} />}
+      {cancellationOrder && (
+        <ConfirmationDialog
+          title={t('cancelOrderTitle')}
+          description={t('cancelOrderConfirmText')}
+          confirmLabel={t('cancelOrder')}
+          cancelLabel={t('keepOrder')}
+          closeLabel={t('close')}
+          tone="danger"
+          icon={<XCircle size={26} />}
+          onCancel={() => setCancellationOrderId(null)}
+          onConfirm={() => {
+            const cancelled = onCancelOrder(cancellationOrder.id);
+            setCancellationOrderId(null);
+            setNowMs(Date.now());
+            if (!cancelled) {
+              haptic('error');
+              return;
+            }
+            setSelectedOrder(null);
+            setView('past');
+            haptic('success');
+          }}
+        />
+      )}
     </PageSection>
   );
 }
@@ -126,59 +181,15 @@ export function PickupCodePanel({ pickupCode, label, className }: { pickupCode: 
   );
 }
 
-function OrderItemsList({ order, locale }: { order: Order; locale: Locale }) {
-  const formatPrice = usePriceFormatter(locale);
+function OrderDetails({ order, t, onClose }: { order: Order; t: Translator; onClose: () => void }) {
   return (
-    <div className="space-y-3">
-      {order.items.map((item) => {
-        const box = boxes.find((candidate) => candidate.id === item.boxId);
-        return (
-          <InsetSurface key={item.boxId} tone="panel" radius="card" className="flex items-center gap-3 p-3">
-            {box && <img src={box.image} alt="" className="h-14 w-14 shrink-0 rounded-control object-cover" />}
-            <div className="min-w-0 flex-1"><p className="break-words text-sm font-black leading-5">{box ? boxName(box, locale) : ''}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</p></div>
-            <b className="shrink-0 text-sm text-brand">{formatPrice(item.unitPrice * item.quantity)}</b>
-          </InsetSurface>
-        );
-      })}
-    </div>
-  );
-}
-
-function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Locale; t: Translator; onClose: () => void }) {
-  const formatPrice = usePriceFormatter(locale);
-  const store = stores.find((item) => item.id === order.storeId);
-  const orderDate = formatOrderDate(order.createdAt, locale);
-  const isActive = order.status === 'paid';
-  if (isActive) {
-    return (
-      <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('showQr')} sheetHeight="medium">
-        <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden">
-          <SheetHeader title={t('showQr')} onClose={onClose} closeLabel={t('close')} />
-          <ScrollArea className="flex-1 pb-2 text-center">
-            <div className="mt-6"><OrderQr order={order} t={t} /></div>
-            <p className="mx-auto mt-5 max-w-[300px] text-sm leading-6 text-ink-secondary">{t('successText')}</p>
-            <PickupCodePanel pickupCode={order.pickupCode} label={t('pickupCode')} className="mt-5" />
-          </ScrollArea>
-        </ModalBody>
-      </DialogLayer>
-    );
-  }
-  return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('orderDetails')} sheetHeight="tall">
-      <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden pb-0 tabular-nums">
-        <SheetHeader title={t('orderDetails')} onClose={onClose} closeLabel={t('close')} />
-        <ScrollArea className="flex-1 pb-5">
-          <InsetSurface tone="brand" radius="card" className="mt-4 p-4">
-            <div className="flex items-center gap-3">
-              {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
-              <div className="min-w-0 flex-1"><p className="break-words text-base font-extrabold leading-5">{store?.name}</p><p className="mt-1 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p></div>
-              <StatusBadge tone="neutral" size="sm">{t('collectedStatus')}</StatusBadge>
-            </div>
-            <div className="mt-4 flex items-center gap-2 border-t border-brand/10 pt-3 text-xs font-bold text-ink-secondary"><CalendarDays size={15} />{orderDate}</div>
-          </InsetSurface>
-          <SectionTitle as="h3" className="mt-7">{t('orderContents')}</SectionTitle>
-          <div className="mt-3"><OrderItemsList order={order} locale={locale} /></div>
-          <InsetSurface radius="card" className="mt-4 flex items-center justify-between p-4"><span className="text-sm font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-brand">{formatPrice(order.total)}</b></InsetSurface>
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('showQr')} sheetHeight="medium">
+      <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden">
+        <SheetHeader title={t('showQr')} onClose={onClose} closeLabel={t('close')} />
+        <ScrollArea className="flex-1 pb-2 text-center">
+          <div className="mt-6"><OrderQr order={order} t={t} /></div>
+          <p className="mx-auto mt-5 max-w-[300px] text-sm leading-6 text-ink-secondary">{t('pickupInstructions')}</p>
+          <PickupCodePanel pickupCode={order.pickupCode} label={t('pickupCode')} className="mt-5" />
         </ScrollArea>
       </ModalBody>
     </DialogLayer>

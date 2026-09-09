@@ -1,11 +1,10 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import { AlertTriangle, Clock3, Image as ImageIcon, MapPin, Package, ShoppingBag, Sparkles } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock3, Image as ImageIcon, MapPin, Package, ShoppingBag } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { AlganMark } from '@/components/algan-logo';
 import { SurpriseBadge } from '@/components/algan/marketplace';
-import { OrderQr, PickupCodePanel } from '@/components/algan/orders';
 import { usePriceFormatter } from '@/components/algan/price-context';
 import { RoutePicker } from '@/components/algan/route-picker';
 import type { Translator } from '@/components/algan/types';
@@ -13,10 +12,9 @@ import { CardActionButton, ConfirmationDialog, DialogLayer, EmptyState, FullScre
 import { availableQuantity } from '@/lib/app-utils';
 import { boxAllergens, boxContentName, boxName, storeAddress } from '@/lib/catalog-localization';
 import { boxes, storeById } from '@/lib/mock-data';
-import { formatOrderId } from '@/lib/order-id';
 import { formatBoxesLeft } from '@/lib/stock';
 import { haptic } from '@/lib/telegram';
-import type { Box, CartItem, Locale, Order } from '@/lib/types';
+import type { Box, CartItem, Locale } from '@/lib/types';
 
 export function CartReplacementDialog({ t, onCancel, onConfirm }: { t: Translator; onCancel: () => void; onConfirm: () => void }) {
   return (
@@ -173,6 +171,9 @@ export function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQu
               ))}
             </div>
           )}
+          <NoticeCard className="mt-5" density="compact" icon={<Clock3 size={17} />} title={t('cancellationNoticeTitle')}>
+            {t('cancellationNoticeText')}
+          </NoticeCard>
           <div className="my-5 h-px shrink-0 bg-border" />
           <div className="flex shrink-0 items-end justify-between tabular-nums"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black" aria-live="polite">{formatPrice(total)}</span></div>
           <PrimaryButton onClick={() => void onPay()} disabled={lines.length === 0 || paymentPending} aria-busy={paymentPending} className="mt-5 shrink-0">{paymentPending ? t('paymentProcessing') : t('checkoutCart')}</PrimaryButton>
@@ -185,25 +186,48 @@ export function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQu
   );
 }
 
-export function PaymentFailure({ t, onBackToCart }: { t: Translator; onBackToCart: () => void }) {
+function PaymentResultScreen({ title, description, actionLabel, statusIcon, tone, closeLabel, onAction }: {
+  title: string;
+  description: string;
+  actionLabel: string;
+  statusIcon: ReactNode;
+  tone: 'brand' | 'danger';
+  closeLabel: string;
+  onAction: () => void;
+}) {
   return (
-    <DialogLayer onClose={onBackToCart} closeLabel={t('close')} ariaLabel={t('paymentFailedTitle')} variant="full">
-      <FullScreenFeedback centered tone="coral" className="relative overflow-hidden" icon={<><AlganMark className="h-9 w-9" /><AlertTriangle className="absolute -right-2 -top-2 rounded-full bg-surface p-1 text-accent-strong shadow-control" size={24} strokeWidth={2.5} /></>} title={t('paymentFailedTitle')} description={t('paymentFailedText')}>
-        <PrimaryButton onClick={onBackToCart} className="mx-auto mt-6 w-full max-w-[330px]">{t('backToCart')}</PrimaryButton>
+    <DialogLayer onClose={onAction} closeLabel={closeLabel} ariaLabel={title} variant="full">
+      <FullScreenFeedback centered tone={tone} icon={statusIcon} title={title} description={description}>
+        <PrimaryButton onClick={onAction} className="mx-auto mt-6 w-full max-w-[330px] shrink-0">{actionLabel}</PrimaryButton>
       </FullScreenFeedback>
     </DialogLayer>
   );
 }
 
-export function Success({ order, t, onDone }: { order: Order; t: Translator; onDone: () => void }) {
+export function PaymentFailure({ t, onBackToCart }: { t: Translator; onBackToCart: () => void }) {
   return (
-    <DialogLayer onClose={onDone} closeLabel={t('close')} ariaLabel={t('ordersCreated')} variant="full">
-      <FullScreenFeedback icon={<><AlganMark className="h-10 w-10" /><Sparkles className="absolute -right-2 -top-1 text-accent-strong" size={20} /></>} title={t('ordersCreated')} description={t('successText')}>
-        <div className="mt-5"><OrderQr order={order} t={t} /></div>
-        <PickupCodePanel pickupCode={order.pickupCode} label={t('pickupCode')} className="mx-auto mt-4 w-full max-w-[320px] p-3" />
-        <p className="mt-4 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p>
-        <PrimaryButton onClick={onDone} className="mt-6 shrink-0">{t('toOrders')}</PrimaryButton>
-      </FullScreenFeedback>
-    </DialogLayer>
+    <PaymentResultScreen
+      title={t('paymentFailedTitle')}
+      description={t('paymentFailedText')}
+      actionLabel={t('backToCart')}
+      closeLabel={t('close')}
+      onAction={onBackToCart}
+      tone="danger"
+      statusIcon={<AlertTriangle size={38} strokeWidth={2.5} />}
+    />
+  );
+}
+
+export function Success({ t, onDone }: { t: Translator; onDone: () => void }) {
+  return (
+    <PaymentResultScreen
+      title={t('paymentSuccessTitle')}
+      description={t('successText')}
+      actionLabel={t('toOrders')}
+      closeLabel={t('close')}
+      onAction={onDone}
+      tone="brand"
+      statusIcon={<CheckCircle2 size={40} strokeWidth={2.5} />}
+    />
   );
 }

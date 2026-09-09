@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { migratePersistedState, useAppStore } from '../lib/store';
 import { acceptedLegalDocuments } from './test-state';
 
@@ -134,6 +134,31 @@ describe('local MVP state', () => {
     expect(useAppStore.getState()).toMatchObject({ cartStoreId: undefined, cartItems: [] });
   });
 
+  it('cancels an eligible order atomically and restores its stock once', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime('2026-08-25T10:00:00.000Z');
+    try {
+      useAppStore.setState({
+        orders: [{
+          id: '12345678', storeId: 'tatti', items: [
+            { boxId: 'bakery-surprise', quantity: 2, unitPrice: 2490 },
+            { boxId: 'tatti-defined', quantity: 1, unitPrice: 2390 },
+          ], total: 7370, pickupCode: '123456', createdAt: '2026-08-25T10:00:00.000Z',
+          pickupStartsAt: '2026-08-25T14:30:00.000Z', pickupEndsAt: '2026-08-25T15:30:00.000Z', status: 'paid',
+        }],
+        purchasedBoxQuantities: { 'bakery-surprise': 3, 'tatti-defined': 1 },
+      });
+
+      expect(useAppStore.getState().cancelOrder('12345678')).toBe(true);
+      expect(useAppStore.getState().orders[0]?.status).toBe('cancelled');
+      expect(useAppStore.getState().purchasedBoxQuantities).toEqual({ 'bakery-surprise': 1 });
+      expect(useAppStore.getState().cancelOrder('12345678')).toBe(false);
+      expect(useAppStore.getState().purchasedBoxQuantities).toEqual({ 'bakery-surprise': 1 });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('never mixes boxes from different venues', () => {
     useAppStore.getState().setCartItemQuantity('bakery-surprise', 'tatti', 1);
     useAppStore.getState().setCartItemQuantity('coffee', 'kofi', 1);
@@ -146,8 +171,8 @@ describe('local MVP state', () => {
   it('migrates legacy one-box orders without dropping history', () => {
     const migrated = migratePersistedState({
       orders: [{ id: '12345678', boxId: 'bakery-surprise', quantity: 2, total: 4980, pickupCode: '1234', createdAt: '2026-08-25T00:00:00.000Z', status: 'paid' }],
-    }) as { orders: Array<{ storeId: string; pickupCode: string; items: unknown[] }> };
-    expect(migrated.orders[0]).toMatchObject({ storeId: 'tatti', pickupCode: '001234' });
+    }) as { orders: Array<{ storeId: string; pickupCode: string; pickupStartsAt?: string; pickupEndsAt?: string; items: unknown[] }> };
+    expect(migrated.orders[0]).toMatchObject({ storeId: 'tatti', pickupCode: '001234', pickupStartsAt: '2026-08-25T14:30:00.000Z', pickupEndsAt: '2026-08-25T15:30:00.000Z' });
     expect(migrated.orders[0]?.items).toEqual([{ boxId: 'bakery-surprise', quantity: 2, unitPrice: 2490 }]);
   });
 

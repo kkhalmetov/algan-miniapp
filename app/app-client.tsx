@@ -20,7 +20,7 @@ import { normalizeKazakhstanPhone } from '@/lib/phone';
 import { useAppStore } from '@/lib/store';
 import { getCopy } from '@/lib/translations';
 import { haptic, setTelegramClosingConfirmation, telegramProfile } from '@/lib/telegram';
-import type { Box, Currency, Order } from '@/lib/types';
+import type { Box, Currency } from '@/lib/types';
 
 export { MINIMUM_SPLASH_MS } from '@/hooks/use-app-runtime';
 export { avatarRetryUrl } from '@/lib/app-utils';
@@ -34,7 +34,7 @@ export default function AlganApp() {
   const {
     hydrated, onboardingDone, profile, legalAcceptance, locale, currency, tab, favoriteBoxIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,
     completeOnboarding, acceptLegalDocuments, syncTelegramProfile, updatePhone, setLocale, setCurrency, setTab, toggleFavoriteBox,
-    setCartItemQuantity, clearCart, completePurchase, resetDemo,
+    setCartItemQuantity, clearCart, completePurchase, cancelOrder, resetDemo,
   } = useAppStore();
   const t = useMemo(() => getCopy(locale), [locale]);
   const liveTelegramProfile = telegramProfile();
@@ -45,7 +45,7 @@ export default function AlganApp() {
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [pendingCartReplacement, setPendingCartReplacement] = useState<PendingCartReplacement | null>(null);
-  const [successOrder, setSuccessOrder] = useState<Order | null>(null);
+  const [purchaseSucceeded, setPurchaseSucceeded] = useState(false);
   const [paymentFailed, setPaymentFailed] = useState(false);
   const [paymentPending, setPaymentPending] = useState(false);
   const paymentPendingRef = useRef(false);
@@ -155,7 +155,7 @@ export default function AlganApp() {
     completePurchase(order);
     setCartOpen(false);
     setSelectedBox(null);
-    setSuccessOrder(order);
+    setPurchaseSucceeded(true);
     haptic('success');
   };
 
@@ -204,7 +204,7 @@ export default function AlganApp() {
           {tab === 'favorites' && (
             <FavoritesTab t={t} locale={locale} favoriteBoxIds={favoriteBoxIds} toggleFavoriteBox={toggleFavoriteBox} openBox={openBox} purchasedBoxQuantities={purchasedBoxQuantities} />
           )}
-          {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} onBrowseOffers={() => { setTab('home'); haptic('tap'); }} />}
+          {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} onCancelOrder={cancelOrder} onBrowseOffers={() => { setTab('home'); haptic('tap'); }} />}
           {tab === 'profile' && (
             <ProfileTab t={t} profile={profile} currency={currency}
               currencyLoading={currency === 'RUB' && !kztToRubRate} currencyRateError={currencyRateError} onToggleCurrency={toggleCurrency}
@@ -237,8 +237,8 @@ export default function AlganApp() {
           onBackToCart={() => { setPaymentFailed(false); setCartOpen(true); }}
         />
       )}
-      {successOrder && (
-        <Success order={successOrder} t={t} onDone={() => { setSuccessOrder(null); setTab('orders'); }} />
+      {purchaseSucceeded && (
+        <Success t={t} onDone={() => { setPurchaseSucceeded(false); setTab('orders'); }} />
       )}
       {settingsOpen && (
         <SettingsModal t={t} locale={locale} setLocale={setLocale} phone={profile.phone}

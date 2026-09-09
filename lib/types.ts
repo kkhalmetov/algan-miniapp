@@ -72,7 +72,9 @@ export interface Order {
   total: number;
   pickupCode: string;
   createdAt: string;
-  status: 'paid' | 'collected';
+  pickupStartsAt?: string;
+  pickupEndsAt?: string;
+  status: 'paid' | 'collected' | 'cancelled';
 }
 
 export interface CartItem {

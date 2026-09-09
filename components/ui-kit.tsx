@@ -785,6 +785,7 @@ export function FullScreenFeedback({ icon, title, description, children, centere
   return (
     <div className={cx(
       'hide-scrollbar flex min-h-[var(--algan-viewport-height)] flex-col overflow-y-auto overscroll-contain px-page pb-[max(1.5rem,var(--algan-safe-area-bottom))] pt-[max(1.5rem,var(--algan-safe-area-top))] text-center sm:min-h-[780px] sm:px-page-wide',
+      tone === 'brand' && 'bg-brand-pale/45',
       tone === 'coral' && 'bg-accent-soft',
       tone === 'danger' && 'bg-danger-soft/30',
       centered && 'justify-center',

@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { boxes } from './mock-data';
 import { normalizePickupCode } from './order-id';
+import { canCancelOrder, createOrderPickupSnapshot } from './order-cancellation';
 import type { CartItem, Currency, LegalAcceptance, Locale, Order, Tab, UserProfile } from './types';
 
 interface AppState {
@@ -29,6 +30,7 @@ interface AppState {
   setTab: (tab: Tab) => void;
   toggleFavoriteBox: (boxId: string) => void;
   addOrder: (order: Order) => void;
+  cancelOrder: (orderId: string) => boolean;
   setCartItemQuantity: (boxId: string, storeId: string, quantity: number) => void;
   clearCart: () => void;
   completePurchase: (order: Order) => void;
@@ -42,6 +44,15 @@ type LegacyOrder = {
 
 const isRecord = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === 'object';
 
+const withPickupSnapshot = (order: Order): Order => {
+  const snapshot = createOrderPickupSnapshot(order.createdAt, order.items, boxes);
+  return {
+    ...order,
+    pickupStartsAt: typeof order.pickupStartsAt === 'string' ? order.pickupStartsAt : snapshot.pickupStartsAt,
+    pickupEndsAt: typeof order.pickupEndsAt === 'string' ? order.pickupEndsAt : snapshot.pickupEndsAt,
+  };
+};
+
 export const migratePersistedState = (persistedState: unknown) => {
   if (!isRecord(persistedState)) return persistedState;
   const migratedState = { ...persistedState };
@@ -52,13 +63,13 @@ export const migratePersistedState = (persistedState: unknown) => {
   const orders = Array.isArray(migratedState.orders) ? migratedState.orders.flatMap((candidate): Order[] => {
     if (!isRecord(candidate)) return [];
     if (Array.isArray(candidate.items)) {
-      return [{ ...candidate, pickupCode: normalizePickupCode(String(candidate.pickupCode ?? '')) } as unknown as Order];
+      return [withPickupSnapshot({ ...candidate, pickupCode: normalizePickupCode(String(candidate.pickupCode ?? '')) } as unknown as Order)];
     }
     if (typeof candidate.boxId !== 'string') return [];
     const legacy = candidate as unknown as LegacyOrder;
     const box = boxes.find((item) => item.id === legacy.boxId);
     const quantity = Math.max(1, Number(legacy.quantity) || 1);
-    return [{
+    return [withPickupSnapshot({
       id: legacy.id,
       storeId: box?.storeId ?? '',
       items: [{ boxId: legacy.boxId, quantity, unitPrice: legacy.total / quantity }],
@@ -66,7 +77,7 @@ export const migratePersistedState = (persistedState: unknown) => {
       pickupCode: normalizePickupCode(legacy.pickupCode),
       createdAt: legacy.createdAt,
       status: legacy.status,
-    }];
+    })];
   }) : migratedState.orders;
   const favoriteBoxIds = Array.isArray(migratedState.favoriteBoxIds)
     ? [...new Set(migratedState.favoriteBoxIds.filter((id): id is string => typeof id === 'string' && boxes.some((box) => box.id === id)))]
@@ -82,7 +93,7 @@ export const migratePersistedState = (persistedState: unknown) => {
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       hydrated: false,
       onboardingDone: false,
       profile: { firstName: '' },
@@ -126,6 +137,23 @@ export const useAppStore = create<AppState>()(
           : [...state.favoriteBoxIds, boxId],
       })),
       addOrder: (order) => set((state) => ({ orders: [order, ...state.orders] })),
+      cancelOrder: (orderId) => {
+        const state = get();
+        const order = state.orders.find((candidate) => candidate.id === orderId);
+        if (!order || !canCancelOrder(order)) return false;
+
+        const purchasedBoxQuantities = { ...state.purchasedBoxQuantities };
+        order.items.forEach((item) => {
+          const nextQuantity = Math.max(0, (purchasedBoxQuantities[item.boxId] ?? 0) - item.quantity);
+          if (nextQuantity === 0) delete purchasedBoxQuantities[item.boxId];
+          else purchasedBoxQuantities[item.boxId] = nextQuantity;
+        });
+        set({
+          orders: state.orders.map((candidate) => candidate.id === orderId ? { ...candidate, status: 'cancelled' } : candidate),
+          purchasedBoxQuantities,
+        });
+        return true;
+      },
       setCartItemQuantity: (boxId, storeId, quantity) => set((state) => {
         const currentItems = state.cartStoreId && state.cartStoreId !== storeId ? [] : state.cartItems;
         const nextItems = quantity <= 0
@@ -155,7 +183,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'algan-miniapp',
-      version: 5,
+      version: 6,
       migrate: (persistedState) => migratePersistedState(persistedState) as never,
       partialize: ({ onboardingDone, profile, legalAcceptance, locale, currency, favoriteBoxIds, orders, cartStoreId, cartItems, purchasedBoxQuantities }) => ({
         onboardingDone, profile, legalAcceptance, locale, currency, favoriteBoxIds, orders, cartStoreId, cartItems, purchasedBoxQuantities,

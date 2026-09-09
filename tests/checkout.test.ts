@@ -19,6 +19,8 @@ describe('checkout order creation', () => {
       items: [{ boxId: box.id, quantity: 2, unitPrice: box.salePrice }],
       total: box.salePrice * 2,
       createdAt: '2026-09-07T12:00:00.000Z',
+      pickupStartsAt: '2026-09-07T14:30:00.000Z',
+      pickupEndsAt: '2026-09-07T15:30:00.000Z',
       status: 'paid',
     });
     expect(order?.id).toMatch(/^\d{8}$/);

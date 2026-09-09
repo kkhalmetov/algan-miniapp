@@ -1,5 +1,6 @@
 import { createOrderId, createPickupCode } from './order-id';
 import { availableQuantity } from './app-utils';
+import { createOrderPickupSnapshot } from './order-cancellation';
 import type { Box, CartItem, Order } from './types';
 
 interface CreateCheckoutOrderOptions {
@@ -29,6 +30,8 @@ export function createCheckoutOrder({
 
   if (items.length === 0) return null;
 
+  const pickup = createOrderPickupSnapshot(createdAt, items, boxes);
+
   return {
     id: createOrderId(existingOrders.map((order) => order.id)),
     storeId: cartStoreId ?? boxes.find((box) => box.id === items[0]?.boxId)?.storeId ?? '',
@@ -36,6 +39,7 @@ export function createCheckoutOrder({
     total: items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
     pickupCode: createPickupCode(existingOrders.map((order) => order.pickupCode)),
     createdAt,
+    ...pickup,
     status: 'paid',
   };
 }

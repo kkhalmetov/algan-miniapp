@@ -48,7 +48,7 @@ describe('orders tab', () => {
     expect(main.scrollTop).toBe(0);
     expect(screen.getByRole('heading', { name: 'Заказы' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Активные' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.queryByText('Готов к получению')).not.toBeInTheDocument();
+    expect(screen.getByText('Готов к получению')).toBeInTheDocument();
     expect(screen.getByText('Surprise Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Tatti-box')).toBeInTheDocument();
     expect(screen.getByText('Surprise Tatti-box').parentElement).toHaveTextContent(/2.?490 ₸ × 2/);
@@ -59,6 +59,7 @@ describe('orders tab', () => {
     const activeCard = screen.getByText('Номер заказа: 12345678').closest('article');
     expect(activeCard).not.toBeNull();
     expect(within(activeCard!).getByTestId('active-order-pickup')).toHaveTextContent('Заберите сегодня · 18:30–20:30');
+    expect(within(activeCard!).getByTestId('order-schedule')).toHaveTextContent('Заберите сегодня · 18:30–20:3025 августа 2026 г.');
     expect(within(activeCard!).getByText('25 августа 2026 г.').parentElement?.querySelector('.lucide-calendar-days')).toBeInTheDocument();
     expect(within(activeCard!).getByText('Итого')).toBeInTheDocument();
     expect(screen.getByText('25 августа 2026 г.')).toBeInTheDocument();
@@ -74,11 +75,13 @@ describe('orders tab', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Прошедшие' }));
     expect(screen.getByRole('button', { name: 'Прошедшие' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.queryByText('Получен')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Получен').length).toBeGreaterThan(0);
     expect(screen.getByText('Кофе & булочки')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 87654321')).toBeInTheDocument();
     expect(screen.getByText('Кофе & булочки').parentElement).toHaveTextContent(/1.?990 ₸ × 2/);
-    expect(within(screen.getByText('Номер заказа: 87654321').closest('article')!).getByRole('button', { name: 'Детали заказа' })).toBeInTheDocument();
+    const pastCard = screen.getByText('Номер заказа: 87654321').closest('article');
+    expect(within(pastCard!).getByTestId('order-schedule')).toHaveTextContent('20 августа 2026 г.');
+    expect(within(pastCard!).queryByRole('button', { name: 'Детали заказа' })).not.toBeInTheDocument();
     expect(screen.queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 12345678')).not.toBeInTheDocument();
   });
@@ -104,7 +107,7 @@ describe('orders tab', () => {
     expect(within(dialog).queryByRole('button', { name: 'Построить маршрут' })).not.toBeInTheDocument();
   });
 
-  it('opens complete, non-truncated details for a completed order', () => {
+  it('shows complete past order information without a details action', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
@@ -112,19 +115,11 @@ describe('orders tab', () => {
     const completedCard = screen.getByText('Номер заказа: 87654321').closest('article');
     expect(completedCard).not.toBeNull();
     expect(within(completedCard!).getByText('Кофе & булочки')).not.toHaveClass('truncate');
-    fireEvent.click(within(completedCard!).getByRole('button', { name: 'Детали заказа' }));
-
-    const dialog = screen.getByRole('dialog', { name: 'Детали заказа' });
-    expect(within(dialog).getByText('Köfi')).toBeInTheDocument();
-    expect(within(dialog).getByText('Номер заказа: 87654321')).toBeInTheDocument();
-    expect(within(dialog).getByText('Получен')).toBeInTheDocument();
-    expect(within(dialog).getByText('20 августа 2026 г.')).toBeInTheDocument();
-    expect(within(dialog).getByRole('heading', { name: 'Состав заказа', level: 3 })).toBeInTheDocument();
-    expect(within(dialog).getByText('Кофе & булочки')).not.toHaveClass('truncate');
-    expect(within(dialog).getAllByText('3 980 ₸')).toHaveLength(2);
-    expect(within(dialog).queryByTitle('QR-код')).not.toBeInTheDocument();
-    expect(within(dialog).queryByText('567-890')).not.toBeInTheDocument();
-    expect(within(dialog).queryByRole('button', { name: 'Построить маршрут' })).not.toBeInTheDocument();
+    expect(within(completedCard!).getByText('Получен')).toBeInTheDocument();
+    expect(within(completedCard!).getByText('20 августа 2026 г.')).toBeInTheDocument();
+    expect(within(completedCard!).getByText('3 980 ₸')).toBeInTheDocument();
+    expect(within(completedCard!).queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Детали заказа' })).not.toBeInTheDocument();
   });
 
   it('opens route providers from an active order card', () => {
@@ -145,6 +140,66 @@ describe('orders tab', () => {
     expect(within(dialog).queryByTitle('QR-код')).not.toBeInTheDocument();
   });
 
+  it('cancels an eligible order, restores stock and opens past orders', () => {
+    vi.setSystemTime('2026-08-25T10:00:00.000Z');
+    useAppStore.setState((state) => ({
+      orders: [{ ...state.orders[0]!, pickupStartsAt: '2026-08-25T14:30:00.000Z', pickupEndsAt: '2026-08-25T15:30:00.000Z' }],
+      purchasedBoxQuantities: { 'bakery-surprise': 2, 'tatti-defined': 1 },
+    }));
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+    fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
+
+    const cancelButton = screen.getByRole('button', { name: 'Отменить заказ' });
+    expect(cancelButton).toBeEnabled();
+    fireEvent.click(cancelButton);
+    const confirmation = screen.getByRole('dialog', { name: 'Отменить заказ?' });
+    fireEvent.click(within(confirmation).getByRole('button', { name: 'Оставить заказ' }));
+    expect(screen.getByRole('button', { name: 'Активные' })).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Отменить заказ' }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Отменить заказ?' })).getByRole('button', { name: 'Отменить заказ' }));
+
+    expect(screen.getByRole('button', { name: 'Прошедшие' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('Отменён')).toBeInTheDocument();
+    expect(useAppStore.getState().orders[0]?.status).toBe('cancelled');
+    expect(useAppStore.getState().purchasedBoxQuantities).toEqual({});
+
+    const cancelledCard = screen.getByText('Номер заказа: 12345678').closest('article');
+    expect(within(cancelledCard!).getByText('Отменён')).toBeInTheDocument();
+    expect(within(cancelledCard!).queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('QR-код')).not.toBeInTheDocument();
+    expect(screen.queryByText('123-456')).not.toBeInTheDocument();
+  });
+
+  it('keeps cancellation disabled inside the three-hour cutoff', () => {
+    vi.setSystemTime('2026-08-25T12:00:00.001Z');
+    useAppStore.setState((state) => ({
+      orders: [{ ...state.orders[0]!, pickupStartsAt: '2026-08-25T14:30:00.000Z', pickupEndsAt: '2026-08-25T15:30:00.000Z' }],
+    }));
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+    fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
+
+    expect(screen.getByRole('button', { name: 'Отменить заказ' })).toBeDisabled();
+    expect(screen.getByText('Отмена недоступна менее чем за 3 часа до начала выдачи.')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Отменить заказ?' })).not.toBeInTheDocument();
+  });
+
+  it('disables cancellation automatically when the cutoff passes', () => {
+    vi.setSystemTime('2026-08-25T11:29:58.000Z');
+    useAppStore.setState((state) => ({
+      orders: [{ ...state.orders[0]!, pickupStartsAt: '2026-08-25T14:30:00.000Z', pickupEndsAt: '2026-08-25T15:30:00.000Z' }],
+    }));
+    render(<AlganApp />);
+    act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
+    fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
+    expect(screen.getByRole('button', { name: 'Отменить заказ' })).toBeEnabled();
+
+    act(() => vi.advanceTimersByTime(3_000));
+    expect(screen.getByRole('button', { name: 'Отменить заказ' })).toBeDisabled();
+  });
+
   it('shows a demo card when the user has no past orders yet', () => {
     useAppStore.setState({ orders: [] });
     render(<AlganApp />);
@@ -158,7 +213,7 @@ describe('orders tab', () => {
     expect(screen.getByText('Номер заказа: 48273106').closest('button')).toBeNull();
     expect(screen.getByText('Сладкий вечер')).toBeInTheDocument();
     expect(screen.getByText('Сладкий вечер').parentElement).toHaveTextContent(/3.?190 ₸ × 1/);
-    expect(screen.getByRole('button', { name: 'Детали заказа' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Детали заказа' })).not.toBeInTheDocument();
   });
 
   it('offers a way back to the catalog from an empty active state', () => {
