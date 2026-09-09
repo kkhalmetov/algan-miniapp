@@ -47,7 +47,7 @@ Onest Variable is self-hosted in `public/fonts` with only the Latin, Cyrillic an
 - Body: 15/22, weight 400–600.
 - Supporting: 13/18.
 - Caption: 12/16.
-- Prices and quantities use weight 800, never decorative type.
+- Prices and quantities use weight 800–900 and tabular numerals, never decorative type. The hero commerce price uses the shared `commerce-price` token.
 
 ### Layout
 
@@ -55,7 +55,7 @@ Onest Variable is self-hosted in `public/fonts` with only the Latin, Cyrillic an
 - Screen gutter: 20 px; compact mobile gutter: 16 px.
 - Canonical screen, header, modal and sticky-footer primitives switch from 16 px below the `sm` breakpoint to 20 px inside the desktop phone shell. Feature screens must not recreate these gutters.
 - Controls: 12 px radius; cards: 18 px; sheets: 28 px.
-- Primary actions: 52 px high. Every interactive target is at least 44 × 44 px.
+- Primary actions: 52 px high. Standalone interactive targets are at least 44 × 44 px; inline legal text links follow the WCAG inline-target exception and keep a 24 px minimum line target.
 - Phone shell is fluid up to 460 px. Desktop presentation keeps the 780 px preview shell.
 - Use one border and, only where needed, one quiet shadow. Avoid cards nested inside cards.
 
@@ -73,7 +73,7 @@ Canonical primitives live in `components/ui-kit.tsx`. Product screens compose th
 - **Actions:** `PrimaryButton`, `SecondaryButton`, `DangerButton`, `TertiaryButton`, `TextLinkButton`, `IconButton`, `PillButton`. `PrimaryButton` owns brand, highlight-on-brand and warning variants; feature code must not recolour it with utility conflicts or inline styles. Floating and selected favorite icon buttons use the corresponding `IconButton` tones.
 - **Structure:** `PageSection`, `BrandHeader`, `TopAppBar`, `ScreenBody`, title primitives, `SurfaceCard`, `InsetSurface`. `SectionTitle` uses `h2` for page sections and its `h3` context for sections nested under a sheet title; semantics must not be recreated with visual-only text.
 - **Commerce:** `StatusBadge`, `QuantityControl`, `QuantityStepper`, `StickyActionFooter`, `CardActionButton`.
-- **Rows and information:** `ListRow`, `LinkRow`, `DetailRow`, `NoticeCard`, `AccordionItem`, `MediaBadge`, `AvatarFrame`. List rows expose default and compact densities; media badges expose semantic sizes instead of feature-owned height/radius overrides.
+- **Rows and information:** `ListRow`, `LinkRow`, `DetailRow`, `NoticeCard`, `AccordionItem`, `MediaBadge`, `AvatarFrame`. List rows and notices expose default and compact densities; media badges expose semantic sizes and the photo-floating tone instead of feature-owned border, height or radius overrides.
 - **Navigation and state:** `BottomNavigation`, `SegmentedControl`, `EmptyState`, `FullScreenFeedback`. Full-screen feedback uses brand for success, coral for recoverable payment failure and danger only for destructive or blocking failure.
 - **Layers:** `DialogLayer`, `ModalBody`, `SheetHeader`, `MediaSheetHeader`, `ConfirmationDialog`, `ScrollArea`. Bottom sheets use content, medium or tall shell-relative heights. Never calculate their height from browser `dvh` inside the desktop phone shell. Internal sheet navigation focuses the changed title. Backdrops are pointer-dismissable but stay outside sequential keyboard and screen-reader navigation. Confirmations may add one semantic icon and use warning for reversible replacement, danger for deletion.
 
@@ -89,8 +89,8 @@ The product-specific `SURPRISE` badge uses a lime surface, deep-pine text and th
 - Box details use a tall sheet with venue context, routing, a strong price hierarchy, two compact pickup/stock cells, exact or surprise composition, allergens and a persistent quantity/action footer that includes the selected total.
 - Bottom navigation always follows the product flow: Home, Orders, Favorites, Profile. Profile is a dedicated tab and is not duplicated in the home header.
 - Switching bottom-navigation tabs always starts the destination at the top; modal and nested scroll positions remain local to their own layer.
-- Active orders prioritise pickup time, collection code and route. History prioritises contents, date and total.
-- Order details always identify the venue, order number, status, date, purchased items and total. Only active orders expose QR, pickup code and route.
+- Active orders prioritise pickup time, collection code and route. History prioritises contents, date and total and exposes a shared attached details action.
+- Completed-order details always identify the venue, order number, status, date, purchased items and total. Only active orders expose QR, pickup code and route; their pickup pass intentionally stays focused on the QR and collection code.
 - Profile is available only from the fourth bottom-navigation tab; the home header contains no profile shortcut.
 - Settings use an explicit segmented language choice; support starts with the direct contact action; long legal documents keep the sheet header fixed while their body scrolls.
 - Empty, loading, success and failure states use the same friendly geometric language as the box mark.
@@ -103,7 +103,7 @@ The product-specific `SURPRISE` badge uses a lime surface, deep-pine text and th
 - Modal focus stays inside the top layer, Escape closes it, the background becomes inert, and previous focus is restored without scrolling.
 - Preserve Telegram and operating-system safe-area insets in headers, navigation, sheets and sticky actions.
 - Never truncate legal or transactional information. Catalogue cards may truncate only repeated names and addresses.
-- RU and KK are equal first-class layouts. The document language follows the selected locale; KK remains the default.
+- RU and KK are equal first-class layouts. The document language and browser title follow the selected locale; KK remains the default.
 
 ## Governance
 

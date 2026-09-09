@@ -33,7 +33,7 @@ export function ProfileTab({ t, profile, currency, currencyLoading, currencyRate
         <div aria-hidden="true" className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-brand-hover" />
         <div className="relative flex items-center gap-4">
           <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} fallbackName={firstName} />
-          <div><ContentTitle as="h1" tone="inverse">{fullName}</ContentTitle><p className="mt-1 text-sm text-white/70">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
+          <div className="min-w-0 flex-1"><ContentTitle as="h1" tone="inverse" className="break-words">{fullName}</ContentTitle><p className="mt-1 truncate text-sm text-white/70">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
         </div>
       </BrandHeader>
 
@@ -121,9 +121,9 @@ export function SettingsModal({ t, locale, setLocale, phone, onEditPhone, onClos
       <ModalBody>
         <SheetHeader title={t('settings')} onClose={onClose} closeLabel={t('close')} />
         <div className="pb-1">
-          <SectionTitle as="h3" className="mt-4 text-base">{t('accountDetails')}</SectionTitle>
+          <SectionTitle as="h3" className="mt-4">{t('accountDetails')}</SectionTitle>
           <div className="mt-3"><ProfileRow icon={<Phone size={18} />} label={t('phoneNumber')} value={phone ? formatKazakhstanPhoneInput(phone) : undefined} onClick={onEditPhone} /></div>
-          <SectionTitle as="h3" className="mt-6 text-base">{t('languageChoice')}</SectionTitle>
+          <SectionTitle as="h3" className="mt-6">{t('languageChoice')}</SectionTitle>
           <div className="mt-3"><SegmentedControl value={locale} label={t('languageChoice')} items={[{ value: 'ru', label: t('russianLanguage') }, { value: 'kk', label: t('kazakhLanguage') }]} onChange={(nextLocale) => { if (nextLocale !== locale) { setLocale(nextLocale); haptic('tap'); } }} /></div>
         </div>
       </ModalBody>

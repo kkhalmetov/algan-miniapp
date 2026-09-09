@@ -50,6 +50,7 @@ describe('Algan design system', () => {
       '--text-display',
       '--text-page-title',
       '--text-section-title',
+      '--text-commerce-price',
       '--shadow-card',
       '--shadow-floating',
       '--motion-fast',
@@ -107,17 +108,33 @@ describe('Algan design system', () => {
     expect(app).not.toContain('new Intl.DateTimeFormat');
     expect(app).not.toContain('grid shrink-0 place-items-center overflow-hidden rounded-full bg-highlight');
     expect(app).not.toContain('px-page pb-[max(1.25rem,env(safe-area-inset-bottom))]');
+    expect(app).not.toContain('rounded-control bg-brand-pale/55');
+    expect(app).not.toMatch(/<SectionTitle[^>]*className="[^"]*text-base/);
+    expect(app).not.toMatch(/<MediaBadge[^>]*className="[^"]*border-[234]/);
+    expect(app).not.toMatch(/<ListRow[^>]*className="[^"]*min-h-/);
     expect(app).toContain('<AvatarFrame');
     expect(app).toContain('<ScrollArea');
     expect(app.match(/overflow-y-auto/g)).toHaveLength(1);
+  });
+
+  it('never truncates transactional cart and order information', () => {
+    const transactionalSources = [
+      readFileSync(resolve(root, 'components/algan/checkout.tsx'), 'utf8'),
+      readFileSync(resolve(root, 'components/algan/orders.tsx'), 'utf8'),
+    ].join('\n');
+
+    expect(transactionalSources).not.toContain('truncate');
+    expect(transactionalSources).toContain('break-words');
   });
 
   it('uses the primary Kazakh document language and keeps it synchronized at runtime', () => {
     const layout = readFileSync(resolve(root, 'app/layout.tsx'), 'utf8');
     const checkout = readFileSync(resolve(root, 'components/algan/checkout.tsx'), 'utf8');
 
-    expect(layout).toContain('<html lang="kk">');
-    expect(readFileSync(resolve(root, 'hooks/use-app-runtime.ts'), 'utf8')).toContain('document.documentElement.lang = locale');
+    expect(layout).toContain('<html lang="kk" suppressHydrationWarning>');
+    const runtime = readFileSync(resolve(root, 'hooks/use-app-runtime.ts'), 'utf8');
+    expect(runtime).toContain('document.documentElement.lang = locale');
+    expect(runtime).toContain('document.title = `Algan — ${t(\'slogan\').toLocaleLowerCase(locale)}`');
     expect(checkout).toContain('aria-busy={paymentPending}');
     expect(layout).not.toContain('спасаем еду');
   });

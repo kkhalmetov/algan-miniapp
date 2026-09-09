@@ -8,7 +8,7 @@ The audit covers onboarding, startup, home, favorites, active and past orders, p
 
 | Area | Discrepancy | Unified result |
 | --- | --- | --- |
-| Screen layout | Product screens used 20, 24 and 28 px horizontal gutters | Top-level content uses `ScreenBody`/20 px; detail and modal content uses `page-wide`/24 px |
+| Screen layout | Product screens used unrelated horizontal gutters | Canonical screen, header, modal and sticky-footer primitives use 16 px below `sm` and 20 px inside the desktop phone shell |
 | Typography | Content headings were recreated with raw class lists | `PageTitle`, `ContentTitle` and `SectionTitle` own the hierarchy |
 | Surfaces | Inset rows, notices and information cards repeated local border/background recipes | `InsetSurface`, `NoticeCard` and `DetailRow` own those recipes |
 | Media | Store logos used several unrelated circle/border combinations | `MediaBadge` defines list, card and cover-logo presentation |
@@ -35,7 +35,7 @@ The audit covers onboarding, startup, home, favorites, active and past orders, p
 | Order dates | Some mobile WebViews rendered Kazakh dates as `2026 M08 28` | A deterministic Shymkent date formatter supplies complete RU/KK month names |
 | Landmarks | The phone shell nested one `main` landmark inside another | The shell is structural; onboarding and application content each expose exactly one main landmark |
 | Avatar styling | User avatars repeated a feature-local 48/64 px circle recipe | `AvatarFrame` owns both sizes, fallback color and typography |
-| Modal gutters | The route picker used a narrower gutter than other sheets | All sheet bodies use `ModalBody` and the documented 24 px modal gutter |
+| Modal gutters | The route picker used a narrower gutter than other sheets | All sheet bodies use `ModalBody` and the canonical responsive 16/20 px gutter |
 | Notice semantics | Standalone informational cards skipped directly from `h1` to `h3` | `NoticeCard` keeps one visual recipe while choosing `h2` for standalone blocks and `h3` for nested notices |
 | Compact-height sheets | Cart legal copy could be clipped on 568 px-high screens | Cart content uses the shared scroll area; its header remains fixed and every line stays reachable |
 | Modal accessibility | Background screens remained discoverable to assistive technology behind `aria-modal` | `DialogLayer` now makes obscured siblings inert and restores their previous state for nested dialogs |
@@ -51,6 +51,18 @@ The audit covers onboarding, startup, home, favorites, active and past orders, p
 | In-modal navigation | Opening FAQ or a legal sub-view removed the triggering row and left keyboard focus on the document root | Shared sheet headers can focus a changed title; FAQ and legal views now announce and focus their new `h2` title without scrolling |
 | Nested headings | Settings, legal groups, company details and order-detail sections reused `h2` beside the modal title | `SectionTitle` owns contextual `h2`/`h3` semantics; sections nested below a sheet title now use `h3` without changing their visual token |
 | Box purchase summary | The persistent box action showed quantity and an action but omitted the selected total described by the commerce pattern | The action now presents the localized selected total and updates it with the quantity while retaining a concise accessible action name |
+| Completed-order history | A completed-order details implementation existed but had no reachable action | History cards now use the shared attached action to open complete order details without exposing active-order pickup controls |
+| Transactional copy | Cart and order item names were truncated even though transactional information must remain complete | Cart, order cards and order details wrap venue and item names while catalogue cards retain intentional truncation |
+| Allergen semantics | Box allergens reused the destructive danger treatment despite having dedicated allergen tokens | The shared `NoticeCard` allergen tone now owns the border, surface, icon, heading and body treatment |
+| Runtime locale | Changing the language updated visible copy and `html[lang]` but left the browser title in the default locale | The browser title follows RU/KK alongside the document language |
+| Nested section type | Several sheet sections overrode the shared 20/26 section-title token with feature-level `text-base` utilities | All nested `h3` sections preserve the canonical `SectionTitle` typography |
+| Long identity copy | A long Telegram display name could force the profile header wider than the mobile shell | The identity column can shrink safely, names wrap and the secondary username truncates without moving controls |
+| Media badge variants | The catalogue photo logo overrode the shared badge border locally | `MediaBadge` now owns a semantic photo-floating tone while feature code controls only placement |
+| Commerce numerals | Price and quantity emphasis was partly recreated with arbitrary typography | The hero price uses the shared commerce token and transactional numerals use tabular figures consistently |
+| Route row sizing | Map-provider rows overrode the shared list-row minimum height | Natural content plus the canonical default row density now determines every provider row height |
+| Compact information notice | The product-photo disclaimer recreated a local rounded notice recipe | The compact `NoticeCard` density now owns its surface, icon, spacing and type |
+| Quantity badges | Known box contents used a feature-local quantity pill | The shared brand `StatusBadge` now presents item quantities consistently |
+| Telegram viewport hydration | Telegram SDK writes viewport custom properties to `<html>` before React hydrates, producing a false-positive attribute mismatch | The root explicitly tolerates SDK-owned pre-hydration attributes while application markup remains strictly hydrated |
 
 ## Governance
 

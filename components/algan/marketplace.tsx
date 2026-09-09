@@ -84,7 +84,7 @@ function MarketplaceBoxCard({ box, store, t, locale, favorite, toggleFavorite, o
         <span className={`relative block h-44 overflow-hidden bg-canvas ${soldOut ? 'opacity-55 grayscale' : ''}`}>
           <img src={box.image} alt={name} width={920} height={600} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover transition duration-[var(--motion-slow)] group-hover:scale-[1.03] group-disabled:scale-100" />
           <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-brand-deep/55 to-transparent" />
-          <MediaBadge className="absolute bottom-3 left-3 border-3 border-panel"><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>
+          <MediaBadge tone="floating" className="absolute bottom-3 left-3"><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>
           {box.type === 'SURPRISE' && <span className="absolute bottom-3 right-3"><SurpriseBadge compact /></span>}
         </span>
         <span className={`block p-4 ${soldOut ? 'text-ink-muted' : ''}`}>
@@ -95,7 +95,7 @@ function MarketplaceBoxCard({ box, store, t, locale, favorite, toggleFavorite, o
             <span className="flex items-center gap-1.5"><Clock3 size={14} className="shrink-0 text-brand" />{box.pickupFrom}–{box.pickupTo}</span>
             <span className={`flex items-center gap-1.5 ${soldOut ? 'font-extrabold text-danger' : 'text-brand'}`}><Package size={14} className="shrink-0" />{soldOut ? t('boxesSoldOut') : formatBoxesLeft(available, locale)}</span>
           </span>
-          <span className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/80 pt-3">
+          <span className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/80 pt-3 tabular-nums">
             <b className={`text-xl leading-none ${soldOut ? 'text-ink-muted' : 'text-brand-hover'}`}>{formatPrice(box.salePrice)}</b>
             <span className="text-xs text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
             <StatusBadge tone={soldOut ? 'neutral' : 'accentSolid'} size="sm">−{discount}%</StatusBadge>

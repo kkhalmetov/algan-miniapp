@@ -88,7 +88,8 @@ describe('box-first catalog and details', () => {
     expect(within(notice).getByText('Точный набор заранее неизвестен и формируется заведением в день получения.')).toBeInTheDocument();
     expect(within(dialog).getByText('Содержит аллергены')).toBeInTheDocument();
     expect(within(dialog).getByText('Глютен, молоко, яйца')).toBeInTheDocument();
-    expect(within(dialog).getByTestId('box-allergens')).toHaveClass('bg-danger-soft', 'text-danger');
+    expect(within(dialog).getByTestId('box-allergens')).toHaveClass('bg-allergen-surface', 'border-allergen-border');
+    expect(within(dialog).getByRole('heading', { name: 'Содержит аллергены' })).toHaveClass('text-allergen-ink');
   });
 
   it('shows exact contents without an extra type label for a regular box', () => {

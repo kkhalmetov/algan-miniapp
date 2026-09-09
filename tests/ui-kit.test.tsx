@@ -125,6 +125,7 @@ describe('Algan UI kit', () => {
       <CardTitle tone="muted">Недоступный бокс</CardTitle>
       <SurfaceCard tone="muted">Приглушённая карточка</SurfaceCard>
       <MediaBadge size="sm">S</MediaBadge>
+      <MediaBadge tone="floating">F</MediaBadge>
       <IconButton label="В избранном" tone="floatingAccent">♡</IconButton>
       <StickyActionFooter density="compact">Действие</StickyActionFooter>
     </>);
@@ -133,6 +134,7 @@ describe('Algan UI kit', () => {
     expect(screen.getByRole('heading', { name: 'Недоступный бокс' })).toHaveClass('text-ink-muted');
     expect(screen.getByText('Приглушённая карточка')).toHaveClass('bg-surface-muted');
     expect(screen.getByText('S')).toHaveClass('h-9', 'w-9');
+    expect(screen.getByText('F')).toHaveClass('border-3', 'border-panel');
     expect(screen.getByRole('button', { name: 'В избранном' })).toHaveClass('bg-accent-soft', 'shadow-control');
     expect(screen.getByText('Действие')).toHaveClass('pt-2.5');
   });
@@ -288,6 +290,7 @@ describe('Algan UI kit', () => {
         <MediaBadge>logo</MediaBadge>
         <DisclosureIndicator />
         <NoticeCard icon="!" title="Важно" titleAs="h2">Описание</NoticeCard>
+        <NoticeCard data-testid="compact-notice" density="compact" icon="i" title="Короткое сообщение" titleAs="p" />
       </ScreenBody>,
     );
 
@@ -299,6 +302,8 @@ describe('Algan UI kit', () => {
     expect(screen.getByText('logo')).toHaveClass('h-12', 'w-12');
     expect(screen.getByText('Описание')).toHaveClass('text-ink-secondary');
     expect(screen.getByRole('heading', { name: 'Важно', level: 2 })).toBeInTheDocument();
+    expect(screen.getByTestId('compact-notice')).toHaveClass('p-3');
+    expect(screen.getByText('Короткое сообщение').parentElement?.previousElementSibling).toHaveClass('h-7', 'w-7');
   });
 
   it('shares user avatar sizing and fallback treatment', () => {

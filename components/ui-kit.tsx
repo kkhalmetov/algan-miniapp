@@ -432,9 +432,10 @@ export function StatusBadge({ children, icon, tone = 'brand', size = 'md', class
   );
 }
 
-export function IconBadge({ children, tone = 'brand', className }: {
+export function IconBadge({ children, tone = 'brand', size = 'md', className }: {
   children: ReactNode;
   tone?: 'brand' | 'accent' | 'soft' | 'warning' | 'danger';
+  size?: 'sm' | 'md';
   className?: string;
 }) {
   const tones = {
@@ -446,21 +447,23 @@ export function IconBadge({ children, tone = 'brand', className }: {
   };
 
   return (
-    <span className={cx('grid h-10 w-10 shrink-0 place-items-center rounded-full', tones[tone], className)}>
+    <span className={cx('grid shrink-0 place-items-center', size === 'sm' ? 'h-7 w-7 rounded-[9px]' : 'h-10 w-10 rounded-full', tones[tone], className)}>
       {children}
     </span>
   );
 }
 
-export function MediaBadge({ children, size = 'md', className }: {
+export function MediaBadge({ children, size = 'md', tone = 'default', className }: {
   children: ReactNode;
   size?: 'sm' | 'md' | 'lg';
+  tone?: 'default' | 'floating';
   className?: string;
 }) {
   return (
     <span className={cx(
-      'grid shrink-0 place-items-center overflow-hidden rounded-[14px] border bg-panel shadow-card',
-      size === 'lg' ? 'h-17 w-17 border-4 border-surface' : size === 'sm' ? 'h-9 w-9 rounded-[10px] border-border' : 'h-12 w-12 border-border',
+      'grid shrink-0 place-items-center overflow-hidden rounded-[14px] bg-panel shadow-card',
+      size === 'lg' ? 'h-17 w-17' : size === 'sm' ? 'h-9 w-9 rounded-[10px]' : 'h-12 w-12',
+      tone === 'floating' ? 'border-3 border-panel' : size === 'lg' ? 'border-4 border-surface' : 'border border-border',
       className,
     )}>
       {children}
@@ -520,21 +523,22 @@ const noticeTextTone: Record<NoticeTone, { title: string; body: string; icon: 's
   allergen: { title: 'text-allergen-ink', body: 'text-allergen-body', icon: 'accent' },
 };
 
-export function NoticeCard({ icon, title, titleAs: Title = 'h3', children, tone = 'brand', className, ...props }: Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
+export function NoticeCard({ icon, title, titleAs: Title = 'h3', children, tone = 'brand', density = 'default', className, ...props }: Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
   icon: ReactNode;
   title?: ReactNode;
   titleAs?: 'h2' | 'h3' | 'p';
-  children: ReactNode;
+  children?: ReactNode;
   tone?: NoticeTone;
+  density?: 'default' | 'compact';
 }) {
   const styles = noticeTextTone[tone];
   return (
-    <InsetSurface tone={tone} className={cx('p-4', className)} {...props}>
-      <div className="flex items-start gap-3">
-        <IconBadge tone={styles.icon}>{icon}</IconBadge>
-        <div className="min-w-0 text-sm leading-6">
+    <InsetSurface tone={tone} className={cx(density === 'compact' ? 'p-3' : 'p-4', className)} {...props}>
+      <div className={cx('flex items-start', density === 'compact' ? 'gap-2.5' : 'gap-3')}>
+        <IconBadge tone={styles.icon} size={density === 'compact' ? 'sm' : 'md'}>{icon}</IconBadge>
+        <div className={cx('min-w-0', density === 'compact' ? 'text-xs leading-5' : 'text-sm leading-6')}>
           {title && <Title className={cx('font-extrabold', styles.title)}>{title}</Title>}
-          <div className={cx(Boolean(title) && 'mt-1.5', styles.body)}>{children}</div>
+          {children !== undefined && <div className={cx(Boolean(title) && (density === 'compact' ? 'mt-1' : 'mt-1.5'), styles.body)}>{children}</div>}
         </div>
       </div>
     </InsetSurface>
@@ -652,7 +656,7 @@ export function QuantityStepper({ quantity, min = 1, max, label, onChange }: {
   onChange: (quantity: number) => void;
 }) {
   return (
-    <div className="flex min-h-12 items-center justify-between rounded-control bg-brand-pale px-1.5" role="group" aria-label={label}>
+    <div className="flex min-h-12 items-center justify-between rounded-control bg-brand-pale px-1.5 tabular-nums" role="group" aria-label={label}>
       <button type="button" onClick={() => onChange(quantity - 1)} aria-label={`${label} −`} disabled={quantity <= min} className="grid h-11 w-11 shrink-0 place-items-center disabled:opacity-45">
         <span className="grid h-8 w-8 place-items-center rounded-[10px] bg-surface text-ink transition active:scale-95"><Minus size={16} /></span>
       </button>

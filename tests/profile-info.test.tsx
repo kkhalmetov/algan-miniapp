@@ -49,6 +49,18 @@ describe('profile information sections', () => {
     expect(heading.parentElement).not.toHaveTextContent('+7 705 976 80 00');
   });
 
+  it('keeps a long profile identity inside the mobile header', () => {
+    useAppStore.setState({
+      profile: { firstName: 'Оченьдлинноеимябезпробелов', lastName: 'Очень длинная фамилия', phone: '+77059768000' },
+    });
+    openProfile();
+
+    const heading = screen.getByRole('heading', { name: 'Оченьдлинноеимябезпробелов Очень длинная фамилия' });
+    expect(heading).toHaveClass('break-words');
+    expect(heading.parentElement).toHaveClass('min-w-0', 'flex-1');
+    expect(heading.nextElementSibling).toHaveClass('truncate');
+  });
+
   it('groups all legal documents under one profile action', async () => {
     openProfile();
 
@@ -169,6 +181,8 @@ describe('profile information sections', () => {
     fireEvent.click(within(languageChoice).getByRole('button', { name: 'Қазақша' }));
     expect(screen.getByRole('heading', { name: 'Баптаулар' })).toBeInTheDocument();
     expect(useAppStore.getState().locale).toBe('kk');
+    expect(document.documentElement.lang).toBe('kk');
+    expect(document.title).toBe('Algan — тиімді ұсыныстар жаныңызда');
   });
 
   it('places the currency switch below demo reset and loads the RUB rate', async () => {

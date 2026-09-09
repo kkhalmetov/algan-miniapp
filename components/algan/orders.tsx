@@ -6,7 +6,7 @@ import { lazy, Suspense, useState } from 'react';
 import { usePriceFormatter } from '@/components/algan/price-context';
 import { RoutePicker } from '@/components/algan/route-picker';
 import type { Translator } from '@/components/algan/types';
-import { DialogLayer, EmptyState, InsetSurface, MediaBadge, ModalBody, PageSection, PrimaryButton, ScrollArea, SecondaryButton, SectionTitle, SegmentedControl, SheetHeader, SurfaceCard } from '@/components/ui-kit';
+import { CardActionButton, DialogLayer, EmptyState, InsetSurface, MediaBadge, ModalBody, PageSection, PrimaryButton, ScrollArea, SecondaryButton, SectionTitle, SegmentedControl, SheetHeader, StatusBadge, SurfaceCard } from '@/components/ui-kit';
 import { boxName } from '@/lib/catalog-localization';
 import { formatOrderDate } from '@/lib/date';
 import { boxes, demoPastOrder, stores } from '@/lib/mock-data';
@@ -57,11 +57,11 @@ export function OrdersTab({ t, locale, orders, onBrowseOffers }: { t: Translator
             const pickupWindow = orderPickupWindow(order);
             const isActive = view === 'active';
             return (
-              <SurfaceCard key={order.id} data-order-status={order.status} className="overflow-hidden">
+              <SurfaceCard key={order.id} data-order-status={order.status} className="overflow-hidden tabular-nums">
                 <div className="p-4">
                   <div className="flex items-start gap-3">
                     {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
-                    <div className="min-w-0 flex-1"><p className="truncate text-sm font-extrabold text-ink">{store?.name}</p><p className="mt-1 text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</p></div>
+                    <div className="min-w-0 flex-1"><p className="break-words text-sm font-extrabold leading-5 text-ink">{store?.name}</p><p className="mt-1 text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</p></div>
                   </div>
 
                   {isActive ? (
@@ -78,7 +78,7 @@ export function OrdersTab({ t, locale, orders, onBrowseOffers }: { t: Translator
                       const box = boxes.find((candidate) => candidate.id === item.boxId);
                       return (
                         <div key={item.boxId} className="flex items-center justify-between gap-3 text-xs">
-                          <span className="min-w-0 truncate font-bold text-ink-secondary">{box ? boxName(box, locale) : ''}</span>
+                          <span className="min-w-0 break-words font-bold leading-5 text-ink-secondary">{box ? boxName(box, locale) : ''}</span>
                           <span className="shrink-0 font-bold text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</span>
                         </div>
                       );
@@ -93,6 +93,9 @@ export function OrdersTab({ t, locale, orders, onBrowseOffers }: { t: Translator
                     {store && <SecondaryButton size="md" onClick={() => { setRouteStore(store); haptic('tap'); }}>{t('buildRoute')}</SecondaryButton>}
                   </div>
                 )}
+                {!isActive && (
+                  <CardActionButton onClick={() => { setSelectedOrder(order); haptic('tap'); }}>{t('orderDetails')}</CardActionButton>
+                )}
               </SurfaceCard>
             );
           })}
@@ -106,7 +109,7 @@ export function OrdersTab({ t, locale, orders, onBrowseOffers }: { t: Translator
 
 export function OrderQr({ order, t }: { order: Order; t: Translator }) {
   return (
-    <div className="mx-auto w-fit rounded-card border border-border bg-white p-4 text-brand shadow-card">
+    <div className="mx-auto w-fit rounded-card border border-border bg-surface p-4 text-brand shadow-card">
       <Suspense fallback={<span role="status" className="grid h-[184px] w-[184px] place-items-center text-xs font-bold text-ink-muted">{t('loading')}</span>}>
         <LazyQRCodeSVG value={createOrderQrPayload(order.id, order.pickupCode)} size={184} level="M" marginSize={1} bgColor="white" fgColor="currentColor" title={t('qrCode')} />
       </Suspense>
@@ -116,7 +119,7 @@ export function OrderQr({ order, t }: { order: Order; t: Translator }) {
 
 export function PickupCodePanel({ pickupCode, label, className }: { pickupCode: string; label: string; className?: string }) {
   return (
-    <InsetSurface tone="brandSolid" className={`p-4 text-center ${className ?? ''}`}>
+    <InsetSurface tone="brandSolid" className={`p-4 text-center tabular-nums ${className ?? ''}`}>
       <p className="text-xs font-bold text-white/70">{label}</p>
       <p className="mt-1 text-3xl font-black tracking-[0.12em]">{formatPickupCode(pickupCode)}</p>
     </InsetSurface>
@@ -132,7 +135,7 @@ function OrderItemsList({ order, locale }: { order: Order; locale: Locale }) {
         return (
           <InsetSurface key={item.boxId} tone="panel" radius="card" className="flex items-center gap-3 p-3">
             {box && <img src={box.image} alt="" className="h-14 w-14 shrink-0 rounded-control object-cover" />}
-            <div className="min-w-0 flex-1"><p className="truncate text-sm font-black">{box ? boxName(box, locale) : ''}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</p></div>
+            <div className="min-w-0 flex-1"><p className="break-words text-sm font-black leading-5">{box ? boxName(box, locale) : ''}</p><p className="mt-1 text-xs text-ink-muted">{formatPrice(item.unitPrice)} × {item.quantity}</p></div>
             <b className="shrink-0 text-sm text-brand">{formatPrice(item.unitPrice * item.quantity)}</b>
           </InsetSurface>
         );
@@ -162,17 +165,18 @@ function OrderDetails({ order, locale, t, onClose }: { order: Order; locale: Loc
   }
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('orderDetails')} sheetHeight="tall">
-      <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden pb-0">
+      <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden pb-0 tabular-nums">
         <SheetHeader title={t('orderDetails')} onClose={onClose} closeLabel={t('close')} />
         <ScrollArea className="flex-1 pb-5">
           <InsetSurface tone="brand" radius="card" className="mt-4 p-4">
             <div className="flex items-center gap-3">
               {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
-              <div className="min-w-0 flex-1"><p className="truncate text-base font-extrabold">{store?.name}</p><p className="mt-1 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p></div>
+              <div className="min-w-0 flex-1"><p className="break-words text-base font-extrabold leading-5">{store?.name}</p><p className="mt-1 text-xs font-bold text-ink-muted">{t('orderId')}: {formatOrderId(order.id)}</p></div>
+              <StatusBadge tone="neutral" size="sm">{t('collectedStatus')}</StatusBadge>
             </div>
             <div className="mt-4 flex items-center gap-2 border-t border-brand/10 pt-3 text-xs font-bold text-ink-secondary"><CalendarDays size={15} />{orderDate}</div>
           </InsetSurface>
-          <SectionTitle as="h3" className="mt-7 text-base">{t('orderContents')}</SectionTitle>
+          <SectionTitle as="h3" className="mt-7">{t('orderContents')}</SectionTitle>
           <div className="mt-3"><OrderItemsList order={order} locale={locale} /></div>
           <InsetSurface radius="card" className="mt-4 flex items-center justify-between p-4"><span className="text-sm font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-brand">{formatPrice(order.total)}</b></InsetSurface>
         </ScrollArea>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { authenticateTelegram } from '@/lib/api';
 import { fetchKztToRubRate } from '@/lib/currency';
 import { prepareTelegram, telegramProfile } from '@/lib/telegram';
+import { getCopy } from '@/lib/translations';
 import type { Currency, Locale, UserProfile } from '@/lib/types';
 
 export const MINIMUM_SPLASH_MS = 750;
@@ -80,7 +81,9 @@ export function useTelegramRuntime(onboardingDone: boolean, syncTelegramProfile:
 
 export function useDocumentLanguage(locale: Locale) {
   useEffect(() => {
+    const t = getCopy(locale);
     document.documentElement.lang = locale;
+    document.title = `Algan — ${t('slogan').toLocaleLowerCase(locale)}`;
   }, [locale]);
 }
 

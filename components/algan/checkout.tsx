@@ -78,7 +78,7 @@ export function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQu
           <MediaSheetHeader data-testid="box-details-cover" onClose={onClose} closeLabel={t('close')}><img src={box.image} alt={name} className="h-full w-full object-cover" /></MediaSheetHeader>
           <div data-testid="box-details-content" className="relative z-10 -mt-5 rounded-t-sheet bg-surface px-page pb-6 pt-6 sm:px-page-wide">
             <div className="mb-3 flex items-center gap-2.5 text-sm font-extrabold text-ink">
-              <MediaBadge size="sm"><img src={store.logo} alt="" className="h-7 w-7 object-contain" /></MediaBadge><span className="min-w-0 truncate">{store.name}</span>
+              <MediaBadge size="sm"><img src={store.logo} alt="" className="h-7 w-7 object-contain" /></MediaBadge><span className="min-w-0 break-words leading-5">{store.name}</span>
             </div>
             <PageTitle>{name}</PageTitle>
             {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}
@@ -88,24 +88,40 @@ export function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQu
               <CardActionButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }}>{t('buildRoute')}</CardActionButton>
             </InsetSurface>
 
-            <div data-testid="box-price-card" className="mt-4 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-4">
-              <div><p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p><p className="mt-1 whitespace-nowrap text-[30px] font-black tracking-[-0.04em] text-brand-hover">{formatPrice(box.salePrice)}</p></div>
+            <div data-testid="box-price-card" className="mt-4 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-4 tabular-nums">
+              <div><p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p><p className="mt-1 whitespace-nowrap text-commerce-price text-brand-hover">{formatPrice(box.salePrice)}</p></div>
               <div className="mb-1 flex items-center gap-2"><span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice)}</span><StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge></div>
             </div>
 
             <div data-testid="box-commerce-summary" className="mt-3 grid grid-cols-2 gap-2">
-              <InsetSurface data-testid="box-pickup-time" className="min-w-0 p-3"><p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.05em] text-ink-secondary"><Clock3 size={13} className="shrink-0 text-brand" />{t('pickupTime')}</p><p className="mt-2 whitespace-nowrap text-sm font-black tracking-[-0.02em] text-ink">{box.pickupFrom}–{box.pickupTo}</p></InsetSurface>
+              <InsetSurface data-testid="box-pickup-time" className="min-w-0 p-3"><p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.05em] text-ink-secondary"><Clock3 size={13} className="shrink-0 text-brand" />{t('pickupTime')}</p><p className="mt-2 whitespace-nowrap text-sm font-black tracking-[-0.02em] text-ink tabular-nums">{box.pickupFrom}–{box.pickupTo}</p></InsetSurface>
               <InsetSurface className="min-w-0 p-3"><p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.05em] text-ink-secondary"><Package size={13} className="shrink-0 text-brand" />{t('offersLabel')}</p><p data-testid="box-stock" className={`mt-2 text-xs font-black ${available > 0 ? 'text-brand' : 'text-danger'}`}>{formatBoxesLeft(available, locale)}</p></InsetSurface>
             </div>
 
-            <div data-testid="box-appearance-notice" className="mt-4 flex items-center gap-2.5 rounded-control bg-brand-pale/55 px-3 py-2.5 text-xs leading-5 text-ink-secondary"><ImageIcon size={16} className="shrink-0 text-brand" /><strong className="font-extrabold text-brand">{t('appearanceMayDifferTitle')}.</strong></div>
+            <NoticeCard
+              data-testid="box-appearance-notice"
+              density="compact"
+              titleAs="p"
+              className="mt-4"
+              icon={<ImageIcon size={15} />}
+              title={`${t('appearanceMayDifferTitle')}.`}
+            />
 
             {box.type === 'SURPRISE' ? (
               <><SectionTitle className="mt-6">{t('surprisePossibleTitle')}</SectionTitle><p className="mt-2 text-sm leading-6 text-ink-secondary">{t('surprisePossibleContents')}</p><NoticeCard data-testid="surprise-composition-notice" className="mt-4" icon={<Package size={19} />} title={t('surpriseNoticeTitle')}>{t('surprise')}</NoticeCard></>
             ) : (
-              <><SectionTitle className="mt-6">{t('composition')}</SectionTitle><ul className="mt-2 divide-y divide-border border-y border-border" data-testid="box-contents">{box.contents?.map((item) => <li key={item.contentName} className="flex items-center justify-between gap-4 py-3 text-sm"><span className="font-bold text-ink">{boxContentName(item, locale)}</span><span className="shrink-0 rounded-full bg-brand-pale px-2.5 py-1 text-xs font-black text-brand">× {item.quantity}</span></li>)}</ul></>
+              <><SectionTitle className="mt-6">{t('composition')}</SectionTitle><ul className="mt-2 divide-y divide-border border-y border-border" data-testid="box-contents">{box.contents?.map((item) => <li key={item.contentName} className="flex items-center justify-between gap-4 py-3 text-sm"><span className="font-bold text-ink">{boxContentName(item, locale)}</span><StatusBadge tone="brand" size="sm">× {item.quantity}</StatusBadge></li>)}</ul></>
             )}
-            <InsetSurface data-testid="box-allergens" tone="danger" radius="card" className="mt-5 flex items-start gap-2.5 p-4 text-sm leading-6"><AlertTriangle size={18} className="mt-0.5 shrink-0 text-danger" /><div><h2 className="font-extrabold text-danger">{allergens ? t('containsAllergens') : t('allergens')}</h2><p className="mt-1">{allergens ?? t('allergensUnknown')}</p></div></InsetSurface>
+            <NoticeCard
+              data-testid="box-allergens"
+              tone="allergen"
+              titleAs="h2"
+              className="mt-5"
+              icon={<AlertTriangle size={18} />}
+              title={allergens ? t('containsAllergens') : t('allergens')}
+            >
+              {allergens ?? t('allergensUnknown')}
+            </NoticeCard>
           </div>
         </ScrollArea>
         {(available > 0 || cartQuantity > 0) && (
@@ -113,7 +129,7 @@ export function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQu
             <div className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-2">
               <QuantityStepper quantity={selectedQuantity} min={1} max={Math.max(available, cartQuantity)} label={t('quantity')} onChange={setSelectedQuantity} />
               <PrimaryButton size="md" className="whitespace-nowrap px-2 text-center" onClick={() => { onChangeQuantity(selectedQuantity); onClose(); }} aria-label={`${t('addToCartFull')} ${name}`} aria-describedby="box-selected-total">
-                <span className="flex min-w-0 flex-col items-center"><span className="text-[11px] leading-4">{t('addToCartFull')}</span><span id="box-selected-total" className="text-sm leading-4">{selectedTotal}</span></span>
+                <span className="flex min-w-0 flex-col items-center"><span className="text-[11px] leading-4">{t('addToCartFull')}</span><span id="box-selected-total" className="text-sm leading-4 tabular-nums">{selectedTotal}</span></span>
               </PrimaryButton>
             </div>
           </StickyActionFooter>
@@ -151,14 +167,14 @@ export function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQu
             <div className="mt-2 space-y-3">
               {lines.map(({ box, quantity }) => (
                 <InsetSurface key={box.id} tone="panel" className="overflow-hidden p-3">
-                  <div className="flex items-center gap-3"><span aria-hidden="true" className="h-18 w-18 shrink-0 overflow-hidden rounded-control"><img src={box.image} alt="" className="h-full w-full object-cover" /></span><div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-brand">{storeById(box.storeId).name}</p><p className="mt-0.5 truncate text-sm font-extrabold">{boxName(box, locale)}</p><p className="mt-1.5 text-base font-extrabold text-brand-hover">{formatPrice(box.salePrice * quantity)}</p></div></div>
+                  <div className="flex items-center gap-3"><span aria-hidden="true" className="h-18 w-18 shrink-0 overflow-hidden rounded-control"><img src={box.image} alt="" className="h-full w-full object-cover" /></span><div className="min-w-0 flex-1"><p className="break-words text-xs font-bold leading-5 text-brand">{storeById(box.storeId).name}</p><p className="mt-0.5 break-words text-sm font-extrabold leading-5">{boxName(box, locale)}</p><p className="mt-1.5 text-base font-extrabold text-brand-hover">{formatPrice(box.salePrice * quantity)}</p></div></div>
                   <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-border pt-3"><QuantityControl quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} label={t('quantity')} addLabel={`${t('addToCart')} ${boxName(box, locale)}`} addText={t('addToCart')} onChange={(next) => onChangeQuantity(box, next)} /><TertiaryButton tone="danger" onClick={() => onChangeQuantity(box, 0)}>{t('removeFromCart')}</TertiaryButton></div>
                 </InsetSurface>
               ))}
             </div>
           )}
           <div className="my-5 h-px shrink-0 bg-border" />
-          <div className="flex shrink-0 items-end justify-between"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black" aria-live="polite">{formatPrice(total)}</span></div>
+          <div className="flex shrink-0 items-end justify-between tabular-nums"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black" aria-live="polite">{formatPrice(total)}</span></div>
           <PrimaryButton onClick={() => void onPay()} disabled={lines.length === 0 || paymentPending} aria-busy={paymentPending} className="mt-5 shrink-0">{paymentPending ? t('paymentProcessing') : t('checkoutCart')}</PrimaryButton>
           <p className="mt-auto shrink-0 pt-3 text-center text-xs leading-5 text-ink-muted">
             {t('checkoutOfferPrefix')}{' '}<TextLinkButton onClick={onOpenOffer}>{t('checkoutOfferLink')}</TextLinkButton>{' '}{t('checkoutOfferBetween')}{' '}<TextLinkButton onClick={onOpenOrderRules}>{t('checkoutRulesLink')}</TextLinkButton>{t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}

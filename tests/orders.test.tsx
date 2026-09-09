@@ -78,7 +78,7 @@ describe('orders tab', () => {
     expect(screen.getByText('Кофе & булочки')).toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 87654321')).toBeInTheDocument();
     expect(screen.getByText('Кофе & булочки').parentElement).toHaveTextContent(/1.?990 ₸ × 2/);
-    expect(screen.queryByRole('button', { name: 'Подробнее' })).not.toBeInTheDocument();
+    expect(within(screen.getByText('Номер заказа: 87654321').closest('article')!).getByRole('button', { name: 'Детали заказа' })).toBeInTheDocument();
     expect(screen.queryByText('Surprise Tatti-box')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 12345678')).not.toBeInTheDocument();
   });
@@ -104,15 +104,27 @@ describe('orders tab', () => {
     expect(within(dialog).queryByRole('button', { name: 'Построить маршрут' })).not.toBeInTheDocument();
   });
 
-  it('keeps completed orders informational without a details action', () => {
+  it('opens complete, non-truncated details for a completed order', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
     fireEvent.click(screen.getByRole('button', { name: 'Прошедшие' }));
     const completedCard = screen.getByText('Номер заказа: 87654321').closest('article');
     expect(completedCard).not.toBeNull();
-    expect(within(completedCard!).queryByRole('button')).not.toBeInTheDocument();
-    expect(screen.queryByRole('dialog', { name: 'Детали заказа' })).not.toBeInTheDocument();
+    expect(within(completedCard!).getByText('Кофе & булочки')).not.toHaveClass('truncate');
+    fireEvent.click(within(completedCard!).getByRole('button', { name: 'Детали заказа' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Детали заказа' });
+    expect(within(dialog).getByText('Köfi')).toBeInTheDocument();
+    expect(within(dialog).getByText('Номер заказа: 87654321')).toBeInTheDocument();
+    expect(within(dialog).getByText('Получен')).toBeInTheDocument();
+    expect(within(dialog).getByText('20 августа 2026 г.')).toBeInTheDocument();
+    expect(within(dialog).getByRole('heading', { name: 'Состав заказа', level: 3 })).toBeInTheDocument();
+    expect(within(dialog).getByText('Кофе & булочки')).not.toHaveClass('truncate');
+    expect(within(dialog).getAllByText('3 980 ₸')).toHaveLength(2);
+    expect(within(dialog).queryByTitle('QR-код')).not.toBeInTheDocument();
+    expect(within(dialog).queryByText('567-890')).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Построить маршрут' })).not.toBeInTheDocument();
   });
 
   it('opens route providers from an active order card', () => {
@@ -146,7 +158,7 @@ describe('orders tab', () => {
     expect(screen.getByText('Номер заказа: 48273106').closest('button')).toBeNull();
     expect(screen.getByText('Сладкий вечер')).toBeInTheDocument();
     expect(screen.getByText('Сладкий вечер').parentElement).toHaveTextContent(/3.?190 ₸ × 1/);
-    expect(screen.queryByRole('button', { name: 'Подробнее' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Детали заказа' })).toBeInTheDocument();
   });
 
   it('offers a way back to the catalog from an empty active state', () => {

@@ -54,6 +54,10 @@
   --text-section-title: 1.25rem;
   --text-section-title--line-height: 1.3;
   --text-section-title--font-weight: 800;
+  --text-commerce-price: 1.875rem;
+  --text-commerce-price--line-height: 1;
+  --text-commerce-price--font-weight: 900;
+  --text-commerce-price--letter-spacing: -.04em;
 
   --shadow-card: 0 7px 22px rgba(13, 79, 69, .07);
   --shadow-floating: 0 18px 54px rgba(8, 47, 43, .20);

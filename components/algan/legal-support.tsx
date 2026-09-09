@@ -43,13 +43,13 @@ export function DocumentsModal({ t, locale, subject, onClose }: { t: Translator;
             <LegalDocumentView type={selectedView} t={t} locale={locale} subject={subject} />
           ) : (
             <>
-              <SectionTitle as="h3" className="mt-4 text-base">{t('agreements')}</SectionTitle>
+              <SectionTitle as="h3" className="mt-4">{t('agreements')}</SectionTitle>
               <div className="mt-3 space-y-2">
                 {documents.map((document) => (
                   <ProfileRow density="compact" key={document.type} icon={document.icon} label={t(LEGAL_TITLE_KEYS[document.type])} onClick={() => setSelectedView(document.type)} />
                 ))}
               </div>
-              <SectionTitle as="h3" className="mt-4 text-base">{t('companyInformation')}</SectionTitle>
+              <SectionTitle as="h3" className="mt-4">{t('companyInformation')}</SectionTitle>
               <div className="mb-1 mt-2"><ProfileRow density="compact" icon={<Building2 size={18} />} label={t('contacts')} onClick={() => setSelectedView('contacts')} /></div>
             </>
           )}

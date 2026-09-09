@@ -33,7 +33,6 @@ export function RoutePicker({ lat, lng, t, onClose }: {
                 icon={<img src={routeProviderLogo[option.id]} alt="" className="h-10 w-10 rounded-control object-cover" />}
                 title={option.label}
                 tone="panel"
-                className="min-h-19"
                 trailing={<span className="flex items-center gap-1 text-xs font-extrabold text-brand">{t('openInMap')}<ArrowUpRight size={16} /></span>}
                 onClick={() => { openExternalLink(option.url); haptic('tap'); }}
               />
