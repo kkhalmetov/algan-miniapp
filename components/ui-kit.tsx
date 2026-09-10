@@ -432,22 +432,27 @@ export function StatusBadge({ children, icon, tone = 'brand', size = 'md', class
   );
 }
 
-export function IconBadge({ children, tone = 'brand', size = 'md', className }: {
-  children: ReactNode;
-  tone?: 'brand' | 'accent' | 'soft' | 'warning' | 'danger';
-  size?: 'sm' | 'md';
-  className?: string;
+export function IconBadge({ children, tone = 'brand', size = 'md', className, ...props }: HTMLAttributes<HTMLSpanElement> & {
+  tone?: 'brand' | 'highlight' | 'accent' | 'soft' | 'warning' | 'danger';
+  size?: 'sm' | 'md' | 'lg' | 'hero';
 }) {
   const tones = {
     brand: 'bg-brand-pale text-brand',
+    highlight: 'bg-highlight text-brand',
     accent: 'bg-accent-soft text-accent-strong',
     soft: 'bg-surface-soft text-brand',
     warning: 'bg-warning-surface text-warning-ink',
     danger: 'bg-danger-soft text-danger',
   };
+  const sizes = {
+    sm: 'h-7 w-7 rounded-[9px]',
+    md: 'h-10 w-10 rounded-full',
+    lg: 'h-12 w-12 rounded-[16px]',
+    hero: 'h-16 w-16 rounded-[20px]',
+  };
 
   return (
-    <span className={cx('grid shrink-0 place-items-center', size === 'sm' ? 'h-7 w-7 rounded-[9px]' : 'h-10 w-10 rounded-full', tones[tone], className)}>
+    <span className={cx('grid shrink-0 place-items-center', sizes[size], tones[tone], className)} {...props}>
       {children}
     </span>
   );

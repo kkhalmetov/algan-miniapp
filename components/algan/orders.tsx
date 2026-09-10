@@ -83,7 +83,7 @@ export function OrdersTab({ t, locale, orders, onCancelOrder, onBrowseOffers }: 
         <div className="mt-5 space-y-3">
           {visibleOrders.map((order) => {
             const store = stores.find((item) => item.id === order.storeId);
-            const orderDate = formatOrderDate(order.createdAt, locale);
+            const orderDate = formatOrderDate(order.pickupStartsAt ?? order.createdAt, locale);
             const pickupWindow = orderPickupWindow(order);
             const isActive = order.status === 'paid';
             const cancellationAllowed = canCancelOrder(order, new Date(nowMs));
@@ -111,7 +111,7 @@ export function OrdersTab({ t, locale, orders, onCancelOrder, onBrowseOffers }: 
                     })}
                   </div>
                   <div data-testid="order-schedule" className="mt-4 space-y-2 border-t border-border pt-3 text-xs font-bold">
-                    {isActive && <div data-testid="active-order-pickup" className="flex items-center gap-2 text-brand"><Clock3 size={16} />{t('pickupToday')} · {pickupWindow}</div>}
+                    {isActive && <div data-testid="active-order-pickup" className="flex items-center gap-2 text-brand"><Clock3 size={16} />{t('pickupTime')} · {pickupWindow}</div>}
                     <div className="flex items-center gap-2 text-ink-muted"><CalendarDays size={16} />{orderDate}</div>
                   </div>
                   <div className="mt-4 flex items-center justify-between border-t border-border pt-4"><span className="text-xs font-bold text-ink-muted">{t('total')}</span><b className="text-lg text-brand">{formatPrice(order.total)}</b></div>

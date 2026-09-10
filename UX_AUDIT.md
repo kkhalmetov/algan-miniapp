@@ -49,10 +49,14 @@ The audit covers onboarding, startup, home, favorites, active and past orders, p
 | Compact navigation | Long Kazakh labels touched or clipped at 320 px despite fitting at larger widths | Bottom-navigation typography now uses the documented compact 10 px label token; all four complete labels have measurable separation at 320 px |
 | Modal dismissal | The full-screen backdrop was exposed as an extra keyboard and screen-reader close button outside the dialog panel | The backdrop remains pointer-dismissable but is removed from sequential focus and the accessibility tree; the visible 44 px close action remains canonical |
 | In-modal navigation | Opening FAQ or a legal sub-view removed the triggering row and left keyboard focus on the document root | Shared sheet headers can focus a changed title; FAQ and legal views now announce and focus their new `h2` title without scrolling |
-| Nested headings | Settings, legal groups, company details and order-detail sections reused `h2` beside the modal title | `SectionTitle` owns contextual `h2`/`h3` semantics; sections nested below a sheet title now use `h3` without changing their visual token |
+| Nested headings | Settings, legal groups and company details reused `h2` beside the modal title | `SectionTitle` owns contextual `h2`/`h3` semantics; sections nested below a sheet title now use `h3` without changing their visual token |
 | Box purchase summary | The persistent box action showed quantity and an action but omitted the selected total described by the commerce pattern | The action now presents the localized selected total and updates it with the quantity while retaining a concise accessible action name |
-| Completed-order history | A completed-order details implementation existed but had no reachable action | History cards now use the shared attached action to open complete order details without exposing active-order pickup controls |
-| Transactional copy | Cart and order item names were truncated even though transactional information must remain complete | Cart, order cards and order details wrap venue and item names while catalogue cards retain intentional truncation |
+| Completed-order history | A redundant details layer repeated information already suitable for the card | History cards now show status, venue, order number, pickup date, all items and total directly, with no details action or active-order pickup controls |
+| Transactional copy | Cart and order item names were truncated even though transactional information must remain complete | Cart and order cards wrap venue and item names while catalogue cards retain intentional truncation |
+| Order schedule meaning | Active cards could claim “today” for persisted orders from another date, and displayed the creation date instead of the pickup snapshot | Cards use the neutral “Pickup time” label and derive the displayed date from `pickupStartsAt`, falling back only for migrated orders without a snapshot |
+| Payment-result semantics | Recoverable payment failure used the same danger family reserved for destructive or blocking states | Success keeps the calm brand surface; recoverable failure uses the coral accent surface while both states retain identical centered geometry and action sizing |
+| Repeated status icons | Support, legal acceptance and fatal fallback recreated highlight/danger icon geometry locally | `IconBadge` now owns semantic highlight/danger tones and compact, standard, large and hero sizes |
+| Empty cart transition | Removing the last item left cancellation terms, a zero total and disabled checkout controls below the empty state | The cart now collapses to the empty state alone; transactional notices, totals and consent appear only when there is an order to place |
 | Allergen semantics | Box allergens reused the destructive danger treatment despite having dedicated allergen tokens | The shared `NoticeCard` allergen tone now owns the border, surface, icon, heading and body treatment |
 | Runtime locale | Changing the language updated visible copy and `html[lang]` but left the browser title in the default locale | The browser title follows RU/KK alongside the document language |
 | Nested section type | Several sheet sections overrode the shared 20/26 section-title token with feature-level `text-base` utilities | All nested `h3` sections preserve the canonical `SectionTitle` typography |
@@ -71,3 +75,10 @@ The audit covers onboarding, startup, home, favorites, active and past orders, p
 - `tests/design-system.test.ts` guards token ownership and forbidden local UI recipes.
 - `tests/ui-kit.test.tsx` verifies visual variants, semantics, keyboard behavior, focus restoration and confirmation behavior.
 - New UI patterns must first be expressed as a token or UI-kit primitive and then be adopted by product screens.
+
+## Verification
+
+- Live browser review covered 320, 390 and 460 px widths, active and past orders, catalogue, box details, cart, payment failure, profile, settings, support, FAQ and legal screens. RU and KK copy was checked, including long navigation and cancellation labels.
+- Layout probes found no unintended horizontal overflow; the only element extending beyond the viewport is the clipped decorative circle in the branded header.
+- Payment success and failure share the same centered feedback primitive and 330 px action constraint; component tests verify their distinct brand/coral tones and absence of order data on success.
+- The complete automated suite, lint, typecheck and production build pass after the audit changes.

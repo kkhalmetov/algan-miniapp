@@ -70,8 +70,8 @@ describe('mock customer catalog', () => {
     expect(kk('backToCart')).toBe('Себетке оралу');
     expect(ru('cartPreservedTitle')).toBe('Корзина сохранена');
     expect(kk('cartPreservedTitle')).toBe('Себет сақталды');
-    expect(ru('orderDetails')).toBe('Детали заказа');
-    expect(kk('orderDetails')).toBe('Тапсырыс мәліметтері');
+    expect(ru('pickupTime')).toBe('Время выдачи');
+    expect(kk('pickupTime')).toBe('Алу уақыты');
     expect(ru('resetDemoConfirm')).toMatch(/история заказов/);
     expect(kk('resetDemoConfirm')).toMatch(/тапсырыстар тарихы/);
     expect(ru('loading')).toBe('Загрузка');

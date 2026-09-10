@@ -23,6 +23,7 @@ describe('orders tab', () => {
             { boxId: 'tatti-defined', quantity: 1, unitPrice: 2390 },
           ], total: 7370,
           pickupCode: '123456', createdAt: '2026-08-25T10:00:00.000Z', status: 'paid',
+          pickupStartsAt: '2026-08-26T13:30:00.000Z', pickupEndsAt: '2026-08-26T15:30:00.000Z',
         },
         {
           id: '87654321', storeId: 'kofi', items: [{ boxId: 'coffee-pair', quantity: 2, unitPrice: 1990 }], total: 3980,
@@ -54,15 +55,15 @@ describe('orders tab', () => {
     expect(screen.getByText('Surprise Tatti-box').parentElement).toHaveTextContent(/2.?490 ₸ × 2/);
     expect(screen.getByText('Tatti-box').parentElement).toHaveTextContent(/2.?390 ₸ × 1/);
     expect(screen.getByText('Номер заказа: 12345678')).toBeInTheDocument();
-    const pickupTime = screen.getByText(/Заберите сегодня ·/);
+    const pickupTime = screen.getByText(/Время выдачи ·/);
     expect(pickupTime).toBeInTheDocument();
     const activeCard = screen.getByText('Номер заказа: 12345678').closest('article');
     expect(activeCard).not.toBeNull();
-    expect(within(activeCard!).getByTestId('active-order-pickup')).toHaveTextContent('Заберите сегодня · 18:30–20:30');
-    expect(within(activeCard!).getByTestId('order-schedule')).toHaveTextContent('Заберите сегодня · 18:30–20:3025 августа 2026 г.');
-    expect(within(activeCard!).getByText('25 августа 2026 г.').parentElement?.querySelector('.lucide-calendar-days')).toBeInTheDocument();
+    expect(within(activeCard!).getByTestId('active-order-pickup')).toHaveTextContent('Время выдачи · 18:30–20:30');
+    expect(within(activeCard!).getByTestId('order-schedule')).toHaveTextContent('Время выдачи · 18:30–20:3026 августа 2026 г.');
+    expect(within(activeCard!).getByText('26 августа 2026 г.').parentElement?.querySelector('.lucide-calendar-days')).toBeInTheDocument();
     expect(within(activeCard!).getByText('Итого')).toBeInTheDocument();
-    expect(screen.getByText('25 августа 2026 г.')).toBeInTheDocument();
+    expect(screen.getByText('26 августа 2026 г.')).toBeInTheDocument();
     expect(screen.queryByText(/Забрать:/)).not.toBeInTheDocument();
     expect(screen.getByText('Номер заказа: 12345678').closest('button')).toBeNull();
     fireEvent.click(screen.getByText('Номер заказа: 12345678'));
@@ -252,6 +253,6 @@ describe('orders tab', () => {
     expect(within(navigation).getByRole('button', { name: 'Тапсырыстар' })).toHaveTextContent('Тапсырыстар');
     fireEvent.click(within(navigation).getByRole('button', { name: 'Тапсырыстар' }));
     expect(screen.getByRole('heading', { name: 'Тапсырыстар' })).toBeInTheDocument();
-    expect(screen.getByText('25 тамыз 2026 ж.')).toBeInTheDocument();
+    expect(screen.getByText('26 тамыз 2026 ж.')).toBeInTheDocument();
   });
 });

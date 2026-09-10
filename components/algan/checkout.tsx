@@ -162,24 +162,26 @@ export function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQu
         <SheetHeader className="pb-3" title={t('cart')} onClose={onClose} closeLabel={t('close')} />
         <ScrollArea data-testid="cart-scroll" className="flex flex-1 flex-col pb-1">
           {lines.length === 0 ? <EmptyState icon={<ShoppingBag size={32} />} title={t('cartEmpty')} /> : (
-            <div className="mt-2 space-y-3">
-              {lines.map(({ box, quantity }) => (
-                <InsetSurface key={box.id} tone="panel" className="overflow-hidden p-3">
-                  <div className="flex items-center gap-3"><span aria-hidden="true" className="h-18 w-18 shrink-0 overflow-hidden rounded-control"><img src={box.image} alt="" className="h-full w-full object-cover" /></span><div className="min-w-0 flex-1"><p className="break-words text-xs font-bold leading-5 text-brand">{storeById(box.storeId).name}</p><p className="mt-0.5 break-words text-sm font-extrabold leading-5">{boxName(box, locale)}</p><p className="mt-1.5 text-base font-extrabold text-brand-hover">{formatPrice(box.salePrice * quantity)}</p></div></div>
-                  <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-border pt-3"><QuantityControl quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} label={t('quantity')} addLabel={`${t('addToCart')} ${boxName(box, locale)}`} addText={t('addToCart')} onChange={(next) => onChangeQuantity(box, next)} /><TertiaryButton tone="danger" onClick={() => onChangeQuantity(box, 0)}>{t('removeFromCart')}</TertiaryButton></div>
-                </InsetSurface>
-              ))}
-            </div>
+            <>
+              <div className="mt-2 space-y-3">
+                {lines.map(({ box, quantity }) => (
+                  <InsetSurface key={box.id} tone="panel" className="overflow-hidden p-3">
+                    <div className="flex items-center gap-3"><span aria-hidden="true" className="h-18 w-18 shrink-0 overflow-hidden rounded-control"><img src={box.image} alt="" className="h-full w-full object-cover" /></span><div className="min-w-0 flex-1"><p className="break-words text-xs font-bold leading-5 text-brand">{storeById(box.storeId).name}</p><p className="mt-0.5 break-words text-sm font-extrabold leading-5">{boxName(box, locale)}</p><p className="mt-1.5 text-base font-extrabold text-brand-hover">{formatPrice(box.salePrice * quantity)}</p></div></div>
+                    <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-border pt-3"><QuantityControl quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} label={t('quantity')} addLabel={`${t('addToCart')} ${boxName(box, locale)}`} addText={t('addToCart')} onChange={(next) => onChangeQuantity(box, next)} /><TertiaryButton tone="danger" onClick={() => onChangeQuantity(box, 0)}>{t('removeFromCart')}</TertiaryButton></div>
+                  </InsetSurface>
+                ))}
+              </div>
+              <NoticeCard className="mt-5" density="compact" icon={<Clock3 size={17} />} title={t('cancellationNoticeTitle')}>
+                {t('cancellationNoticeText')}
+              </NoticeCard>
+              <div className="my-5 h-px shrink-0 bg-border" />
+              <div className="flex shrink-0 items-end justify-between tabular-nums"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black" aria-live="polite">{formatPrice(total)}</span></div>
+              <PrimaryButton onClick={() => void onPay()} disabled={paymentPending} aria-busy={paymentPending} className="mt-5 shrink-0">{paymentPending ? t('paymentProcessing') : t('checkoutCart')}</PrimaryButton>
+              <p className="mt-auto shrink-0 pt-3 text-center text-xs leading-5 text-ink-muted">
+                {t('checkoutOfferPrefix')}{' '}<TextLinkButton onClick={onOpenOffer}>{t('checkoutOfferLink')}</TextLinkButton>{' '}{t('checkoutOfferBetween')}{' '}<TextLinkButton onClick={onOpenOrderRules}>{t('checkoutRulesLink')}</TextLinkButton>{t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
+              </p>
+            </>
           )}
-          <NoticeCard className="mt-5" density="compact" icon={<Clock3 size={17} />} title={t('cancellationNoticeTitle')}>
-            {t('cancellationNoticeText')}
-          </NoticeCard>
-          <div className="my-5 h-px shrink-0 bg-border" />
-          <div className="flex shrink-0 items-end justify-between tabular-nums"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black" aria-live="polite">{formatPrice(total)}</span></div>
-          <PrimaryButton onClick={() => void onPay()} disabled={lines.length === 0 || paymentPending} aria-busy={paymentPending} className="mt-5 shrink-0">{paymentPending ? t('paymentProcessing') : t('checkoutCart')}</PrimaryButton>
-          <p className="mt-auto shrink-0 pt-3 text-center text-xs leading-5 text-ink-muted">
-            {t('checkoutOfferPrefix')}{' '}<TextLinkButton onClick={onOpenOffer}>{t('checkoutOfferLink')}</TextLinkButton>{' '}{t('checkoutOfferBetween')}{' '}<TextLinkButton onClick={onOpenOrderRules}>{t('checkoutRulesLink')}</TextLinkButton>{t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
-          </p>
         </ScrollArea>
       </ModalBody>
     </DialogLayer>
@@ -191,7 +193,7 @@ function PaymentResultScreen({ title, description, actionLabel, statusIcon, tone
   description: string;
   actionLabel: string;
   statusIcon: ReactNode;
-  tone: 'brand' | 'danger';
+  tone: 'brand' | 'coral';
   closeLabel: string;
   onAction: () => void;
 }) {
@@ -212,7 +214,7 @@ export function PaymentFailure({ t, onBackToCart }: { t: Translator; onBackToCar
       actionLabel={t('backToCart')}
       closeLabel={t('close')}
       onAction={onBackToCart}
-      tone="danger"
+      tone="coral"
       statusIcon={<AlertTriangle size={38} strokeWidth={2.5} />}
     />
   );

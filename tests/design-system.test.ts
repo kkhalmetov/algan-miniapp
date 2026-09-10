@@ -107,6 +107,8 @@ describe('Algan design system', () => {
     expect(app).not.toContain('text-white/65');
     expect(app).not.toContain('new Intl.DateTimeFormat');
     expect(app).not.toContain('grid shrink-0 place-items-center overflow-hidden rounded-full bg-highlight');
+    expect(app).not.toContain('grid h-12 w-12 place-items-center rounded-[16px] bg-highlight');
+    expect(app).not.toContain('grid h-16 w-16 place-items-center rounded-[20px] bg-highlight');
     expect(app).not.toContain('px-page pb-[max(1.25rem,env(safe-area-inset-bottom))]');
     expect(app).not.toContain('rounded-control bg-brand-pale/55');
     expect(app).not.toMatch(/<SectionTitle[^>]*className="[^"]*text-base/);

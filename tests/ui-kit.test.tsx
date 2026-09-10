@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AccordionItem, BottomNavigation, BottomNavigationItem, BrandHeader, CardActionButton, CardPressable, CardTitle, ConfirmationDialog, DangerButton, DialogLayer,
-  ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconButton, InsetSurface, LinkRow, ListRow, MediaBadge, MediaSheetHeader,
+  ContentTitle, DetailRow, DisclosureIndicator, EmptyState, FullScreenFeedback, IconBadge, IconButton, InsetSurface, LinkRow, ListRow, MediaBadge, MediaSheetHeader,
   AvatarFrame, ModalBody, ModalHeader, NoticeCard, PageSection, PageTitle, PillButton, PrimaryButton, QuantityControl, ScreenBody, SecondaryButton, SectionTitle, SheetHeader,
   ScrollArea, SegmentedControl, StatusBadge, StickyActionFooter, SurfaceCard, TextField, TextLinkButton, TertiaryButton, TopAppBar,
 } from '../components/ui-kit';
@@ -106,6 +106,16 @@ describe('Algan UI kit', () => {
     expect(screen.getByRole('banner')).toHaveClass('bg-brand');
     expect(screen.getByRole('heading', { name: 'Заказы' })).toHaveClass('text-page-title');
     expect(screen.getByText('Боксы закончились')).toHaveClass('bg-danger-soft', 'text-danger');
+  });
+
+  it('owns semantic icon colors and sizes', () => {
+    render(<>
+      <IconBadge tone="highlight" size="hero">✓</IconBadge>
+      <IconBadge tone="danger" size="lg">!</IconBadge>
+    </>);
+
+    expect(screen.getByText('✓')).toHaveClass('h-16', 'w-16', 'rounded-[20px]', 'bg-highlight', 'text-brand');
+    expect(screen.getByText('!')).toHaveClass('h-12', 'w-12', 'rounded-[16px]', 'bg-danger-soft', 'text-danger');
   });
 
   it('moves focus to a changed sheet title and supports nested heading levels', () => {

@@ -5,7 +5,7 @@ import { lazy, type ReactNode, Suspense, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import { ProfileRow } from '@/components/algan/profile-row';
 import type { LegalDocument, LegalInformationView, LegalSubject, Translator } from '@/components/algan/types';
-import { AccordionItem, DialogLayer, InsetSurface, LinkRow, ModalBody, NoticeCard, PrimaryButton, ScrollArea, SectionTitle, SheetHeader } from '@/components/ui-kit';
+import { AccordionItem, DialogLayer, IconBadge, InsetSurface, LinkRow, ModalBody, NoticeCard, PrimaryButton, ScrollArea, SectionTitle, SheetHeader } from '@/components/ui-kit';
 import { isPublishedLegalDocument } from '@/lib/legal-core';
 import { openTelegramLink } from '@/lib/telegram';
 import type { CopyKey } from '@/lib/translations';
@@ -94,7 +94,7 @@ export function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }
             <>
               <InsetSurface tone="brandSolid" radius="card" className="relative mt-3 overflow-hidden p-5 text-white">
                 <div aria-hidden="true" className="absolute -right-8 -top-12 h-32 w-32 rounded-full bg-brand-hover" />
-                <span className="relative grid h-12 w-12 place-items-center rounded-[16px] bg-highlight text-brand"><Headphones size={23} /></span>
+                <IconBadge className="relative" tone="highlight" size="lg"><Headphones size={23} /></IconBadge>
                 <p className="relative mt-5 text-xl font-extrabold tracking-[-0.025em] text-white">{t('support')}</p>
                 <p className="relative mt-2 text-sm leading-6 text-white/75">{t('supportIntro')}</p>
                 <PrimaryButton aria-label={`${t('contactSupport')}. ${t('workingHours')}`} onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} className="relative mt-5" tone="highlight">

@@ -130,9 +130,9 @@ describe('multi-box cart', () => {
     expect(within(failureDialog).getByText('Не удалось завершить оплату. Попробуйте ещё раз.')).toBeInTheDocument();
     expect(within(failureDialog).queryByText('Корзина сохранена')).not.toBeInTheDocument();
     expect(within(failureDialog).queryByText(/Все выбранные боксы остались на месте/)).not.toBeInTheDocument();
-    expect(within(failureDialog).getByText('Оплата не прошла').parentElement).toHaveClass('justify-center', 'bg-danger-soft/30');
+    expect(within(failureDialog).getByText('Оплата не прошла').parentElement).toHaveClass('justify-center', 'bg-accent-soft');
     expect(failureDialog.querySelector('.lucide-triangle-alert')).toBeInTheDocument();
-    expect(failureDialog.querySelector('.bg-accent-soft')).not.toBeInTheDocument();
+    expect([...failureDialog.querySelectorAll('*')].some((element) => element.classList.contains('bg-danger-soft/30'))).toBe(false);
     expect(within(failureDialog).queryByRole('button', { name: 'Закрыть' })).not.toBeInTheDocument();
     expect(within(failureDialog).queryByRole('button', { name: 'Повторить оплату' })).not.toBeInTheDocument();
     expect(useAppStore.getState().orders).toEqual([]);
@@ -170,6 +170,21 @@ describe('multi-box cart', () => {
     expect(within(cartDialog).getByText('Surprise Tatti-box')).toBeInTheDocument();
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 1 }]);
 
+  });
+
+  it('shows only the empty state after the last cart item is removed', () => {
+    openCatalog();
+    addBoxFromDetails('Surprise Tatti-box');
+    fireEvent.click(screen.getByRole('button', { name: /^Корзина/ }));
+
+    const cartDialog = screen.getByRole('dialog', { name: 'Корзина' });
+    fireEvent.click(within(cartDialog).getByRole('button', { name: 'Удалить' }));
+
+    expect(within(cartDialog).getByText('Корзина пуста')).toBeInTheDocument();
+    expect(within(cartDialog).queryByText('Отмена заказа')).not.toBeInTheDocument();
+    expect(within(cartDialog).queryByText('Итого')).not.toBeInTheDocument();
+    expect(within(cartDialog).queryByRole('button', { name: 'Оформить заказ' })).not.toBeInTheDocument();
+    expect(within(cartDialog).queryByRole('button', { name: 'публичную оферту' })).not.toBeInTheDocument();
   });
 
   it('does not allow selecting more boxes than are available', () => {

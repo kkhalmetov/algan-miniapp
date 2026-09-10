@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import { ProfileRow } from '@/components/algan/profile-row';
 import type { LegalDocument, Translator } from '@/components/algan/types';
-import { ContentTitle, PageTitle, PillButton, PrimaryButton, ScrollArea, TextField, TextLinkButton } from '@/components/ui-kit';
+import { ContentTitle, IconBadge, PageTitle, PillButton, PrimaryButton, ScrollArea, TextField, TextLinkButton } from '@/components/ui-kit';
 import { formatKazakhstanPhoneInput, normalizeKazakhstanPhone } from '@/lib/phone';
 import type { Locale } from '@/lib/types';
 
@@ -96,7 +96,7 @@ export function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccep
         <div aria-hidden="true" className="absolute -right-14 -top-16 h-48 w-48 rounded-full bg-brand-hover" />
         <div aria-hidden="true" className="absolute -bottom-20 -left-12 h-44 w-44 rounded-full border-[34px] border-highlight/20" />
         <div className="relative flex items-start justify-between gap-4"><AlganLogo light /><LanguagePill locale={locale} setLocale={setLocale} dark /></div>
-        <div className="relative mt-10 grid h-16 w-16 place-items-center rounded-[20px] bg-highlight text-brand shadow-action"><ShieldCheck size={30} /></div>
+        <IconBadge className="relative mt-10 shadow-action" tone="highlight" size="hero"><ShieldCheck size={30} /></IconBadge>
       </div>
       <ScrollArea className="-mt-4 flex flex-1 flex-col rounded-t-sheet bg-surface px-page pb-[max(1.5rem,var(--algan-safe-area-bottom))] pt-8 sm:px-page-wide">
         <PageTitle>{t('legalUpdateTitle')}</PageTitle>
