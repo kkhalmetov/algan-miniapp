@@ -14,9 +14,15 @@ export async function fetchKztToRubRate(signal?: AbortSignal) {
 }
 
 export function formatCurrency(valueKzt: number, locale: Locale, currency: Currency, kztToRubRate?: number | null) {
+  // Some Telegram WebViews fall back to English grouping for kk-KZ.
+  // Keep the same unambiguous spacing and decimal separator in both app languages.
+  const formatAmount = (value: number) => new Intl.NumberFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ')
+    .formatToParts(value)
+    .map((part) => part.type === 'group' ? '\u00a0' : part.type === 'decimal' ? ',' : part.value)
+    .join('');
   if (currency === 'RUB' && kztToRubRate) {
     const rubles = Math.round(valueKzt * kztToRubRate);
-    return `${new Intl.NumberFormat(locale === 'kk' ? 'kk-KZ' : 'ru-RU').format(rubles)} ₽`;
+    return `${formatAmount(rubles)} ₽`;
   }
-  return `${new Intl.NumberFormat(locale === 'kk' ? 'kk-KZ' : 'ru-KZ').format(valueKzt)} ₸`;
+  return `${formatAmount(valueKzt)} ₸`;
 }

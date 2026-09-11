@@ -1,5 +1,6 @@
-import { FileCheck2, FileText, Languages, ShieldCheck } from 'lucide-react';
-import type { ReactNode } from 'react';
+/* eslint-disable @next/next/no-img-element */
+import { FileCheck2, FileText, Languages, ShieldCheck } from '@/components/icons';
+import { useState, type ReactNode } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import { ProfileRow } from '@/components/algan/profile-row';
 import type { LegalDocument, Translator } from '@/components/algan/types';
@@ -9,21 +10,25 @@ import type { Locale } from '@/lib/types';
 
 export function Splash({ t }: { t: Translator }) {
   return (
-    <main className="relative grid min-h-[var(--algan-viewport-height)] place-items-center overflow-hidden bg-canvas px-page text-brand sm:px-page-wide" aria-label={`Algan — ${t('loading')}`}>
-      <div aria-hidden="true" className="absolute -right-18 top-14 h-48 w-48 rounded-full bg-brand-soft/55 blur-[1px]" />
-      <div aria-hidden="true" className="absolute -bottom-24 -left-20 h-64 w-64 rounded-full border-[46px] border-accent/12" />
-      <div className="relative flex flex-col items-center text-center">
-        <AlganLogo className="algan-logo-float flex-col gap-4" markClassName="h-24 w-24" wordmarkClassName="h-10 w-[122px]" />
-        <span className="algan-loader mt-8" role="status"><span className="sr-only">{t('loading')}</span></span>
-      </div>
-    </main>
+    <PhoneShell>
+      <main className="algan-splash algan-full-screen relative flex flex-col items-center justify-center overflow-hidden px-page py-12" aria-label={`Algan — ${t('loading')}`}>
+        <span aria-hidden="true" className="absolute -right-24 -top-24 h-80 w-80 rounded-full border border-brand-deep/10" />
+        <span aria-hidden="true" className="absolute -bottom-44 -left-32 h-96 w-96 rounded-full border-[50px] border-brand-deep/5" />
+        <div className="relative flex flex-col items-center text-center">
+          <AlganLogo tone="ink" className="algan-logo-float flex-col gap-2" markClassName="h-28 w-28" wordmarkClassName="h-20 w-[185px]" />
+          <p className="mt-2 text-sm font-semibold">{t('loadingTagline')}</p>
+          <span className="algan-loader mt-12" role="status"><span className="sr-only">{t('loading')}</span></span>
+        </div>
+        <p className="algan-eyebrow absolute bottom-10 text-brand-deep">ALGAN · {t('city')}</p>
+      </main>
+    </PhoneShell>
   );
 }
 
 export function PhoneShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-[var(--algan-viewport-height)] bg-canvas pl-[var(--algan-safe-area-left)] pr-[var(--algan-safe-area-right)] text-ink sm:grid sm:place-items-center sm:px-8 sm:py-6">
-      <div className="relative mx-auto min-h-[var(--algan-viewport-height)] w-full max-w-[460px] overflow-hidden bg-surface sm:min-h-[780px] sm:rounded-shell sm:shadow-shell">{children}</div>
+    <div className="algan-shell pl-[var(--algan-safe-area-left)] pr-[var(--algan-safe-area-right)] text-ink">
+      <div className="algan-shell-panel">{children}</div>
     </div>
   );
 }
@@ -40,26 +45,31 @@ interface OnboardingProps {
 
 export function Onboarding({ t, locale, setLocale, phone, setPhone, openLegal, onContinue }: OnboardingProps) {
   const canContinue = Boolean(normalizeKazakhstanPhone(phone));
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const showError = phoneTouched && phone.replace(/\D/g, '').length > 1 && !canContinue;
   return (
-    <main className="flex min-h-[var(--algan-viewport-height)] flex-col bg-canvas sm:min-h-[780px]">
-      <div className="relative overflow-hidden bg-brand px-page pb-10 pt-[max(1.25rem,var(--algan-safe-area-top))] text-white sm:px-page-wide">
-        <div className="absolute -right-14 -top-10 h-48 w-48 rounded-full bg-brand-hover" />
-        <div className="absolute -bottom-18 -left-10 h-40 w-40 rounded-full border-[32px] border-highlight/25" />
-        <div className="relative flex items-start justify-between"><AlganLogo light /><LanguagePill locale={locale} setLocale={setLocale} dark /></div>
-        <div className="relative mt-14">
-          <p className="inline-flex rounded-full bg-highlight px-3 py-1.5 text-xs font-extrabold text-brand">{t('slogan')}</p>
-          <h1 className="mt-4 max-w-[360px] text-display">{t('hero')}</h1>
+    <main className="algan-app-frame bg-canvas">
+      <ScrollArea className="flex h-full flex-col">
+      <div className="shrink-0 px-page pb-6 pt-[max(1.25rem,var(--algan-safe-area-top))] sm:px-page-wide">
+        <div className="flex items-center justify-between"><AlganLogo markClassName="h-10 w-10" wordmarkClassName="h-9 w-[91px]" /><LanguagePill locale={locale} setLocale={setLocale} /></div>
+        <div className="relative mt-6 min-h-56 overflow-hidden">
+          <p className="algan-eyebrow text-brand">{t('intro')} · {t('city')}</p>
+          <h1 className="relative z-10 mt-3 text-display">{t('onboardingHeadline')}<br /><span className="text-brand">{t('onboardingAccent')}</span></h1>
+          <p className="relative z-10 mt-4 max-w-[64%] text-sm leading-6 text-ink-secondary">{t('onboardingDescription')}</p>
+          <img src="/images/algan-good-bag.svg" alt="" aria-hidden="true" width={180} height={220} className="absolute -bottom-4 -right-3 w-[112px] rotate-[8deg] min-[360px]:w-[136px]" />
         </div>
+        <ol className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-4">{(['stepChoose', 'stepPay', 'stepCollect'] as const).map((step, index) => <li key={step} className="flex items-center gap-1.5 text-[10px] font-bold"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-deep text-white">{index + 1}</span>{t(step)}</li>)}</ol>
       </div>
 
-      <form className="relative -mt-4 flex flex-1 flex-col rounded-t-sheet bg-surface px-page pb-[max(1.5rem,var(--algan-safe-area-bottom))] pt-8 sm:px-page-wide" onSubmit={(event) => { event.preventDefault(); onContinue(); }}>
-        <p className="text-xs font-extrabold uppercase tracking-[.08em] text-accent-strong">{t('intro')}</p>
-        <ContentTitle className="mt-2">{t('askName')}</ContentTitle>
+      <form className="relative flex flex-1 shrink-0 flex-col rounded-t-sheet border-t border-border bg-surface px-page pb-[max(1.5rem,var(--algan-safe-area-bottom))] pt-6 sm:px-page-wide" onSubmit={(event) => { event.preventDefault(); if (canContinue) onContinue(); }}>
+        <ContentTitle>{t('askName')}</ContentTitle>
         <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('nameHelp')}</p>
-        <TextField label={t('phone')} required value={phone} onValueChange={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" />
-        <PrimaryButton type="submit" disabled={!canContinue} className="mt-7">{t('continue')}</PrimaryButton>
+        <TextField label={t('phone')} required value={phone} onValueChange={(value) => setPhone(formatKazakhstanPhoneInput(value))} placeholder="+7 700 000 00 00" autoComplete="tel" type="tel" inputMode="tel" onBlur={() => setPhoneTouched(true)} aria-invalid={showError} aria-describedby={showError ? 'onboarding-phone-error' : undefined} />
+        {showError && <p id="onboarding-phone-error" role="alert" className="mt-2 text-xs font-semibold text-danger">{t('invalidPhone')}</p>}
+        <PrimaryButton type="submit" disabled={!canContinue} className="mt-5">{t('continue')}</PrimaryButton>
         <LegalAcceptanceSentence t={t} openLegal={openLegal} className="mt-auto pt-4" />
       </form>
+      </ScrollArea>
     </main>
   );
 }
@@ -91,12 +101,10 @@ export function LegalAcceptanceScreen({ t, locale, setLocale, openLegal, onAccep
   onAccept: () => void;
 }) {
   return (
-    <main className="flex min-h-[var(--algan-viewport-height)] flex-col overflow-hidden bg-canvas sm:min-h-[780px]">
-      <div className="relative overflow-hidden bg-brand px-page pb-8 pt-[max(1.5rem,var(--algan-safe-area-top))] text-white sm:px-page-wide">
-        <div aria-hidden="true" className="absolute -right-14 -top-16 h-48 w-48 rounded-full bg-brand-hover" />
-        <div aria-hidden="true" className="absolute -bottom-20 -left-12 h-44 w-44 rounded-full border-[34px] border-highlight/20" />
-        <div className="relative flex items-start justify-between gap-4"><AlganLogo light /><LanguagePill locale={locale} setLocale={setLocale} dark /></div>
-        <IconBadge className="relative mt-10 shadow-action" tone="highlight" size="hero"><ShieldCheck size={30} /></IconBadge>
+    <main className="algan-app-frame flex flex-col overflow-hidden bg-canvas">
+      <div className="px-page pb-8 pt-[max(1.5rem,var(--algan-safe-area-top))] sm:px-page-wide">
+        <div className="flex items-start justify-between gap-4"><AlganLogo /><LanguagePill locale={locale} setLocale={setLocale} /></div>
+        <IconBadge className="mt-10 rotate-[-6deg]" tone="highlight" size="hero"><ShieldCheck size={30} /></IconBadge>
       </div>
       <ScrollArea className="-mt-4 flex flex-1 flex-col rounded-t-sheet bg-surface px-page pb-[max(1.5rem,var(--algan-safe-area-bottom))] pt-8 sm:px-page-wide">
         <PageTitle>{t('legalUpdateTitle')}</PageTitle>

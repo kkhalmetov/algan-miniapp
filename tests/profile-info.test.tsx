@@ -185,13 +185,13 @@ describe('profile information sections', () => {
     expect(document.title).toBe('Algan — тиімді ұсыныстар жаныңызда');
   });
 
-  it('places the currency switch below demo reset and loads the RUB rate', async () => {
+  it('groups currency with preferences before demo reset and loads the RUB rate', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ result: 'success', rates: { RUB: 0.185297 } }) }));
     openProfile();
 
     const reset = screen.getByRole('button', { name: 'Сбросить демо-данные' });
     const switchCurrency = screen.getByRole('button', { name: 'Показывать цены в рублях' });
-    expect(reset.compareDocumentPosition(switchCurrency) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(switchCurrency.compareDocumentPosition(reset) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     await act(async () => {
       fireEvent.click(switchCurrency);
@@ -234,7 +234,7 @@ describe('profile information sections', () => {
     render(<AlganApp />);
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
-    expect(screen.getByRole('heading', { name: 'Қолданушы!' })).toBeInTheDocument();
+    expect(screen.getByText('Қолданушы!')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Профиль' }));
     expect(screen.getByRole('heading', { name: 'Қолданушы' })).toBeInTheDocument();
   });

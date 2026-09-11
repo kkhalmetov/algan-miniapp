@@ -1,115 +1,114 @@
-# Algan Design System
+# Algan · Design system 02
 
-## Brand idea
+Новый стиль строится вокруг простой идеи: хорошие находки на каждый день. Тёплая терракота, молочные поверхности, медовые акценты, крупный шрифт и пакет с улыбкой связывают весь путь — от запуска до получения заказа.
 
-Algan helps good food find a person instead of a bin. The interface should feel useful, optimistic and local: appetising photography does the selling, clear commerce information builds trust, and the smiling food-box mark keeps the mission human.
+Интерактивная галерея находится на `/design/`. Она использует настоящие компоненты приложения и отдельные демонстрационные данные. Переключатель показывает UI-kit и все основные экраны; RU / ҚАЗ меняет язык экранов.
 
-The product is a mobile-first Telegram Mini App. Too Good To Go is a category reference, not a visual template. Algan must not reuse its logo geometry, illustrations, layouts or exact colour relationships.
+## Brand and logo
 
-## Logo
+- `public/algan-mark.svg` — пакет с ручкой, улыбкой и маленькой искрой. Основной знак и favicon, сетка 64 × 64.
+- `public/algan-wordmark.svg` — плотное строчное начертание algan в кривых, без зависимости от загрузки шрифта.
+- `public/algan-logo.svg` и `public/algan-logo-light.svg` — готовые горизонтальные композиции.
+- `components/algan-logo.tsx` — канонический React-компонент: основной, светлый и тёмный варианты.
+- `public/images/algan-good-bag.svg` — фирменная иллюстрация пакета с выпечкой и зеленью для главной и входа.
 
-The symbol is an open takeaway box with a smile cut from its front. The handle suggests something ready to carry. It must remain recognisable at 24 px.
-
-- `public/algan-mark.svg`: standalone mark and favicon source.
-- `public/algan-wordmark.svg`: custom lowercase wordmark.
-- `public/algan-logo.svg`: pine horizontal lockup.
-- `public/algan-logo-light.svg`: lime lockup for pine surfaces.
-- Use the mark alone only when the product name is already visible or space is constrained.
-- Never recolour parts independently, outline the logo, put it in a generic circle, or use a partner colour for it.
+Знак хорошо читается от 24 px; обычный размер в шапке — 40 px. Оставляйте вокруг него свободное пространство не меньше четверти ширины знака. Не деформируйте пропорции и не добавляйте обводку или тени к самому логотипу. Логотипы заведений и картографических сервисов сохраняют их собственную идентичность.
 
 ## Foundations and tokens
 
-Tokens live in `app/globals.css` and are exposed through Tailwind v4 semantic utilities. New raw hex values are not allowed in product markup. `lib/design-tokens.ts` is the single runtime mirror for Telegram and browser APIs.
+Источник значений — `app/globals.css`. New raw hex values are not allowed in product markup. Runtime-цвета для Telegram находятся в `lib/design-tokens.ts` и проверяются на соответствие CSS.
 
-### Colour
+### Палитра
 
-| Role | Token | Value | Use |
-| --- | --- | --- | --- |
-| Pine | `brand` | `#0D4F45` | Identity and large brand surfaces |
-| Emerald | `brand-hover` | `#17735F` | Primary actions and active controls |
-| Lime | `brand-soft`, `highlight` | `#CBEF69` | Positive selection and small highlights |
-| Coral | `accent` | `#FF7455` | Discount and urgency |
-| Canvas | `canvas` | `#F6F4EE` | App background |
-| Surface | `surface`, `panel` | `#FFFFFF` | Cards, sheets and controls |
-| Ink | `ink` | `#132620` | Primary copy |
-| Muted | `ink-muted` | `#4E635C` | Supporting copy |
-| Border | `border` | `#DCE5E1` | Quiet structure |
+| Назначение | Токен | Цвет |
+| --- | --- | --- |
+| Основное действие, логотип, акцентный текст | `brand` | `#AC3818` |
+| Наведение на основное действие | `brand-hover` | `#BD401B` |
+| Тёмная опора, выбранная категория | `brand-deep`, `ink` | `#29251F` |
+| Мягкая фирменная поверхность | `brand-pale` | `#FFF0E5` |
+| Иллюстрация, загрузка, заметный акцент | `accent` | `#F36B3F` |
+| Скидка, билет заказа, позитивный акцент | `highlight` | `#F8D578` |
+| Фон приложения | `canvas` | `#F8F5F0` |
+| Карточка, поле, модальное окно | `surface`, `panel` | `#FFFDF9` |
+| Вложенная информация | `surface-soft` | `#F4F0E9` |
+| Второстепенный текст | `ink-secondary` | `#575047` |
+| Подписи | `ink-muted` | `#685E53` |
+| Граница | `border` | `#E5DDD3` |
+| Успех: текст / поверхность | `success` / `success-soft` | `#38604A` / `#E8F0E7` |
+| Ошибка: текст / поверхность | `danger` / `danger-soft` | `#B33432` / `#FDE9E7` |
 
-Status colours have paired light surfaces and dark foregrounds. Never communicate stock, payment or validation state through colour alone.
+Оранжевый используется для иллюстраций и крупных акцентов; белый текст основных кнопок расположен на более тёмной терракоте. Предупреждения и аллергены имеют отдельные пары фона и текста. Смысл статуса всегда передаётся словами и, где уместно, иконкой.
 
-### Typography
+### Шрифт
 
-Onest Variable is self-hosted in `public/fonts` with only the Latin, Cyrillic and Cyrillic Extended subsets used by the product.
+Golos Text Variable, веса 400–900. Локальный WOFF2 содержит латиницу, русские и казахские буквы, знаки ₸ и ₽. Лицензия SIL OFL находится рядом со шрифтом. `font-display: swap` сохраняет доступность текста при загрузке.
 
-- Display: 32/36, weight 800.
-- Page title: 28/32, weight 800.
-- Section title: 20/26, weight 800.
-- Body: 15/22, weight 400–600.
-- Supporting: 13/18.
-- Caption: 12/16.
-- Prices and quantities use weight 800–900 and tabular numerals, never decorative type. The hero commerce price uses the shared `commerce-price` token.
+| Уровень | Размер / интерлиньяж | Вес |
+| --- | --- | --- |
+| Display | 38 px / 1.08; на ширине до 359 px — 32 px | 800 |
+| Заголовок страницы | 32 px / 1.12; до 359 px — 28 px | 800 |
+| Заголовок раздела | 22 px / 1.3 | 800 |
+| Главная цена | 30 px / 1 | 900 |
+| Основной текст | 14–16 px / 22–24 px | 400–600 |
+| Подписи | 11–12 px / 16–20 px | 500–700 |
+| Короткие маркеры и навигация | 10 px / 15 px | 700–800 |
 
-### Layout
+Цены, количество и коды используют табличные цифры. Названия и адреса в корзине, заказе и документах переносятся полностью. В каталоге допустимо сокращение повторяющегося контекста.
 
-- 4 px spacing rhythm.
-- Screen gutter: 20 px; compact mobile gutter: 16 px.
-- Canonical screen, header, modal and sticky-footer primitives switch from 16 px below the `sm` breakpoint to 20 px inside the desktop phone shell. Feature screens must not recreate these gutters.
-- Controls: 12 px radius; cards: 18 px; sheets: 28 px.
-- Primary actions: 52 px high. Standalone interactive targets are at least 44 × 44 px; inline legal text links follow the WCAG inline-target exception and keep a 24 px minimum line target.
-- Phone shell is fluid up to 460 px. Desktop presentation keeps the 780 px preview shell.
-- Use one border and, only where needed, one quiet shadow. Avoid cards nested inside cards.
+### Геометрия и адаптивность
 
-### Motion
+- Ритм отступов — 4 px. Поля экрана — 16 px на телефоне, 24 px в десктопной рамке.
+- Скругления: управление 16 px, карточка 24 px, окно 32 px, рамка 40 px.
+- Основная кнопка — минимум 56 px, вторичные действия — 44–48 px. Круглая кнопка — 44 × 44 px. Ссылки внутри юридического текста сохраняют строковый формат и минимальную высоту 24 px.
+- Приложение занимает доступную высоту Telegram/браузера и имеет максимальную ширину 460 px. На десктопе высота рамки — до 860 px с полями 24 px сверху и снизу.
+- `PhoneShell` и `--algan-app-height` задают общую геометрию. Окна рассчитывают высоту относительно рамки; собственная прокрутка отделена от навигации и основной кнопки.
+- Учитываются Telegram content safe-area и системные safe-area отступы. Горизонтальная прокрутка используется только для категорий.
 
-- Fast 140 ms for control feedback.
-- Medium 220 ms for dialogs and selected states.
-- Slow 360 ms for photography and larger transitions.
-- Use the shared standard easing and respect `prefers-reduced-motion`.
+### Иконки и движение
+
+`components/icons.tsx` — собственная SVG-семья на сетке 24 px: округлённые линии 1.8 px и лёгкая цветная подложка. Используйте её для продуктовых действий, статусов и навигации. Декоративные SVG скрыты от скринридера; имя действия задаётся кнопке.
+
+Длительности: 140 ms для нажатий, 220 ms для окон, 360 ms для крупных переходов. Загрузка использует тонкую движущуюся полосу и спокойное движение знака. `prefers-reduced-motion` отключает повторяющееся движение и сводит переходы к минимуму.
 
 ## Components
 
-Canonical primitives live in `components/ui-kit.tsx`. Product screens compose them; domain cards may define layout but may not redefine controls, modal layers, typography or status treatments.
+Канонический UI-kit расположен в `components/ui-kit.tsx`.
 
-- **Actions:** `PrimaryButton`, `SecondaryButton`, `DangerButton`, `TertiaryButton`, `TextLinkButton`, `IconButton`, `PillButton`. `PrimaryButton` owns brand, highlight-on-brand and warning variants; feature code must not recolour it with utility conflicts or inline styles. Floating and selected favorite icon buttons use the corresponding `IconButton` tones.
-- **Structure:** `PageSection`, `BrandHeader`, `TopAppBar`, `ScreenBody`, title primitives, `SurfaceCard`, `InsetSurface`. `SectionTitle` uses `h2` for page sections and its `h3` context for sections nested under a sheet title; semantics must not be recreated with visual-only text.
-- **Commerce:** `StatusBadge`, `QuantityControl`, `QuantityStepper`, `StickyActionFooter`, `CardActionButton`.
-- **Rows and information:** `ListRow`, `LinkRow`, `DetailRow`, `NoticeCard`, `AccordionItem`, `IconBadge`, `MediaBadge`, `AvatarFrame`. Icon and media badges own semantic tones and sizes; list rows and notices expose default and compact densities; media badges expose the photo-floating tone instead of feature-owned border, height or radius overrides.
-- **Navigation and state:** `BottomNavigation`, `SegmentedControl`, `EmptyState`, `FullScreenFeedback`. Full-screen feedback uses brand for success, coral for recoverable payment failure and danger only for destructive or blocking failure.
-- **Layers:** `DialogLayer`, `ModalBody`, `SheetHeader`, `MediaSheetHeader`, `ConfirmationDialog`, `ScrollArea`. Bottom sheets use content, medium or tall shell-relative heights. Never calculate their height from browser `dvh` inside the desktop phone shell. Internal sheet navigation focuses the changed title. Backdrops are pointer-dismissable but stay outside sequential keyboard and screen-reader navigation. Confirmations may add one semantic icon and use warning for reversible replacement, danger for deletion.
+| Группа | Компоненты и назначение |
+| --- | --- |
+| Действия | `PrimaryButton`, `SecondaryButton`, `DangerButton`, `TertiaryButton`, `IconButton`, `PillButton`, `TextLinkButton` |
+| Ввод и выбор | `TextField`, `SearchField` с очисткой, `FilterChip`, `SegmentedControl` |
+| Структура | `PageSection`, `BrandHeader`, `ScreenBody`, заголовки, `SurfaceCard`, `InsetSurface` |
+| Торговля | `StatusBadge`, `QuantityControl`, `QuantityStepper`, `StickyActionFooter`, `CardActionButton` |
+| Информация | `ListRow`, `LinkRow`, `DetailRow`, `NoticeCard`, `AccordionItem`, `MediaBadge`, `AvatarFrame` |
+| Навигация | `BottomNavigation`, `BottomNavigationItem`: иконка, полная подпись, выбранная плитка, счётчик заказов |
+| Состояния | `EmptyState`, `FullScreenFeedback`: объяснение и следующий шаг |
+| Слои | `DialogLayer`, `ModalBody`, `SheetHeader`, `MediaSheetHeader`, `ScrollArea`, `ConfirmationDialog` |
 
-Primary actions use emerald. Lime is for selected or positive supporting states and must not become a full-page background. Coral highlights discounts and urgency; destructive flows use danger tokens.
+Кнопки предусматривают обычное, hover, pressed, focus, disabled и busy состояния. Во время оплаты кнопка показывает спиннер и `aria-busy`; корзина, юридические ссылки и закрытие временно недоступны. После ответа действия возвращаются.
 
-The product-specific `SURPRISE` badge uses a lime surface, deep-pine text and the open-box-with-spark icon in both compact card and standard detail variants. It must never reuse the coral discount treatment.
+`DialogLayer` удерживает клавиатурный фокус внутри верхнего окна, закрывает его по Escape и делает фон inert. После закрытия возвращает фокус без скачка прокрутки. Вложенные окна используют счётчик блокировок фона. Фотокарточка сохраняет кнопку закрытия при прокрутке; информационные окна сохраняют заголовок.
 
-## Screen patterns
+## UX patterns
 
-- Home and favorites use the same photo-first box card. The box image leads; venue logo/name, address, pickup window, stock, prices, discount and box-level favorite action remain visible without opening details.
-- Box cards open the box sheet directly. There is no intermediate venue-details screen; venue identity, address and routing live inside the box experience.
-- Sold-out boxes remain in catalogue order but use a muted grayscale media state, an explicit sold-out label and no interactive card or favorite action.
-- Box details use a tall sheet with venue context, routing, a strong price hierarchy, two compact pickup/stock cells, exact or surprise composition, allergens and a persistent quantity/action footer that includes the selected total.
-- Bottom navigation always follows the product flow: Home, Orders, Favorites, Profile. Profile is a dedicated tab and is not duplicated in the home header.
-- Switching bottom-navigation tabs always starts the destination at the top; modal and nested scroll positions remain local to their own layer.
-- Active orders prioritise the pickup window, status and collection actions. History cards show venue, order number, status, pickup date, purchased items and total directly, without a redundant details action.
-- Only active orders expose QR, pickup code and route; their pickup pass intentionally stays focused on the QR and collection code. Cancelled history never exposes collection actions.
-- Profile is available only from the fourth bottom-navigation tab; the home header contains no profile shortcut.
-- Settings use an explicit segmented language choice; support starts with the direct contact action; long legal documents keep the sheet header fixed while their body scrolls.
-- Empty, loading, success and failure states use the same friendly geometric language as the box mark.
-
-## Accessibility and interaction
-
-- Maintain WCAG AA contrast for body and supporting text on every canonical surface.
-- Keep native button, link, heading, list and input semantics.
-- Icon-only actions require an accessible label; selection uses `aria-current` or `aria-pressed`.
-- Modal focus stays inside the top layer, Escape closes it, the background becomes inert, and previous focus is restored without scrolling.
-- Preserve Telegram and operating-system safe-area insets in headers, navigation, sheets and sticky actions.
-- Never truncate legal or transactional information. Catalogue cards may truncate only repeated names and addresses.
-- RU and KK are equal first-class layouts. The document language and browser title follow the selected locale; KK remains the default.
+1. **Вход:** бренд и смысл продукта, три коротких шага, один номер телефона. Проверка формата после выхода из поля; продолжение доступно только для корректного номера. Документы открываются поверх формы.
+2. **Главная:** приветствие и фирменная иллюстрация, поиск по боксу/заведению/адресу, категории, доступные предложения. Сортировка и условия применяются только после подтверждения фильтров.
+3. **Карточка:** фотография, заведение, скидка, название, рейтинг, адрес, окно выдачи, остаток и цена. Избранное — самостоятельная кнопка.
+4. **Детали:** цена и экономия до подробного состава, заметные время и остаток, маршрут, состав/сюрприз, аллергены. Количество и итог выбранных боксов закреплены снизу.
+5. **Корзина:** единый адрес получения, полные названия, время каждого бокса, количество, экономия, условия отмены. Общая сумма и оформление закреплены. Корзина доступна из всех четырёх разделов.
+6. **Оплата:** одно действие; повторная отправка заблокирована. Успех ведёт к заказу. Ошибка объясняет, что корзина сохранена, и возвращает к ней.
+7. **Заказы:** активные — в форме билета с крупным временем получения, адресом, QR/кодом и маршрутом. История показывает статус и полный состав без дополнительного окна. Отмена имеет подтверждение и учитывает действующий срок.
+8. **Избранное:** те же карточки; пустой список предлагает найти бокс.
+9. **Профиль:** имя и контакт, количество купленных боксов и экономия, настройки языка/валюты, помощь, документы. Отменённые заказы не включаются в показатели.
+10. **Помощь и документы:** прямой контакт, часы работы, FAQ; группы документов и полноценный читаемый документ с отдельной прокруткой.
 
 ## Governance
 
-1. Add or change semantic foundations in `app/globals.css` before using them.
-2. Extend an existing UI-kit primitive before copying its class recipe into a screen.
-3. Add a focused UI-kit test for every new shared variant.
-4. Keep product markup free of raw hex colours and feature-owned modal/backdrop recipes.
-5. Verify 320, 390 and 460 px widths, both locales, reduced motion and keyboard focus before release.
-6. Run `npm run typecheck`, `npm test` and `npm run build` for every design-system change.
+1. Меняйте семантические основы в `app/globals.css`, затем используйте их через компоненты.
+2. Расширяйте существующий примитив до создания нового варианта в отдельном экране.
+3. Бизнес-ограничения, юридические тексты и платёжная интеграция не определяются визуальной темой.
+4. Проверяйте RU и KK, 320/390/460 px, короткую высоту, прокрутку, клавиатуру, состояния ошибок и загрузки.
+5. Поддерживайте `/design/` как рабочую галерею компонентов и экранов. Демонстрация не должна изменять сохранённый профиль.
+6. Выполняйте `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`. Тесты новых сценариев проверяют поведение, а не дублируют классы оформления.
+
+Текущая среда использует демонстрационный каталог и оплату без списания денег. Редизайн не меняет этот режим. Карта реализации и проверки — в `UX_AUDIT.md`.

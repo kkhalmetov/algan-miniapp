@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fetchKztToRubRate, formatCurrency, KZT_RUB_RATE_URL } from '../lib/currency';
 
 describe('currency display', () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
   it('converts tenge prices to rounded rubles', () => {
     expect(formatCurrency(2490, 'ru', 'RUB', 0.185297)).toBe('461 ₽');
@@ -15,6 +15,13 @@ describe('currency display', () => {
 
     await expect(fetchKztToRubRate()).resolves.toBe(0.185297);
     expect(fetchMock).toHaveBeenCalledWith(KZT_RUB_RATE_URL, { signal: undefined });
+  });
+
+  it('normalizes prices when a WebView uses English grouping for Kazakh', () => {
+    vi.spyOn(Intl.NumberFormat.prototype, 'formatToParts').mockReturnValue([
+      { type: 'integer', value: '2' }, { type: 'group', value: ',' }, { type: 'integer', value: '490' },
+    ]);
+    expect(formatCurrency(2490, 'kk', 'KZT')).toBe('2\u00a0490 ₸');
   });
 
   it('rejects an invalid exchange-rate response', async () => {

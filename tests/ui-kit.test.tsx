@@ -21,10 +21,10 @@ describe('Algan UI kit', () => {
     const button = screen.getByRole('button', { name: 'Продолжить' });
 
     expect(button).toBeDisabled();
-    expect(button).toHaveClass('min-h-13', 'bg-brand-hover', 'text-center', 'leading-5');
+    expect(button).toHaveClass('min-h-14', 'bg-brand', 'text-center', 'leading-5');
     expect(screen.getByRole('button', { name: 'Поддержка' })).toHaveClass('bg-highlight', 'text-brand-deep', 'shadow-none');
-    expect(screen.getByRole('button', { name: 'Маршрут' })).toHaveClass('min-h-13', 'bg-surface');
-    expect(screen.getByRole('button', { name: 'Выйти' })).toHaveClass('min-h-13', 'bg-danger-soft');
+    expect(screen.getByRole('button', { name: 'Маршрут' })).toHaveClass('min-h-14', 'bg-surface');
+    expect(screen.getByRole('button', { name: 'Выйти' })).toHaveClass('min-h-14', 'bg-danger-soft');
     expect(screen.getByRole('button', { name: 'Удалить' })).toHaveClass('min-h-11', 'text-danger');
   });
 
@@ -103,7 +103,7 @@ describe('Algan UI kit', () => {
       <PageSection title="Заказы"><StatusBadge tone="danger">Боксы закончились</StatusBadge></PageSection>
     </>);
 
-    expect(screen.getByRole('banner')).toHaveClass('bg-brand');
+    expect(screen.getByRole('banner')).toHaveClass('bg-canvas');
     expect(screen.getByRole('heading', { name: 'Заказы' })).toHaveClass('text-page-title');
     expect(screen.getByText('Боксы закончились')).toHaveClass('bg-danger-soft', 'text-danger');
   });
@@ -236,7 +236,7 @@ describe('Algan UI kit', () => {
       </FullScreenFeedback>,
     );
     expect(screen.getByText('!')).toHaveClass('bg-accent', 'text-brand-deep');
-    expect(screen.getByText('Оплата не прошла').closest('div')).toHaveClass('bg-accent-soft');
+    expect(screen.getByText('Оплата не прошла').closest('.algan-full-screen')).toHaveClass('bg-accent-soft');
     unmount();
 
     render(
@@ -266,6 +266,18 @@ describe('Algan UI kit', () => {
     expect(dialog.firstElementChild).toHaveAttribute('tabindex', '-1');
     expect(dialog.querySelector('section')).toHaveClass('rounded-sheet', 'max-w-sm');
     expect(dialog.querySelector('section')).toHaveFocus();
+  });
+
+  it('blocks the navigation outside a deeply nested dialog until the dialog closes', () => {
+    const onClose = vi.fn();
+    const tree = (open: boolean) => <div className="algan-shell-panel"><main><section><button>Заказ</button>{open && <DialogLayer onClose={onClose} closeLabel="Закрыть" ariaLabel="QR-код"><button>Готово</button></DialogLayer>}</section></main><nav><button>Главная</button></nav></div>;
+    const { rerender, container } = render(tree(true));
+    expect(screen.queryByRole('button', { name: 'Главная' })).not.toBeInTheDocument();
+    expect(container.querySelector('nav')).toHaveAttribute('inert');
+    expect(screen.getByRole('button', { name: 'Готово' })).toBeVisible();
+    rerender(tree(false));
+    expect(screen.getByRole('button', { name: 'Главная' })).toBeVisible();
+    expect(container.querySelector('nav')).not.toHaveAttribute('inert');
   });
 
   it('shares compact add and quantity controls with full touch targets', () => {

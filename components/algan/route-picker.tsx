@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from '@/components/icons';
 import type { Translator } from '@/components/algan/types';
 import { DialogLayer, ListRow, ModalBody, ScrollArea, SheetHeader } from '@/components/ui-kit';
 import { getRouteOptions, type RouteProvider } from '@/lib/maps';
@@ -22,7 +22,7 @@ export function RoutePicker({ lat, lng, t, onClose }: {
 }) {
   const options = getRouteOptions(lat, lng, true);
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('chooseMap')} className="z-[1200]" sheetHeight="medium">
+    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('chooseMap')} className="z-[1200]">
       <ModalBody className="flex h-full min-h-0 flex-col pt-4">
         <SheetHeader title={t('chooseMap')} onClose={onClose} closeLabel={t('close')} />
         <ScrollArea className="mt-4 flex-1 pb-1">

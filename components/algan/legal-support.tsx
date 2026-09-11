@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowUpRight, Building2, CircleHelp, FileCheck2, FileText, Headphones, Info, Mail, Phone, ReceiptText, ShieldCheck, ShoppingBag } from 'lucide-react';
+import { ArrowUpRight, Building2, CircleHelp, FileCheck2, FileText, Headphones, Info, Mail, Phone, ReceiptText, ShieldCheck, ShoppingBag } from '@/components/icons';
 import { lazy, type ReactNode, Suspense, useState } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import { ProfileRow } from '@/components/algan/profile-row';
@@ -43,6 +43,7 @@ export function DocumentsModal({ t, locale, subject, onClose }: { t: Translator;
             <LegalDocumentView type={selectedView} t={t} locale={locale} subject={subject} />
           ) : (
             <>
+              <p className="mt-3 text-sm leading-6 text-ink-muted">{t('documentsIntro')}</p>
               <SectionTitle as="h3" className="mt-4">{t('agreements')}</SectionTitle>
               <div className="mt-3 space-y-2">
                 {documents.map((document) => (
@@ -92,15 +93,14 @@ export function HelpModal({ t, onClose }: { t: Translator; onClose: () => void }
         <ScrollArea className="flex-1 pb-1">
           {view === 'menu' && (
             <>
-              <InsetSurface tone="brandSolid" radius="card" className="relative mt-3 overflow-hidden p-5 text-white">
-                <div aria-hidden="true" className="absolute -right-8 -top-12 h-32 w-32 rounded-full bg-brand-hover" />
-                <IconBadge className="relative" tone="highlight" size="lg"><Headphones size={23} /></IconBadge>
-                <p className="relative mt-5 text-xl font-extrabold tracking-[-0.025em] text-white">{t('support')}</p>
-                <p className="relative mt-2 text-sm leading-6 text-white/75">{t('supportIntro')}</p>
-                <PrimaryButton aria-label={`${t('contactSupport')}. ${t('workingHours')}`} onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} className="relative mt-5" tone="highlight">
+              <InsetSurface tone="brand" radius="card" className="mt-3 p-5">
+                <IconBadge className="rotate-[-6deg]" tone="highlight" size="hero"><Headphones size={30} /></IconBadge>
+                <p className="mt-5 text-2xl font-extrabold tracking-[-0.035em] text-ink">{t('helpHeadline')}</p>
+                <p className="mt-2 text-sm leading-6 text-ink-secondary">{t('supportIntro')}</p>
+                <PrimaryButton aria-label={`${t('contactSupport')}. ${t('workingHours')}`} onClick={() => openTelegramLink(SUPPORT_TELEGRAM_URL)} className="mt-5">
                   <TelegramIcon /><span>{t('contactSupport')}</span>
                 </PrimaryButton>
-                <p className="relative mt-3 text-center text-xs font-bold text-white/70">{t('workingHours')}</p>
+                <p className="mt-3 text-center text-xs font-semibold text-ink-muted">{t('workingHours')}</p>
               </InsetSurface>
               <div className="mt-4"><ProfileRow icon={<CircleHelp size={18} />} label={t('faq')} onClick={() => setView('faq')} /></div>
             </>

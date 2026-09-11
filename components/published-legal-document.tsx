@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText } from 'lucide-react';
+import { FileText } from '@/components/icons';
 import { InsetSurface } from './ui-kit';
 import {
   LEGAL_DOCUMENT_VERSION,
@@ -29,7 +29,7 @@ export default function PublishedLegalDocumentView({ type, t, locale, subject }:
 
   return (
     <article className="mt-4 text-sm leading-7 text-ink-secondary" data-legal-document={type}>
-      <InsetSurface tone="brand" radius="card" className="p-4">
+      <InsetSurface tone="soft" radius="card" className="p-4">
         <div className="mb-3 flex items-center gap-2 border-b border-brand/10 pb-3 text-brand"><FileText size={18} /><span className="text-xs font-extrabold uppercase tracking-[.06em]">{t(LEGAL_TITLE_KEYS[type])}</span></div>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
           <dt className="font-black text-ink-muted">{meta.version}</dt><dd className="text-right font-bold text-ink">{LEGAL_DOCUMENT_VERSION}</dd>
@@ -39,7 +39,7 @@ export default function PublishedLegalDocumentView({ type, t, locale, subject }:
       </InsetSurface>
 
       {type === 'personalDataConsent' && (
-        <InsetSurface tone="brand" className="mt-3 p-4">
+        <InsetSurface tone="panel" className="mt-3 p-4">
           <h3 className="font-black text-brand">{meta.subject}</h3>
           <dl className="mt-3 space-y-2 text-xs">
             <div className="flex items-start justify-between gap-4"><dt className="font-bold text-ink-muted">{meta.fullName}</dt><dd className="text-right font-black text-ink">{subject.fullName}</dd></div>

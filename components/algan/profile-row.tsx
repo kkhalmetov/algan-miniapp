@@ -1,8 +1,8 @@
-import { ChevronRight } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { ChevronRight } from '@/components/icons';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { ListRow } from '@/components/ui-kit';
 
-export function ProfileRow({ icon, label, value, valueWrap = false, onClick, className, density = 'default' }: {
+export function ProfileRow({ icon, label, value, valueWrap = false, onClick, className, density = 'default', disabled, ...props }: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> & {
   icon: ReactNode;
   label: string;
   value?: string;
@@ -18,10 +18,11 @@ export function ProfileRow({ icon, label, value, valueWrap = false, onClick, cla
       subtitle={value}
       subtitleWrap={valueWrap}
       onClick={onClick}
-      disabled={!onClick}
+      disabled={disabled || !onClick}
       trailing={onClick ? <ChevronRight size={17} className="text-ink-subtle" /> : undefined}
       className={className}
       density={density}
+      {...props}
     />
   );
 }

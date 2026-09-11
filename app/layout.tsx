@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   applicationName: 'Algan',
   manifest: '/manifest.webmanifest',
   icons: {
-    icon: '/algan-mark.svg?v=3',
+    icon: '/algan-mark.svg?v=4',
   },
   openGraph: {
     title: 'Algan — тиімді ұсыныстар жаныңызда',

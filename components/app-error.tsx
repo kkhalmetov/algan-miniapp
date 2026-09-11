@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, Mail } from 'lucide-react';
+import { AlertTriangle, Mail } from '@/components/icons';
 import { AlganLogo } from '@/components/algan-logo';
 import { IconBadge, LinkRow, PageTitle, PrimaryButton, SurfaceCard } from '@/components/ui-kit';
 

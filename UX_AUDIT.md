@@ -1,84 +1,53 @@
-# Algan UI/UX Audit
+# Algan · UI/UX redesign audit
 
-## Scope
+Дата: 11 сентября 2026. Объём: полный редизайн интерфейса и пользовательских сценариев существующего Telegram Mini App. Визуальное направление выбрано самостоятельно по поручению пользователя.
 
-The audit covers onboarding, startup, home, favorites, active and past orders, profile, settings, help, legal information, box details, cart, routing, successful payment and failed payment in Russian and Kazakh. Responsive verification covers 320, 390 and 460 px mobile widths plus the 460 × 780 px desktop preview shell.
+## Карта реализации
 
-## Resolved discrepancies
-
-| Area | Discrepancy | Unified result |
+| Требование | Реализация | Доказательство / просмотр |
 | --- | --- | --- |
-| Screen layout | Product screens used unrelated horizontal gutters | Canonical screen, header, modal and sticky-footer primitives use 16 px below `sm` and 20 px inside the desktop phone shell |
-| Typography | Content headings were recreated with raw class lists | `PageTitle`, `ContentTitle` and `SectionTitle` own the hierarchy |
-| Surfaces | Inset rows, notices and information cards repeated local border/background recipes | `InsetSurface`, `NoticeCard` and `DetailRow` own those recipes |
-| Media | Store logos used several unrelated circle/border combinations | `MediaBadge` defines list, card and cover-logo presentation |
-| Navigation affordance | Box cards recreated a one-off circular chevron | `DisclosureIndicator` is the shared affordance |
-| Detail headers | Store details used a feature-local branded toolbar | `TopAppBar` is the canonical compact header |
-| Confirmations | Cart replacement was custom and demo reset used `window.confirm` | Both use `ConfirmationDialog`; ordinary and destructive tones are explicit |
-| Empty states | Empty cart rendered an empty description paragraph | Supporting copy is optional and absent content creates no layout gap |
-| Modal behavior | Focus could leave a dialog; locking `body` or focusing a moving sheet could shift the mobile viewport | `DialogLayer` traps focus with `preventScroll`, preserves the viewport position and closes the top layer with Escape |
-| Motion | Overlays appeared without a shared transition model | Sheet, centered and full-screen transitions use the same motion tokens and respect reduced-motion settings |
-| Loading | Busy actions relied only on changed copy/disabled state | Payment and currency actions expose `aria-busy`; splash copy is localized |
-| Localization | The document language stayed Russian while Kazakh is the default | Initial HTML language is `kk` and follows the selected locale at runtime |
-| Content consistency | Link metadata described the product differently from onboarding | Metadata now uses the same neutral, offer-focused Kazakh positioning |
-| Scroll chrome | Mobile list screens could show browser scrollbars unlike Telegram | The canonical scrolling surface hides visual scrollbar chrome while preserving scrolling |
-| Typography cascade | A global `font` shorthand overrode UI-kit size and weight utilities on buttons and inputs | Global form controls inherit only the font family; component typography tokens now apply as authored |
-| Bottom navigation | Labels depended on the browser's inherited 16 px button font and could collide in Kazakh | Navigation owns a consistent 10 px label size that keeps complete RU/KK names visible |
-| Sheet headers | Settings, documents, cart and detail sheets used different handle, title and close-button spacing | `SheetHeader` now owns the handle and both titled and close-only sheet variants |
-| Box detail spacing | The close control visually crowded the product cover below a separate white header | The dedicated header is removed; the 44 × 44 px close control and contrasting handle sit intentionally over the media hero |
-| Box detail hierarchy | The separate white header, large media and disconnected price/time blocks pushed useful product information below the fold | A 90% marketplace sheet now starts with a media hero, combines price and pickup time, keeps content visible and preserves a fixed quantity/action footer |
-| Secondary text contrast | Muted and subtle text tokens measured only 4.00:1 and 3.06:1 on the app surface | The secondary text scale now preserves hierarchy while maintaining at least 4.5:1 across canonical light surfaces |
-| Text on brand surfaces | Profile and pickup-code supporting text at 65% white measured about 4.36:1 | Supporting text on brand surfaces now uses at least 70% white for AA contrast |
-| Heading hierarchy | Profile started at `h2` and store cards skipped from the page heading to `h3` | Profile exposes one `h1`; store cards use the shared `CardTitle` at `h2` |
-| Catalog localization | Kazakh UI still displayed Russian addresses, box names, contents and allergens | A typed catalog-localization layer now serves full KK copy with source-language fallback for backend compatibility |
-| Demo identity | A profile created in Russian kept showing «Пользователь» after switching to Kazakh | Browser fallback identity now follows the active language on home, profile and avatar surfaces |
-| Order dates | Some mobile WebViews rendered Kazakh dates as `2026 M08 28` | A deterministic Shymkent date formatter supplies complete RU/KK month names |
-| Landmarks | The phone shell nested one `main` landmark inside another | The shell is structural; onboarding and application content each expose exactly one main landmark |
-| Avatar styling | User avatars repeated a feature-local 48/64 px circle recipe | `AvatarFrame` owns both sizes, fallback color and typography |
-| Modal gutters | The route picker used a narrower gutter than other sheets | All sheet bodies use `ModalBody` and the canonical responsive 16/20 px gutter |
-| Notice semantics | Standalone informational cards skipped directly from `h1` to `h3` | `NoticeCard` keeps one visual recipe while choosing `h2` for standalone blocks and `h3` for nested notices |
-| Compact-height sheets | Cart legal copy could be clipped on 568 px-high screens | Cart content uses the shared scroll area; its header remains fixed and every line stays reachable |
-| Modal accessibility | Background screens remained discoverable to assistive technology behind `aria-modal` | `DialogLayer` now makes obscured siblings inert and restores their previous state for nested dialogs |
-| Scroll behavior | Detail, help, legal and cart flows repeated different overflow recipes and exposed inconsistent scrollbar chrome | `ScrollArea` owns vertical scrolling, overscroll containment and hidden scrollbar chrome |
-| Inline legal actions | Text links had a visual hit area below the 24 px compact-target minimum | `TextLinkButton` now guarantees a 24 px touch target without changing inline hierarchy |
-| Interactive feedback | Several secondary UI-kit controls had pressed feedback but no pointer-hover state | Shared pills, rows, icon controls, accordions, segments and card actions now expose consistent hover feedback |
-| Decorative media | Store and map-provider logos repeated adjacent visible labels to screen readers | Redundant logos now use empty alternative text while visible names remain the accessible label |
-| Supporting copy | Help working hours were truncated on a 320 px-wide screen | Rows can opt into wrapped supporting copy; complete working hours remain visible at compact widths |
-| Transaction transition | Closing store/cart layers while opening the successful-order screen could leave the app root inert | Dialog background locks are reference-counted, so replacing any number of nested sheets always restores interaction |
-| Tab navigation | The shared scrolling viewport retained its old offset when a user switched tabs, so a new screen could open below its title and controls | Every tab change resets the canonical application viewport to the top while preserving scrolling inside dialogs |
-| Compact navigation | Long Kazakh labels touched or clipped at 320 px despite fitting at larger widths | Bottom-navigation typography now uses the documented compact 10 px label token; all four complete labels have measurable separation at 320 px |
-| Modal dismissal | The full-screen backdrop was exposed as an extra keyboard and screen-reader close button outside the dialog panel | The backdrop remains pointer-dismissable but is removed from sequential focus and the accessibility tree; the visible 44 px close action remains canonical |
-| In-modal navigation | Opening FAQ or a legal sub-view removed the triggering row and left keyboard focus on the document root | Shared sheet headers can focus a changed title; FAQ and legal views now announce and focus their new `h2` title without scrolling |
-| Nested headings | Settings, legal groups and company details reused `h2` beside the modal title | `SectionTitle` owns contextual `h2`/`h3` semantics; sections nested below a sheet title now use `h3` without changing their visual token |
-| Box purchase summary | The persistent box action showed quantity and an action but omitted the selected total described by the commerce pattern | The action now presents the localized selected total and updates it with the quantity while retaining a concise accessible action name |
-| Completed-order history | A redundant details layer repeated information already suitable for the card | History cards now show status, venue, order number, pickup date, all items and total directly, with no details action or active-order pickup controls |
-| Transactional copy | Cart and order item names were truncated even though transactional information must remain complete | Cart and order cards wrap venue and item names while catalogue cards retain intentional truncation |
-| Order schedule meaning | Active cards could claim “today” for persisted orders from another date, and displayed the creation date instead of the pickup snapshot | Cards use the neutral “Pickup time” label and derive the displayed date from `pickupStartsAt`, falling back only for migrated orders without a snapshot |
-| Payment-result semantics | Recoverable payment failure used the same danger family reserved for destructive or blocking states | Success keeps the calm brand surface; recoverable failure uses the coral accent surface while both states retain identical centered geometry and action sizing |
-| Repeated status icons | Support, legal acceptance and fatal fallback recreated highlight/danger icon geometry locally | `IconBadge` now owns semantic highlight/danger tones and compact, standard, large and hero sizes |
-| Empty cart transition | Removing the last item left cancellation terms, a zero total and disabled checkout controls below the empty state | The cart now collapses to the empty state alone; transactional notices, totals and consent appear only when there is an order to place |
-| Allergen semantics | Box allergens reused the destructive danger treatment despite having dedicated allergen tokens | The shared `NoticeCard` allergen tone now owns the border, surface, icon, heading and body treatment |
-| Runtime locale | Changing the language updated visible copy and `html[lang]` but left the browser title in the default locale | The browser title follows RU/KK alongside the document language |
-| Nested section type | Several sheet sections overrode the shared 20/26 section-title token with feature-level `text-base` utilities | All nested `h3` sections preserve the canonical `SectionTitle` typography |
-| Long identity copy | A long Telegram display name could force the profile header wider than the mobile shell | The identity column can shrink safely, names wrap and the secondary username truncates without moving controls |
-| Media badge variants | The catalogue photo logo overrode the shared badge border locally | `MediaBadge` now owns a semantic photo-floating tone while feature code controls only placement |
-| Commerce numerals | Price and quantity emphasis was partly recreated with arbitrary typography | The hero price uses the shared commerce token and transactional numerals use tabular figures consistently |
-| Route row sizing | Map-provider rows overrode the shared list-row minimum height | Natural content plus the canonical default row density now determines every provider row height |
-| Compact information notice | The product-photo disclaimer recreated a local rounded notice recipe | The compact `NoticeCard` density now owns its surface, icon, spacing and type |
-| Quantity badges | Known box contents used a feature-local quantity pill | The shared brand `StatusBadge` now presents item quantities consistently |
-| Telegram viewport hydration | Telegram SDK writes viewport custom properties to `<html>` before React hydrates, producing a false-positive attribute mismatch | The root explicitly tolerates SDK-owned pre-hydration attributes while application markup remains strictly hydrated |
+| Логотип | Новый пакет с улыбкой и искрой, словесный знак в кривых, тёмная и светлая композиции, favicon | `public/algan-*.svg`, `components/algan-logo.tsx`; `/design/`, загрузка и главная |
+| Экран загрузки | Оранжевый фон, крупный знак, локализованный текст и тонкая анимированная полоса | `Splash` в `components/algan/onboarding.tsx`; сцена 01 |
+| Навигация | Четыре раздела, новые иконки, выделение всей выбранной плитки, счётчик активных заказов, safe-area | `components/algan/navigation.tsx`, `BottomNavigation` в UI-kit |
+| Вход | Новый первый экран, три шага, одна форма телефона, валидация, переключение языка, доступ к документам | `Onboarding`; сцена 02, `tests/onboarding.test.tsx` |
+| Главная | Фирменный герой, поиск по названию/заведению/адресу, категории, сортировка и фильтры | `components/algan/marketplace.tsx`, `lib/catalog-query.ts`; сцена 03 |
+| Карточки предложений | Фотография, заведение, скидка, название, рейтинг, адрес, выдача, остаток, цены, избранное | `MarketplaceBoxCard`; главная и избранное |
+| Полная карточка | Новый порядок информации, экономия, маршрут, состав, предупреждение о сюрпризе, аллергены | `BoxDetails` в `components/algan/checkout.tsx`; сцена 04 |
+| Корзина | Единое место получения, подробные строки заказа, редактирование количества, экономия, условия отмены и фиксированный итог | `CartSheet` и `CartDock`; сцена 05 |
+| Оплата | Busy-состояние со спиннером, защита от повторной отправки, блокировка редактирования и закрытия на время ответа | `CartSheet`, `app/app-client.tsx`; сцена 06 |
+| Успешная оплата | Позитивный статус, памятка получения, понятный переход к заказу | `Success`; сцена 07 |
+| Ошибка оплаты | Отдельное оформление, объяснение сохранения корзины, возврат к оформлению | `PaymentFailure`; сцена 08 |
+| Активные заказы | Билет с крупным временем выдачи, адресом, стоимостью и действиями | `OrdersTab`; сцена 09 |
+| Получение заказа | Контрастный QR на светлом поле, короткая инструкция, отдельный крупный код | `OrderDetails`, `OrderQr`, `PickupCodePanel`; кнопка получения в сцене 09 |
+| История заказов | Заведение, дата, полный состав, сумма и статус сразу в карточке | Вкладка прошедших заказов в сцене 09 |
+| Избранное | Единый формат карточек, независимое сохранение, пустое состояние с переходом к выбору | `FavoritesTab`; сцены 10–11 |
+| Профиль | Новая иерархия имени и контакта, купленные боксы и экономия, группы предпочтений и сервиса | `ProfileTab`; сцена 12 |
+| Настройки и телефон | Явный выбор RU/KK, контактные данные, компактное окно редактирования, ошибки ввода | `SettingsModal`, `PhoneEditor`; сцены 13–14 |
+| Помощь | Прямое обращение, полные часы работы, FAQ с раскрывающимися ответами | `HelpModal`; сцена 15 |
+| Документы | Группы документов и реквизитов, новая типографика текста, закреплённые заголовки и отдельная прокрутка | `DocumentsModal`, `LegalModal`, `published-legal-document.tsx`; сцена 16 |
+| Остальные состояния | Обновление документов, сбой загрузки, отсутствие результатов, пустая корзина, замена корзины и подтверждение отмены | Сцены 17–18 и действия в соответствующих разделах |
+| Дизайн-система и UI-kit | Семантическая палитра, Golos Text, собственная SVG-семья, размеры, радиусы, состояния и доступность | `DESIGN.md`, `app/globals.css`, `components/ui-kit.tsx`, `components/icons.tsx`, `/design/` |
 
-## Governance
+## Основные изменения UX
 
-- Foundations remain in `app/globals.css` and runtime-only platform colors remain in `lib/design-tokens.ts`.
-- Shared React primitives remain in `components/ui-kit.tsx`; feature screens must compose them rather than duplicate recipes.
-- `tests/design-system.test.ts` guards token ownership and forbidden local UI recipes.
-- `tests/ui-kit.test.tsx` verifies visual variants, semantics, keyboard behavior, focus restoration and confirmation behavior.
-- New UI patterns must first be expressed as a token or UI-kit primitive and then be adopted by product screens.
+- Поиск находит предложения по нескольким словам, включая RU/KK названия и адреса. Фильтры имеют черновик: закрытие не применяет несохранённый выбор; подтверждение применяет весь набор. Сброс возвращает полный каталог.
+- Доступные боксы идут перед закончившимися. Остаток учитывает уже оформленные покупки. Сортировка не изменяет исходный каталог.
+- В деталях цена и условия получения читаются до длинного описания. Выбранная сумма и количество видны в нижней панели. Кнопка закрытия сохраняется при прокрутке.
+- Сохранённый бокс можно удалить из избранного и после того, как он закончился.
+- Корзина доступна из каждого раздела. При замене заведения требуется явное подтверждение; при неуспешной оплате выбранные боксы сохраняются.
+- Заголовок и итог корзины закреплены, а содержимое прокручивается. На коротком экране условия и действия остаются достижимыми.
+- Настройки и редактор телефона используют высоту содержимого. Вход, юридическое обновление и результат оплаты имеют корректную внутреннюю прокрутку.
+- Вложенное окно заказа блокирует и содержимое раздела, и нижнюю навигацию. При закрытии восстанавливаются интерактивность и фокус. Это проверено отдельно от простого окна на верхнем уровне.
+- Галерея использует изолированные данные и рамку, занимающую оставшуюся после переключателя высоту. Она не очищает и не изменяет сохранённый профиль.
 
-## Verification
+## Проверка
 
-- Live browser review covered 320, 390 and 460 px widths, active and past orders, catalogue, box details, cart, payment failure, profile, settings, support, FAQ and legal screens. RU and KK copy was checked, including long navigation and cancellation labels.
-- Layout probes found no unintended horizontal overflow; the only element extending beyond the viewport is the clipped decorative circle in the branded header.
-- Payment success and failure share the same centered feedback primitive and 330 px action constraint; component tests verify their distinct brand/coral tones and absence of order data on success.
-- The complete automated suite, lint, typecheck and production build pass after the audit changes.
+Автоматические проверки охватывают оформление заказа, неуспешную оплату и повтор, остатки, ограничения корзины, отмену заказа, локализацию, телефон, юридические документы, фокус и блокировку фона. Новые поведенческие тесты находятся в `tests/catalog-query.test.tsx`, `tests/checkout-pending.test.tsx` и `tests/ui-kit.test.tsx`.
+
+Проверка в браузере охватывает все основные сцены на 390 px, а также все 18 экранов на 320 × 568 и 460 × 844 в казахской версии. Проверяются ширина страницы, выход элементов за границы и ошибки рендера. Дополнительно просматриваются QR, история заказов, документы с длинной прокруткой, ошибки телефона и вложенные переходы. На десктопе проверяется рамка шириной 460 px.
+
+Артефакты локальной проверки сохраняются в `outputs/redesign/` (каталог результатов исключён из Git). Итог: 174/174 теста проходят; `npm run typecheck`, `npm run lint`, `npm run build` и `git diff --check` завершены успешно. В рабочем приложении дополнительно пройден сценарий: неуспешная демо-оплата → сохранённая корзина → повтор → успешный заказ → раздел заказов. Консоль этого просмотра не содержит ошибок.
+
+## Границы выполненной работы
+
+Реализован интерфейс в действующем приложении, а не отдельный статический макет. Каталог и оплата сохраняют существующий демонстрационный режим: списаний и передачи заказа заведению нет. Юридическое содержание не переписывалось; документы, которые уже имели статус «готовится», сохраняют его. Проверка проведена в браузере и автоматических тестах; проверка в установленном Telegram на физическом устройстве не выполнялась. Публикация на рабочий сервер в эту работу не включена.

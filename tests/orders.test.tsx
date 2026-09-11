@@ -55,13 +55,13 @@ describe('orders tab', () => {
     expect(screen.getByText('Surprise Tatti-box').parentElement).toHaveTextContent(/2.?490 ₸ × 2/);
     expect(screen.getByText('Tatti-box').parentElement).toHaveTextContent(/2.?390 ₸ × 1/);
     expect(screen.getByText('Номер заказа: 12345678')).toBeInTheDocument();
-    const pickupTime = screen.getByText(/Время выдачи ·/);
+    const pickupTime = screen.getByText('Время выдачи');
     expect(pickupTime).toBeInTheDocument();
     const activeCard = screen.getByText('Номер заказа: 12345678').closest('article');
     expect(activeCard).not.toBeNull();
-    expect(within(activeCard!).getByTestId('active-order-pickup')).toHaveTextContent('Время выдачи · 18:30–20:30');
-    expect(within(activeCard!).getByTestId('order-schedule')).toHaveTextContent('Время выдачи · 18:30–20:3026 августа 2026 г.');
-    expect(within(activeCard!).getByText('26 августа 2026 г.').parentElement?.querySelector('.lucide-calendar-days')).toBeInTheDocument();
+    expect(within(activeCard!).getByTestId('active-order-pickup')).toHaveTextContent('18:30–20:30');
+    expect(within(activeCard!).getByTestId('order-schedule')).toHaveTextContent('26 августа 2026 г.');
+    expect(within(activeCard!).getByText('26 августа 2026 г.').parentElement?.querySelector('[data-icon="calendar"]')).toBeInTheDocument();
     expect(within(activeCard!).getByText('Итого')).toBeInTheDocument();
     expect(screen.getByText('26 августа 2026 г.')).toBeInTheDocument();
     expect(screen.queryByText(/Забрать:/)).not.toBeInTheDocument();
@@ -69,7 +69,7 @@ describe('orders tab', () => {
     fireEvent.click(screen.getByText('Номер заказа: 12345678'));
     expect(screen.queryByTitle('QR-код')).not.toBeInTheDocument();
     const receiveOrderButton = screen.getByRole('button', { name: 'Получить заказ' });
-    expect(receiveOrderButton.querySelector('svg')).not.toBeInTheDocument();
+    expect(receiveOrderButton).toHaveAccessibleName('Получить заказ');
     expect(receiveOrderButton).toBeInTheDocument();
     expect(screen.queryByText('Кофе & булочки')).not.toBeInTheDocument();
     expect(screen.queryByText('Номер заказа: 87654321')).not.toBeInTheDocument();
@@ -235,7 +235,7 @@ describe('orders tab', () => {
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
     const navigation = screen.getByRole('navigation');
-    expect(within(navigation).getAllByRole('button').map((button) => button.textContent)).toEqual(['Главная', 'Заказы', 'Избранное', 'Профиль']);
+    expect(within(navigation).getAllByRole('button').map((button) => button.lastElementChild?.textContent)).toEqual(['Главная', 'Заказы', 'Избранное', 'Профиль']);
     fireEvent.click(within(navigation).getByRole('button', { name: 'Профиль' }));
     expect(screen.getByRole('heading', { name: 'Kimal' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Заказы' })).not.toBeInTheDocument();
@@ -248,7 +248,7 @@ describe('orders tab', () => {
     act(() => vi.advanceTimersByTime(MINIMUM_SPLASH_MS));
 
     const navigation = screen.getByRole('navigation');
-    expect(within(navigation).getAllByRole('button').map((button) => button.textContent)).toEqual(['Басты бет', 'Тапсырыстар', 'Таңдаулылар', 'Профиль']);
+    expect(within(navigation).getAllByRole('button').map((button) => button.lastElementChild?.textContent)).toEqual(['Басты бет', 'Тапсырыстар', 'Таңдаулылар', 'Профиль']);
     expect(within(navigation).getByRole('button', { name: 'Таңдаулылар' })).toHaveTextContent('Таңдаулылар');
     expect(within(navigation).getByRole('button', { name: 'Тапсырыстар' })).toHaveTextContent('Тапсырыстар');
     fireEvent.click(within(navigation).getByRole('button', { name: 'Тапсырыстар' }));

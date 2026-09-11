@@ -1,13 +1,13 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import { CalendarDays, CheckCircle2, Clock3, PackageCheck, ShoppingBag, XCircle } from 'lucide-react';
+import { ArrowUpRight, CalendarDays, CheckCircle2, Clock3, PackageCheck, ShoppingBag, XCircle } from '@/components/icons';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { usePriceFormatter } from '@/components/algan/price-context';
 import { RoutePicker } from '@/components/algan/route-picker';
 import type { Translator } from '@/components/algan/types';
 import { ConfirmationDialog, DangerButton, DialogLayer, EmptyState, InsetSurface, MediaBadge, ModalBody, PageSection, PrimaryButton, ScrollArea, SecondaryButton, SegmentedControl, SheetHeader, StatusBadge, SurfaceCard } from '@/components/ui-kit';
-import { boxName } from '@/lib/catalog-localization';
+import { boxName, storeAddress } from '@/lib/catalog-localization';
 import { formatOrderDate, formatShymkentTime } from '@/lib/date';
 import { boxes, demoPastOrder, stores } from '@/lib/mock-data';
 import { canCancelOrder, orderCancellationDeadline } from '@/lib/order-cancellation';
@@ -36,7 +36,7 @@ function orderPickupWindow(order: Order) {
 
 function OrderStatus({ order, t }: { order: Order; t: Translator }) {
   if (order.status === 'paid') {
-    return <StatusBadge tone="brand" icon={<Clock3 size={12} />}>{t('activeOrderStatus')}</StatusBadge>;
+    return <StatusBadge tone="success" icon={<Clock3 size={12} />}>{t('activeOrderStatus')}</StatusBadge>;
   }
   if (order.status === 'cancelled') {
     return <StatusBadge tone="danger" icon={<XCircle size={12} />}>{t('cancelledOrderStatus')}</StatusBadge>;
@@ -70,7 +70,7 @@ export function OrdersTab({ t, locale, orders, onCancelOrder, onBrowseOffers }: 
   }, [orders, nowMs]);
 
   return (
-    <PageSection title={t('orders')}>
+    <PageSection title={t('orders')} eyebrow={t('myAlgan')} description={t('ordersIntro')}>
       <div className="mt-5">
         <SegmentedControl value={view} label={t('orders')} items={[{ value: 'active', label: t('activeOrders') }, { value: 'past', label: t('pastOrders') }]} onChange={(item) => { setView(item); haptic('tap'); }} />
       </div>
@@ -89,15 +89,18 @@ export function OrdersTab({ t, locale, orders, onCancelOrder, onBrowseOffers }: 
             const cancellationAllowed = canCancelOrder(order, new Date(nowMs));
             const cancellationHelpId = `order-cancellation-${order.id}`;
             return (
-              <SurfaceCard key={order.id} data-order-status={order.status} className="overflow-hidden tabular-nums">
+              <SurfaceCard key={order.id} data-order-status={order.status} className="algan-ticket overflow-hidden tabular-nums">
+                {isActive && <div className="flex items-center justify-between gap-2 bg-highlight px-4 py-3"><span className="algan-eyebrow">{t('selfPickup')}</span><OrderStatus order={order} t={t} /></div>}
                 <div className="p-4">
                   <div className="flex items-start gap-3">
                     {store && <MediaBadge><img src={store.logo} alt="" className="h-9 w-9 object-contain" /></MediaBadge>}
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center justify-between gap-2"><p className="break-words text-sm font-extrabold leading-5 text-ink">{store?.name}</p><OrderStatus order={order} t={t} /></div>
+                      <div className="flex flex-wrap items-center justify-between gap-2"><p className="break-words text-base font-extrabold leading-5 text-ink">{store?.name}</p>{!isActive && <OrderStatus order={order} t={t} />}</div>
                       <p className="mt-1 text-[11px] font-semibold text-ink-subtle">{t('orderId')}: {formatOrderId(order.id)}</p>
                     </div>
                   </div>
+
+                  {isActive && <div className="mt-4 rounded-control bg-surface-soft p-4"><p className="algan-eyebrow text-ink-muted">{t('pickupTime')}</p><p data-testid="active-order-pickup" className="mt-1 text-2xl font-extrabold tracking-[-.035em]">{pickupWindow}</p>{store && <p className="mt-2 text-xs leading-5 text-ink-secondary">{storeAddress(store, locale)}</p>}</div>}
 
                   <div className="mt-4 space-y-2">
                     {order.items.map((item) => {
@@ -111,16 +114,15 @@ export function OrdersTab({ t, locale, orders, onCancelOrder, onBrowseOffers }: 
                     })}
                   </div>
                   <div data-testid="order-schedule" className="mt-4 space-y-2 border-t border-border pt-3 text-xs font-bold">
-                    {isActive && <div data-testid="active-order-pickup" className="flex items-center gap-2 text-brand"><Clock3 size={16} />{t('pickupTime')} · {pickupWindow}</div>}
                     <div className="flex items-center gap-2 text-ink-muted"><CalendarDays size={16} />{orderDate}</div>
                   </div>
-                  <div className="mt-4 flex items-center justify-between border-t border-border pt-4"><span className="text-xs font-bold text-ink-muted">{t('total')}</span><b className="text-lg text-brand">{formatPrice(order.total)}</b></div>
+                  <div className="algan-ticket-divider mt-4 flex items-center justify-between pt-4"><span className="text-xs font-bold text-ink-muted">{t('total')}</span><b className="text-xl text-ink">{formatPrice(order.total)}</b></div>
                 </div>
 
                 {isActive && (
                   <div className="border-t border-border bg-surface-soft p-3">
-                    <div className={`grid gap-2 ${store ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                      <PrimaryButton size="md" onClick={() => { setSelectedOrder(order); haptic('tap'); }}>{t('showQr')}</PrimaryButton>
+                    <div className="grid gap-2">
+                      <PrimaryButton onClick={() => { setSelectedOrder(order); haptic('tap'); }}>{t('showQr')}<ArrowUpRight size={18} /></PrimaryButton>
                       {store && <SecondaryButton size="md" onClick={() => { setRouteStore(store); haptic('tap'); }}>{t('buildRoute')}</SecondaryButton>}
                     </div>
                     <DangerButton size="md" className="mt-2" disabled={!cancellationAllowed} aria-describedby={cancellationHelpId} onClick={() => { setCancellationOrderId(order.id); haptic('tap'); }}>{t('cancelOrder')}</DangerButton>
@@ -164,7 +166,7 @@ export function OrdersTab({ t, locale, orders, onCancelOrder, onBrowseOffers }: 
 
 export function OrderQr({ order, t }: { order: Order; t: Translator }) {
   return (
-    <div className="mx-auto w-fit rounded-card border border-border bg-surface p-4 text-brand shadow-card">
+    <div className="mx-auto w-fit rounded-card border border-border bg-white p-5 text-ink shadow-card">
       <Suspense fallback={<span role="status" className="grid h-[184px] w-[184px] place-items-center text-xs font-bold text-ink-muted">{t('loading')}</span>}>
         <LazyQRCodeSVG value={createOrderQrPayload(order.id, order.pickupCode)} size={184} level="M" marginSize={1} bgColor="white" fgColor="currentColor" title={t('qrCode')} />
       </Suspense>
@@ -174,7 +176,7 @@ export function OrderQr({ order, t }: { order: Order; t: Translator }) {
 
 export function PickupCodePanel({ pickupCode, label, className }: { pickupCode: string; label: string; className?: string }) {
   return (
-    <InsetSurface tone="brandSolid" className={`p-4 text-center tabular-nums ${className ?? ''}`}>
+    <InsetSurface tone="brandSolid" radius="card" className={`p-5 text-center tabular-nums ${className ?? ''}`}>
       <p className="text-xs font-bold text-white/70">{label}</p>
       <p className="mt-1 text-3xl font-black tracking-[0.12em]">{formatPickupCode(pickupCode)}</p>
     </InsetSurface>
@@ -187,7 +189,7 @@ function OrderDetails({ order, t, onClose }: { order: Order; t: Translator; onCl
       <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden">
         <SheetHeader title={t('showQr')} onClose={onClose} closeLabel={t('close')} />
         <ScrollArea className="flex-1 pb-2 text-center">
-          <div className="mt-6"><OrderQr order={order} t={t} /></div>
+          <div className="algan-collection-pass mt-5 rounded-card px-4 py-6"><p className="algan-eyebrow mb-4 text-ink">{t('pickupPass')}</p><OrderQr order={order} t={t} /></div>
           <p className="mx-auto mt-5 max-w-[300px] text-sm leading-6 text-ink-secondary">{t('pickupInstructions')}</p>
           <PickupCodePanel pickupCode={order.pickupCode} label={t('pickupCode')} className="mt-5" />
         </ScrollArea>

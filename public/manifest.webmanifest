@@ -6,11 +6,11 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f6f4ee",
-  "theme_color": "#0d4f45",
+  "background_color": "#f8f5f0",
+  "theme_color": "#fffdf9",
   "icons": [
     {
-      "src": "/algan-mark.svg?v=3",
+      "src": "/algan-mark.svg?v=4",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

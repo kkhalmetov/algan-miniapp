@@ -13,16 +13,18 @@ function sourceFiles(directory: string): string[] {
 }
 
 describe('Algan design system', () => {
-  it('ships the smiling food-box identity in standalone and horizontal lockups', () => {
+  it('ships the good-bag identity and vector wordmark in both lockups', () => {
     const mark = readFileSync(resolve(root, 'public/algan-mark.svg'), 'utf8');
     const wordmark = readFileSync(resolve(root, 'public/algan-wordmark.svg'), 'utf8');
     const logo = readFileSync(resolve(root, 'public/algan-logo.svg'), 'utf8');
     const lightLogo = readFileSync(resolve(root, 'public/algan-logo-light.svg'), 'utf8');
 
-    expect(mark).toContain('smile-cut');
-    expect(wordmark).toContain('viewBox="0 0 170 56"');
-    expect(logo).toContain('#0D4F45');
-    expect(lightLogo).toContain('#CBEF69');
+    expect(mark).toContain('Algan good bag');
+    expect(mark).toContain('fill-rule="evenodd"');
+    expect(wordmark).toContain('<path');
+    expect(wordmark).not.toContain('<text');
+    expect(logo).toContain('#AC3818');
+    expect(lightLogo).toContain('#FFFDF9');
   });
 
   it('keeps application markup free of raw hex colors', () => {
@@ -61,7 +63,7 @@ describe('Algan design system', () => {
 
     for (const token of requiredTokens) expect(css).toContain(token);
     expect(layout).toContain("import './fonts.css'");
-    expect(css).toContain('--font-sans: "Onest Variable", sans-serif');
+    expect(css).toContain('--font-sans: "Golos Text", sans-serif');
   });
 
   it('documents the rules for extending the interface', () => {
@@ -153,10 +155,10 @@ describe('Algan design system', () => {
     const css = readFileSync(resolve(root, 'app/globals.css'), 'utf8');
     const runtime = readFileSync(resolve(root, 'lib/design-tokens.ts'), 'utf8');
 
-    expect(css).toContain('--color-brand: #0d4f45');
-    expect(css).toContain('--color-surface: #ffffff');
-    expect(runtime).toContain("BRAND_COLOR = '#0d4f45'");
-    expect(runtime).toContain("APP_SURFACE_COLOR = '#ffffff'");
+    expect(css).toContain('--color-brand: #ac3818');
+    expect(css).toContain('--color-surface: #fffdf9');
+    expect(runtime).toContain("BRAND_COLOR = '#ac3818'");
+    expect(runtime).toContain("APP_SURFACE_COLOR = '#fffdf9'");
   });
 
   it('does not reset component typography with a global font shorthand', () => {
@@ -181,6 +183,7 @@ describe('Algan design system', () => {
     const foregroundTokens = ['--color-ink-secondary', '--color-ink-muted', '--color-ink-subtle'];
     const surfaceTokens = ['--color-surface', '--color-panel', '--color-surface-soft', '--color-surface-muted', '--color-brand-pale'];
     const semanticPairs = [
+      ['--color-success', '--color-success-soft'],
       ['--color-accent-strong', '--color-accent-soft'],
       ['--color-danger', '--color-danger-soft'],
       ['--color-warning-ink', '--color-warning-surface'],

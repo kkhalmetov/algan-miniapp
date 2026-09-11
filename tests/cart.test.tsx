@@ -44,17 +44,17 @@ describe('multi-box cart', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: `Добавить в корзину ${name}` }));
   };
 
-  it('shows the cart dock only on the home tab', () => {
+  it('keeps the cart accessible from every navigation tab', () => {
     useAppStore.setState({ cartStoreId: 'tatti', cartItems: [{ boxId: 'bakery-surprise', quantity: 1 }] });
     openCatalog();
 
     expect(screen.getByTestId('cart-dock')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Заказы' }));
-    expect(screen.queryByTestId('cart-dock')).not.toBeInTheDocument();
+    expect(screen.getByTestId('cart-dock')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Избранное' }));
-    expect(screen.queryByTestId('cart-dock')).not.toBeInTheDocument();
+    expect(screen.getByTestId('cart-dock')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Профиль' }));
-    expect(screen.queryByTestId('cart-dock')).not.toBeInTheDocument();
+    expect(screen.getByTestId('cart-dock')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Главная' }));
     expect(screen.getByTestId('cart-dock')).toBeInTheDocument();
   });
@@ -69,14 +69,15 @@ describe('multi-box cart', () => {
       { boxId: 'tatti-defined', quantity: 1 },
     ]);
     const cartButton = screen.getByRole('button', { name: /^Корзина/ });
-    expect(cartButton).toHaveTextContent('Корзина · 3');
-    expect(cartButton.querySelector('svg')).not.toBeInTheDocument();
+    expect(within(cartButton).getByText('3')).toBeInTheDocument();
+    expect(cartButton).toHaveAccessibleName(/^Корзина/);
     fireEvent.click(cartButton);
     const cartDialog = screen.getByRole('dialog', { name: 'Корзина' });
     expect(within(cartDialog).getByRole('heading', { name: 'Корзина' })).toBeInTheDocument();
-    expect(within(cartDialog).queryByText('19:30–20:30')).not.toBeInTheDocument();
-    expect(within(cartDialog).queryByText('18:30–19:30')).not.toBeInTheDocument();
-    expect(within(cartDialog).getAllByText('Tatti Bakery')).toHaveLength(2);
+    expect(within(cartDialog).getByText('19:30–20:30')).toBeInTheDocument();
+    expect(within(cartDialog).getByText('18:30–19:30')).toBeInTheDocument();
+    expect(within(cartDialog).getAllByText('Tatti Bakery')).toHaveLength(1);
+    expect(within(cartDialog).getByTestId('cart-scroll')).not.toContainElement(within(cartDialog).getByTestId('cart-checkout-footer'));
     expect(within(cartDialog).getByTestId('cart-scroll')).toHaveClass('overflow-y-auto', 'overscroll-contain');
     expect(within(cartDialog).queryByRole('img')).not.toBeInTheDocument();
     expect(within(cartDialog).getByText('Заказ можно отменить не позднее чем за 3 часа до начала выдачи.')).toBeInTheDocument();
@@ -88,13 +89,13 @@ describe('multi-box cart', () => {
     });
 
     expect(screen.getByText('Оплата прошла!')).toBeInTheDocument();
-    expect(screen.getByText('Оплата прошла!').parentElement).toHaveClass('justify-center', 'bg-brand-pale/45');
+    expect(screen.getByText('Оплата прошла!').closest('.algan-full-screen')).toHaveClass('h-full', 'bg-canvas');
     const viewOrderButton = screen.getByRole('button', { name: 'Посмотреть заказ' });
     expect(viewOrderButton.querySelector('svg')).not.toBeInTheDocument();
     expect(viewOrderButton).toHaveClass('max-w-[330px]');
     expect(screen.getByText('Заказ оформлен. Все подробности и код получения доступны в разделе «Заказы».')).toBeInTheDocument();
     const successDialog = screen.getByRole('dialog');
-    expect(successDialog.querySelector('.lucide-circle-check')).toBeInTheDocument();
+    expect(successDialog.querySelector('[data-icon="success"]')).toBeInTheDocument();
     expect(within(successDialog).queryByTitle('QR-код')).not.toBeInTheDocument();
     expect(within(successDialog).queryByText('Код получения')).not.toBeInTheDocument();
     expect(within(successDialog).queryByText(/Номер заказа/)).not.toBeInTheDocument();
@@ -128,10 +129,10 @@ describe('multi-box cart', () => {
 
     const failureDialog = screen.getByRole('dialog', { name: 'Оплата не прошла' });
     expect(within(failureDialog).getByText('Не удалось завершить оплату. Попробуйте ещё раз.')).toBeInTheDocument();
-    expect(within(failureDialog).queryByText('Корзина сохранена')).not.toBeInTheDocument();
-    expect(within(failureDialog).queryByText(/Все выбранные боксы остались на месте/)).not.toBeInTheDocument();
-    expect(within(failureDialog).getByText('Оплата не прошла').parentElement).toHaveClass('justify-center', 'bg-accent-soft');
-    expect(failureDialog.querySelector('.lucide-triangle-alert')).toBeInTheDocument();
+    expect(within(failureDialog).getByText('Корзина сохранена')).toBeInTheDocument();
+    expect(within(failureDialog).getByText(/Все выбранные боксы остались на месте/)).toBeInTheDocument();
+    expect(within(failureDialog).getByText('Оплата не прошла').closest('.algan-full-screen')).toHaveClass('h-full', 'bg-accent-soft');
+    expect(failureDialog.querySelector('[data-icon="warning"]')).toBeInTheDocument();
     expect([...failureDialog.querySelectorAll('*')].some((element) => element.classList.contains('bg-danger-soft/30'))).toBe(false);
     expect(within(failureDialog).queryByRole('button', { name: 'Закрыть' })).not.toBeInTheDocument();
     expect(within(failureDialog).queryByRole('button', { name: 'Повторить оплату' })).not.toBeInTheDocument();
@@ -178,7 +179,7 @@ describe('multi-box cart', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Корзина/ }));
 
     const cartDialog = screen.getByRole('dialog', { name: 'Корзина' });
-    fireEvent.click(within(cartDialog).getByRole('button', { name: 'Удалить' }));
+    fireEvent.click(within(cartDialog).getByRole('button', { name: 'Удалить: Surprise Tatti-box' }));
 
     expect(within(cartDialog).getByText('Корзина пуста')).toBeInTheDocument();
     expect(within(cartDialog).queryByText('Отмена заказа')).not.toBeInTheDocument();
@@ -224,7 +225,7 @@ describe('multi-box cart', () => {
     fireEvent.click(within(boxDialog).getByRole('button', { name: 'Добавить в корзину Кофе & булочки' }));
     const confirmation = screen.getByRole('dialog', { name: 'Заменить корзину?' });
     expect(within(confirmation).getByText('В одной корзине могут быть боксы только одного заведения.')).toBeInTheDocument();
-    expect(within(confirmation).getByRole('button', { name: 'Очистить и добавить' })).toHaveClass('bg-danger-soft', 'text-danger');
+    expect(within(confirmation).getByRole('button', { name: 'Очистить и добавить' })).toHaveClass('bg-warning-ink', 'text-white');
     expect(within(confirmation).getByText('Текущие боксы будут удалены, а выбранный бокс добавится в новую корзину.')).toBeInTheDocument();
     expect(within(confirmation).queryByRole('button', { name: 'Закрыть' })).not.toBeInTheDocument();
     fireEvent.click(within(confirmation).getByRole('button', { name: 'Оставить корзину' }));

@@ -1,20 +1,22 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import { AlertTriangle, CheckCircle2, Clock3, Image as ImageIcon, MapPin, Package, ShoppingBag } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Clock3, Image as ImageIcon, MapPin, Package, ShieldCheck, ShoppingBag, X } from '@/components/icons';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { SurpriseBadge } from '@/components/algan/marketplace';
 import { usePriceFormatter } from '@/components/algan/price-context';
 import { RoutePicker } from '@/components/algan/route-picker';
 import type { Translator } from '@/components/algan/types';
-import { CardActionButton, ConfirmationDialog, DialogLayer, EmptyState, FullScreenFeedback, InsetSurface, MediaBadge, MediaSheetHeader, ModalBody, NoticeCard, PageTitle, PrimaryButton, QuantityControl, QuantityStepper, ScrollArea, SectionTitle, SheetHeader, StatusBadge, StickyActionFooter, TertiaryButton, TextLinkButton } from '@/components/ui-kit';
+import { CardActionButton, ConfirmationDialog, DialogLayer, EmptyState, FullScreenFeedback, IconButton, InsetSurface, MediaBadge, MediaSheetHeader, ModalBody, NoticeCard, PageTitle, PrimaryButton, QuantityControl, QuantityStepper, ScrollArea, SectionTitle, SheetHeader, StatusBadge, StickyActionFooter, TertiaryButton, TextLinkButton } from '@/components/ui-kit';
 import { availableQuantity } from '@/lib/app-utils';
 import { boxAllergens, boxContentName, boxName, storeAddress } from '@/lib/catalog-localization';
 import { boxes, storeById } from '@/lib/mock-data';
 import { formatBoxesLeft } from '@/lib/stock';
 import { haptic } from '@/lib/telegram';
 import type { Box, CartItem, Locale } from '@/lib/types';
+import { IS_DEMO_RELEASE } from '@/lib/release';
+import { AlganLogo } from '@/components/algan-logo';
 
 export function CartReplacementDialog({ t, onCancel, onConfirm }: { t: Translator; onCancel: () => void; onConfirm: () => void }) {
   return (
@@ -26,7 +28,7 @@ export function CartReplacementDialog({ t, onCancel, onConfirm }: { t: Translato
       cancelLabel={t('keepCart')}
       closeLabel={t('close')}
       icon={<ShoppingBag size={24} />}
-      tone="danger"
+      tone="warning"
       showClose={false}
       onConfirm={onConfirm}
       onCancel={onCancel}
@@ -44,8 +46,8 @@ export function CartDock({ items, locale, t, onOpen }: { items: CartItem[]; loca
   const quantity = lines.reduce((sum, line) => sum + line.quantity, 0);
   return (
     <StickyActionFooter data-testid="cart-dock" density="compact" className="z-[700]">
-      <PrimaryButton size="md" onClick={onOpen} aria-label={`${t('cart')}, ${formatPrice(total)}`}>
-        <span>{t('cart')} · {quantity}</span><span className="ml-auto">{formatPrice(total)}</span>
+      <PrimaryButton onClick={onOpen} aria-label={`${t('cart')}, ${formatPrice(total)}`}>
+        <span className="grid h-7 min-w-7 place-items-center rounded-[9px] bg-white/15 px-1 text-xs">{quantity}</span><span>{t('cart')}</span><span className="ml-auto tabular-nums">{formatPrice(total)}</span><ArrowUpRight size={18} />
       </PrimaryButton>
     </StickyActionFooter>
   );
@@ -71,30 +73,32 @@ export function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQu
   const selectedTotal = formatPrice(box.salePrice * selectedQuantity);
   return (
     <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={name} sheetHeight="tall">
-      <div data-testid="box-details-sheet" className="flex h-full min-h-0 flex-col">
+      <div data-testid="box-details-sheet" className="relative flex h-full min-h-0 flex-col">
+        <IconButton onClick={onClose} label={t('close')} tone="floating" className="absolute right-page top-4 z-30 sm:right-page-wide"><X size={18} /></IconButton>
         <ScrollArea data-testid="box-details-scroll" className="flex-1">
-          <MediaSheetHeader data-testid="box-details-cover" onClose={onClose} closeLabel={t('close')}><img src={box.image} alt={name} className="h-full w-full object-cover" /></MediaSheetHeader>
+          <MediaSheetHeader data-testid="box-details-cover" onClose={onClose} closeLabel={t('close')} showClose={false}><img src={box.image} alt={name} className="h-full w-full object-cover" /><span className="absolute bottom-8 left-page z-10 sm:left-page-wide"><StatusBadge tone="accentSolid" size="lg">−{discount}%</StatusBadge></span></MediaSheetHeader>
           <div data-testid="box-details-content" className="relative z-10 -mt-5 rounded-t-sheet bg-surface px-page pb-6 pt-6 sm:px-page-wide">
             <div className="mb-3 flex items-center gap-2.5 text-sm font-extrabold text-ink">
-              <MediaBadge size="sm"><img src={store.logo} alt="" className="h-7 w-7 object-contain" /></MediaBadge><span className="min-w-0 break-words leading-5">{store.name}</span>
+              <MediaBadge size="sm"><img src={store.logo} alt="" className="h-7 w-7 object-contain" /></MediaBadge><span className="min-w-0 flex-1 break-words leading-5">{store.name}</span>{box.isHalal && <StatusBadge tone="success" size="sm">{t('halal')}</StatusBadge>}
             </div>
             <PageTitle>{name}</PageTitle>
             {box.type === 'SURPRISE' && <div className="mt-3"><SurpriseBadge /></div>}
 
-            <InsetSurface data-testid="box-store-summary" tone="panel" className="mt-4 overflow-hidden p-0 shadow-card">
-              <div className="flex items-start gap-2.5 p-3.5 text-sm font-bold text-ink-secondary"><MapPin size={17} className="mt-0.5 shrink-0 text-brand-hover" /><span>{address}</span></div>
-              <CardActionButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }}>{t('buildRoute')}</CardActionButton>
-            </InsetSurface>
-
-            <div data-testid="box-price-card" className="mt-4 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-4 tabular-nums">
-              <div><p className="text-[11px] font-black uppercase tracking-[0.08em] text-ink-secondary">{t('boxPrice')}</p><p className="mt-1 whitespace-nowrap text-commerce-price text-brand-hover">{formatPrice(box.salePrice)}</p></div>
-              <div className="mb-1 flex items-center gap-2"><span className="text-xs font-semibold text-ink-muted line-through">{formatPrice(box.originalPrice)}</span><StatusBadge tone="accentSolid" size="sm">−{discount}%</StatusBadge></div>
+            <div data-testid="box-price-card" className="mt-4 flex flex-wrap items-end gap-3 tabular-nums">
+              <div><p className="algan-eyebrow text-ink-muted">{t('boxPrice')}</p><p className="mt-1 whitespace-nowrap text-commerce-price text-ink">{formatPrice(box.salePrice)}</p></div>
+              <span className="pb-1 text-sm font-medium text-ink-muted line-through">{formatPrice(box.originalPrice)}</span>
             </div>
+            <p className="mt-2 text-xs font-bold text-brand">{t('yourSavings')} · {formatPrice(box.originalPrice - box.salePrice)}</p>
 
-            <div data-testid="box-commerce-summary" className="mt-3 grid grid-cols-2 gap-2">
+            <div data-testid="box-commerce-summary" className="mt-5 grid grid-cols-2 gap-2">
               <InsetSurface data-testid="box-pickup-time" className="min-w-0 p-3"><p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.05em] text-ink-secondary"><Clock3 size={13} className="shrink-0 text-brand" />{t('pickupTime')}</p><p className="mt-2 whitespace-nowrap text-sm font-black tracking-[-0.02em] text-ink tabular-nums">{box.pickupFrom}–{box.pickupTo}</p></InsetSurface>
               <InsetSurface className="min-w-0 p-3"><p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.05em] text-ink-secondary"><Package size={13} className="shrink-0 text-brand" />{t('offersLabel')}</p><p data-testid="box-stock" className={`mt-2 text-xs font-black ${available > 0 ? 'text-brand' : 'text-danger'}`}>{formatBoxesLeft(available, locale)}</p></InsetSurface>
             </div>
+
+            <InsetSurface data-testid="box-store-summary" tone="soft" className="mt-3 overflow-hidden">
+              <div className="flex items-start gap-2.5 p-3.5 text-sm font-medium text-ink-secondary"><MapPin size={18} className="mt-0.5 shrink-0 text-brand" /><span>{address}</span></div>
+              <CardActionButton onClick={() => { setRoutePickerOpen(true); haptic('tap'); }}>{t('buildRoute')}<ArrowUpRight size={16} /></CardActionButton>
+            </InsetSurface>
 
             <NoticeCard
               data-testid="box-appearance-notice"
@@ -126,7 +130,7 @@ export function BoxDetails({ box, locale, t, cartQuantity, available, onChangeQu
           <StickyActionFooter>
             <div className="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-2">
               <QuantityStepper quantity={selectedQuantity} min={1} max={Math.max(available, cartQuantity)} label={t('quantity')} onChange={setSelectedQuantity} />
-              <PrimaryButton size="md" className="whitespace-nowrap px-2 text-center" onClick={() => { onChangeQuantity(selectedQuantity); onClose(); }} aria-label={`${t('addToCartFull')} ${name}`} aria-describedby="box-selected-total">
+              <PrimaryButton className="px-2 text-center" onClick={() => { onChangeQuantity(selectedQuantity); onClose(); }} aria-label={`${t('addToCartFull')} ${name}`} aria-describedby="box-selected-total">
                 <span className="flex min-w-0 flex-col items-center"><span className="text-[11px] leading-4">{t('addToCartFull')}</span><span id="box-selected-total" className="text-sm leading-4 tabular-nums">{selectedTotal}</span></span>
               </PrimaryButton>
             </div>
@@ -156,39 +160,47 @@ export function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQu
     return box ? [{ box, quantity: item.quantity }] : [];
   });
   const total = lines.reduce((sum, line) => sum + line.box.salePrice * line.quantity, 0);
+  const savings = lines.reduce((sum, line) => sum + (line.box.originalPrice - line.box.salePrice) * line.quantity, 0);
+  const store = lines[0] ? storeById(lines[0].box.storeId) : undefined;
+  const close = () => { if (!paymentPending) onClose(); };
   return (
-    <DialogLayer onClose={onClose} closeLabel={t('close')} ariaLabel={t('cart')} sheetHeight="tall">
-      <ModalBody className="flex h-full min-h-0 flex-col overflow-hidden">
-        <SheetHeader className="pb-3" title={t('cart')} onClose={onClose} closeLabel={t('close')} />
-        <ScrollArea data-testid="cart-scroll" className="flex flex-1 flex-col pb-1">
-          {lines.length === 0 ? <EmptyState icon={<ShoppingBag size={32} />} title={t('cartEmpty')} /> : (
+    <DialogLayer onClose={close} closeLabel={t('close')} ariaLabel={t('cart')} sheetHeight="tall">
+      <div className="flex h-full min-h-0 flex-col">
+        <ModalBody className="pb-3"><SheetHeader title={t('cart')} onClose={close} closeDisabled={paymentPending} closeLabel={t('close')} /></ModalBody>
+        <ScrollArea data-testid="cart-scroll" className="flex-1 px-page pb-5 sm:px-page-wide">
+          {lines.length === 0 ? <EmptyState icon={<ShoppingBag size={32} />} title={t('cartEmpty')}><PrimaryButton onClick={onClose}>{t('browseOffers')}</PrimaryButton></EmptyState> : (
             <>
-              <div className="mt-2 space-y-3">
+              {store && <div className="mb-5 rounded-card bg-surface-soft p-4"><p className="algan-eyebrow text-ink-muted">{t('selfPickup')}</p><p className="mt-2 text-base font-bold">{store.name}</p><p className="mt-1 flex items-start gap-1.5 text-xs leading-5 text-ink-secondary"><MapPin size={15} className="mt-0.5 shrink-0" />{storeAddress(store, locale)}</p></div>}
+              <fieldset disabled={paymentPending} className="min-w-0 space-y-3">
+                <legend className="algan-eyebrow mb-3 text-ink-muted">{t('orderSummary')}</legend>
                 {lines.map(({ box, quantity }) => (
-                  <InsetSurface key={box.id} tone="panel" className="overflow-hidden p-3">
-                    <div className="flex items-center gap-3"><span aria-hidden="true" className="h-18 w-18 shrink-0 overflow-hidden rounded-control"><img src={box.image} alt="" className="h-full w-full object-cover" /></span><div className="min-w-0 flex-1"><p className="break-words text-xs font-bold leading-5 text-brand">{storeById(box.storeId).name}</p><p className="mt-0.5 break-words text-sm font-extrabold leading-5">{boxName(box, locale)}</p><p className="mt-1.5 text-base font-extrabold text-brand-hover">{formatPrice(box.salePrice * quantity)}</p></div></div>
-                    <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-border pt-3"><QuantityControl quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} label={t('quantity')} addLabel={`${t('addToCart')} ${boxName(box, locale)}`} addText={t('addToCart')} onChange={(next) => onChangeQuantity(box, next)} /><TertiaryButton tone="danger" onClick={() => onChangeQuantity(box, 0)}>{t('removeFromCart')}</TertiaryButton></div>
-                  </InsetSurface>
+                  <div key={box.id} className="border-b border-border pb-4">
+                    <div className="flex items-start gap-3"><span aria-hidden="true" className="h-20 w-20 shrink-0 overflow-hidden rounded-control"><img src={box.image} alt="" className="h-full w-full object-cover" /></span><div className="min-w-0 flex-1"><p className="break-words text-sm font-bold leading-5">{boxName(box, locale)}</p><p className="mt-1 text-[11px] font-medium text-ink-muted">{box.pickupFrom}–{box.pickupTo}</p><p className="mt-2 text-lg font-extrabold text-ink">{formatPrice(box.salePrice * quantity)}</p></div></div>
+                    <div className="mt-3 grid grid-cols-[8rem_1fr] items-center gap-2"><QuantityControl quantity={quantity} max={availableQuantity(box, purchasedBoxQuantities)} label={`${t('quantity')}: ${boxName(box, locale)}`} addLabel={`${t('addToCart')} ${boxName(box, locale)}`} addText={t('addToCart')} onChange={(next) => onChangeQuantity(box, next)} /><TertiaryButton tone="danger" className="justify-self-end" onClick={() => onChangeQuantity(box, 0)} aria-label={`${t('removeFromCart')}: ${boxName(box, locale)}`}>{t('removeFromCart')}</TertiaryButton></div>
+                  </div>
                 ))}
-              </div>
-              <NoticeCard className="mt-5" density="compact" icon={<Clock3 size={17} />} title={t('cancellationNoticeTitle')}>
+              </fieldset>
+              <div className="mt-5 flex items-center justify-between gap-3 rounded-control bg-success-soft px-4 py-3 text-sm font-bold text-success"><span>{t('yourSavings')}</span><span className="tabular-nums">{formatPrice(savings)}</span></div>
+              <NoticeCard className="mt-4" density="compact" icon={<Clock3 size={17} />} title={t('cancellationNoticeTitle')}>
                 {t('cancellationNoticeText')}
               </NoticeCard>
-              <div className="my-5 h-px shrink-0 bg-border" />
-              <div className="flex shrink-0 items-end justify-between tabular-nums"><span className="text-sm font-bold text-ink-secondary">{t('total')}</span><span className="text-2xl font-black" aria-live="polite">{formatPrice(total)}</span></div>
-              <PrimaryButton onClick={() => void onPay()} disabled={paymentPending} aria-busy={paymentPending} className="mt-5 shrink-0">{paymentPending ? t('paymentProcessing') : t('checkoutCart')}</PrimaryButton>
-              <p className="mt-auto shrink-0 pt-3 text-center text-xs leading-5 text-ink-muted">
-                {t('checkoutOfferPrefix')}{' '}<TextLinkButton onClick={onOpenOffer}>{t('checkoutOfferLink')}</TextLinkButton>{' '}{t('checkoutOfferBetween')}{' '}<TextLinkButton onClick={onOpenOrderRules}>{t('checkoutRulesLink')}</TextLinkButton>{t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
+              <p className="mt-5 text-xs leading-5 text-ink-muted">
+                {t('checkoutOfferPrefix')}{' '}<TextLinkButton disabled={paymentPending} onClick={onOpenOffer}>{t('checkoutOfferLink')}</TextLinkButton>{' '}{t('checkoutOfferBetween')}{' '}<TextLinkButton disabled={paymentPending} onClick={onOpenOrderRules}>{t('checkoutRulesLink')}</TextLinkButton>{t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
               </p>
             </>
           )}
         </ScrollArea>
-      </ModalBody>
+        {lines.length > 0 && <StickyActionFooter data-testid="cart-checkout-footer">
+          <div className="mb-3 flex items-center justify-between gap-3 tabular-nums"><span className="text-sm font-semibold text-ink-secondary">{t('total')}</span><span className="text-2xl font-extrabold" aria-live="polite">{formatPrice(total)}</span></div>
+          <PrimaryButton onClick={() => void onPay()} disabled={paymentPending} aria-busy={paymentPending}>{paymentPending ? t('paymentProcessing') : t('checkoutCart')}</PrimaryButton>
+          {IS_DEMO_RELEASE && <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-ink-muted"><ShieldCheck size={13} />{t('demoShort')}</p>}
+        </StickyActionFooter>}
+      </div>
     </DialogLayer>
   );
 }
 
-function PaymentResultScreen({ title, description, actionLabel, statusIcon, tone, closeLabel, onAction }: {
+function PaymentResultScreen({ title, description, actionLabel, statusIcon, tone, closeLabel, onAction, children }: {
   title: string;
   description: string;
   actionLabel: string;
@@ -196,11 +208,13 @@ function PaymentResultScreen({ title, description, actionLabel, statusIcon, tone
   tone: 'brand' | 'coral';
   closeLabel: string;
   onAction: () => void;
+  children?: ReactNode;
 }) {
   return (
     <DialogLayer onClose={onAction} closeLabel={closeLabel} ariaLabel={title} variant="full">
-      <FullScreenFeedback centered tone={tone} icon={statusIcon} title={title} description={description}>
-        <PrimaryButton onClick={onAction} className="mx-auto mt-6 w-full max-w-[330px] shrink-0">{actionLabel}</PrimaryButton>
+      <FullScreenFeedback centered tone={tone} icon={statusIcon} title={title} description={description} header={<AlganLogo markClassName="h-7 w-7" wordmarkClassName="h-7 w-[72px]" />}>
+        {children}
+        <PrimaryButton onClick={onAction} className="mx-auto mt-8 w-full max-w-[330px] shrink-0">{actionLabel}</PrimaryButton>
       </FullScreenFeedback>
     </DialogLayer>
   );
@@ -215,8 +229,8 @@ export function PaymentFailure({ t, onBackToCart }: { t: Translator; onBackToCar
       closeLabel={t('close')}
       onAction={onBackToCart}
       tone="coral"
-      statusIcon={<AlertTriangle size={38} strokeWidth={2.5} />}
-    />
+      statusIcon={<AlertTriangle size={42} />}
+    ><NoticeCard className="mx-auto mt-6 max-w-[330px] text-left" icon={<ShoppingBag size={20} />} title={t('cartPreservedTitle')}>{t('cartPreservedText')}</NoticeCard></PaymentResultScreen>
   );
 }
 
@@ -229,7 +243,7 @@ export function Success({ t, onDone }: { t: Translator; onDone: () => void }) {
       closeLabel={t('close')}
       onAction={onDone}
       tone="brand"
-      statusIcon={<CheckCircle2 size={40} strokeWidth={2.5} />}
-    />
+      statusIcon={<CheckCircle2 size={44} />}
+    ><div className="algan-ticket mx-auto mt-6 w-full max-w-[330px] p-5"><p className="algan-eyebrow text-brand">{t('readyToCollect')}</p><p className="mt-2 text-sm leading-6 text-ink-secondary">{t('pickupInstructions')}</p><div className="algan-ticket-divider mt-4 pt-3"><p className="text-xs font-bold text-ink-muted">{t('city')} · ALGAN</p></div></div></PaymentResultScreen>
   );
 }

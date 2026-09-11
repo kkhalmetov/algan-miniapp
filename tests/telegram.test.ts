@@ -124,7 +124,7 @@ describe('Telegram version compatibility', () => {
     prepareTelegram();
 
     expect(setHeaderColor).toHaveBeenCalledWith('bg_color');
-    expect(setBackgroundColor).toHaveBeenCalledWith('#ffffff');
+    expect(setBackgroundColor).toHaveBeenCalledWith('#fffdf9');
   });
 
   it('configures the custom header color in clients supporting Bot API 6.9', () => {
@@ -143,8 +143,8 @@ describe('Telegram version compatibility', () => {
 
     prepareTelegram();
 
-    expect(setHeaderColor).toHaveBeenCalledWith('#0d4f45');
-    expect(setBackgroundColor).toHaveBeenCalledWith('#ffffff');
+    expect(setHeaderColor).toHaveBeenCalledWith('#fffdf9');
+    expect(setBackgroundColor).toHaveBeenCalledWith('#fffdf9');
   });
 
   it('configures the Telegram bottom bar in clients supporting Bot API 7.10', () => {
@@ -157,7 +157,7 @@ describe('Telegram version compatibility', () => {
 
     prepareTelegram();
 
-    expect(setBottomBarColor).toHaveBeenCalledWith('#ffffff');
+    expect(setBottomBarColor).toHaveBeenCalledWith('#fffdf9');
   });
 
   it('protects an in-progress checkout from accidental closing', () => {

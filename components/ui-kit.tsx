@@ -2,7 +2,7 @@
 
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
 import { useEffect, useId, useRef } from 'react';
-import { ArrowLeft, ChevronDown, Minus, Plus, X } from 'lucide-react';
+import { ArrowLeft, ChevronDown, LoaderCircle, Minus, Plus, Search, X } from '@/components/icons';
 
 export function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
@@ -45,19 +45,19 @@ function unlockElement(element: HTMLElement) {
   else element.setAttribute('aria-hidden', lock.ariaHidden);
 }
 
-const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-4 text-center font-extrabold leading-5 transition duration-[var(--motion-fast)] active:scale-[.985] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-45';
+const actionButtonBase = 'flex w-full items-center justify-center gap-2 rounded-control px-5 text-center font-bold leading-5 transition duration-[var(--motion-fast)] active:scale-[.985] disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-55';
 type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { size?: 'md' | 'lg' };
-const actionButtonSize = { md: 'min-h-11 text-sm', lg: 'min-h-13 text-[15px]' } as const;
+const actionButtonSize = { md: 'min-h-12 text-sm', lg: 'min-h-14 text-[15px]' } as const;
 
 type PrimaryButtonTone = 'brand' | 'highlight' | 'warning';
 const primaryButtonTone: Record<PrimaryButtonTone, string> = {
-  brand: 'bg-brand-hover text-white shadow-action hover:bg-brand',
+  brand: 'bg-brand text-white shadow-action hover:bg-brand-hover',
   highlight: 'bg-highlight text-brand-deep shadow-none hover:brightness-95',
   warning: 'bg-warning-ink text-white shadow-none hover:brightness-95',
 };
 
-export function PrimaryButton({ className, type = 'button', size = 'lg', tone = 'brand', ...props }: ActionButtonProps & { tone?: PrimaryButtonTone }) {
-  return <button type={type} className={cx(actionButtonBase, actionButtonSize[size], primaryButtonTone[tone], 'disabled:bg-surface-muted disabled:text-ink-subtle', className)} {...props} />;
+export function PrimaryButton({ className, type = 'button', size = 'lg', tone = 'brand', children, ...props }: ActionButtonProps & { tone?: PrimaryButtonTone }) {
+  return <button type={type} className={cx(actionButtonBase, actionButtonSize[size], primaryButtonTone[tone], 'disabled:bg-surface-muted disabled:text-ink-subtle aria-busy:disabled:opacity-100', className)} {...props}>{props['aria-busy'] && <LoaderCircle size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />}{children}</button>;
 }
 
 type TitleTone = 'default' | 'inverse' | 'muted';
@@ -86,14 +86,18 @@ export function CardTitle({ className, tone = 'default', ...props }: HTMLAttribu
   return <h2 className={cx('truncate text-lg font-extrabold tracking-[-0.025em]', titleTone[tone], className)} {...props} />;
 }
 
-export function PageSection({ title, children, className }: {
+export function PageSection({ title, children, className, description, eyebrow }: {
   title: ReactNode;
   children: ReactNode;
   className?: string;
+  description?: ReactNode;
+  eyebrow?: ReactNode;
 }) {
   return (
-    <section className={cx('min-h-full bg-canvas px-page pb-8 pt-[max(1.5rem,var(--algan-safe-area-top))] sm:px-page-wide', className)}>
+    <section className={cx('min-h-full bg-canvas px-page pb-8 pt-[max(1.75rem,var(--algan-safe-area-top))] sm:px-page-wide', className)}>
+      {eyebrow && <p className="algan-eyebrow algan-section-kicker">{eyebrow}</p>}
       <PageTitle>{title}</PageTitle>
+      {description && <p className="mt-2 max-w-sm text-sm leading-6 text-ink-muted">{description}</p>}
       {children}
     </section>
   );
@@ -102,7 +106,7 @@ export function PageSection({ title, children, className }: {
 export function BrandHeader({ className, ...props }: HTMLAttributes<HTMLElement>) {
   return (
     <header
-      className={cx('relative overflow-hidden bg-brand px-page pb-6 pt-[max(1.25rem,var(--algan-safe-area-top))] text-white sm:px-page-wide', className)}
+      className={cx('relative overflow-hidden bg-canvas px-page pb-5 pt-[max(1.25rem,var(--algan-safe-area-top))] text-ink sm:px-page-wide', className)}
       {...props}
     />
   );
@@ -124,15 +128,15 @@ export function TopAppBar({ leading, title, trailing, className, ...props }: HTM
   );
 }
 
-export function ScreenBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cx('bg-canvas px-page pt-5 sm:px-page-wide', className)} {...props} />;
+export function ScreenBody({ className, flush = false, ...props }: HTMLAttributes<HTMLDivElement> & { flush?: boolean }) {
+  return <div className={cx('bg-canvas px-page sm:px-page-wide', !flush && 'pt-5', className)} {...props} />;
 }
 
 export function SecondaryButton({ className, type = 'button', size = 'lg', ...props }: ActionButtonProps) {
   return (
     <button
       type={type}
-      className={cx(actionButtonBase, actionButtonSize[size], 'border border-border bg-surface text-brand hover:border-brand/30 hover:bg-brand-pale', className)}
+      className={cx(actionButtonBase, actionButtonSize[size], 'border border-border bg-surface text-ink hover:border-brand/30 hover:bg-brand-pale', className)}
       {...props}
     />
   );
@@ -216,7 +220,7 @@ export function TextField({
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
         className={cx(
-          'mt-2 h-13 w-full rounded-control border border-border bg-panel px-4 text-[15px] outline-none transition placeholder:text-ink-subtle focus:border-brand-hover focus:ring-4 focus:ring-brand-hover/12',
+          'mt-2 h-14 w-full rounded-control border border-border bg-surface-soft px-4 text-base font-medium outline-none transition placeholder:text-ink-subtle focus:border-brand-hover focus:bg-surface focus:ring-4 focus:ring-brand-hover/12 aria-invalid:border-danger',
           className,
         )}
       />
@@ -224,10 +228,24 @@ export function TextField({
   );
 }
 
+export function SearchField({ value, onChange, label, clearLabel }: { value: string; onChange: (value: string) => void; label: string; clearLabel: string }) {
+  return (
+    <div className="flex min-h-13 min-w-0 flex-1 items-center rounded-control border border-border bg-surface px-3 focus-within:border-brand focus-within:ring-3 focus-within:ring-brand/10">
+      <Search size={19} aria-hidden="true" className="mr-2 shrink-0 text-ink-muted" />
+      <input type="search" aria-label={label} placeholder={label} value={value} onChange={(event) => onChange(event.target.value)} className="h-12 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-[13px] placeholder:text-ink-muted focus-visible:!outline-none [&::-webkit-search-cancel-button]:hidden" />
+      {value && <button type="button" aria-label={clearLabel} onClick={() => onChange('')} className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-ink-muted"><X size={17} /></button>}
+    </div>
+  );
+}
+
+export function FilterChip({ selected, icon, children, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { selected: boolean; icon?: ReactNode }) {
+  return <button type="button" aria-pressed={selected} className="algan-category" {...props}>{icon}{children}</button>;
+}
+
 type IconButtonTone = 'muted' | 'dark' | 'brand' | 'accent' | 'floating' | 'floatingAccent';
 
 const iconButtonTone: Record<IconButtonTone, string> = {
-  muted: 'border border-border bg-surface text-ink',
+  muted: 'bg-surface-soft text-ink',
   dark: 'bg-white/12 text-white',
   brand: 'bg-brand-hover text-white',
   accent: 'bg-accent-soft text-accent-strong',
@@ -267,6 +285,7 @@ export function ModalHeader({
   onClose,
   closeLabel,
   focusTitleOnChange = false,
+  closeDisabled = false,
 }: {
   title: ReactNode;
   onBack?: () => void;
@@ -274,6 +293,7 @@ export function ModalHeader({
   onClose: () => void;
   closeLabel: string;
   focusTitleOnChange?: boolean;
+  closeDisabled?: boolean;
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
 
@@ -282,14 +302,14 @@ export function ModalHeader({
   }, [focusTitleOnChange, title]);
 
   return (
-    <div className="flex min-h-11 items-center gap-3">
+    <div className="flex min-h-11 items-start gap-3">
       {onBack && (
         <IconButton onClick={onBack} label={backLabel ?? closeLabel}>
           <ArrowLeft size={18} />
         </IconButton>
       )}
-      <h2 ref={titleRef} tabIndex={focusTitleOnChange ? -1 : undefined} className="min-w-0 flex-1 text-xl font-extrabold tracking-[-0.025em]">{title}</h2>
-      <IconButton onClick={onClose} label={closeLabel}>
+      <h2 ref={titleRef} tabIndex={focusTitleOnChange ? -1 : undefined} className="min-w-0 flex-1 py-2 text-2xl font-extrabold leading-tight tracking-[-0.035em]">{title}</h2>
+      <IconButton onClick={onClose} disabled={closeDisabled} label={closeLabel}>
         <X size={18} />
       </IconButton>
     </div>
@@ -308,6 +328,7 @@ export function SheetHeader({
   closeLabel,
   compact = false,
   focusTitleOnChange = false,
+  closeDisabled = false,
   className,
   ...props
 }: Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
@@ -318,16 +339,17 @@ export function SheetHeader({
   closeLabel: string;
   compact?: boolean;
   focusTitleOnChange?: boolean;
+  closeDisabled?: boolean;
 }) {
   return (
     <div className={cx('shrink-0 bg-surface', className)} {...props}>
       <SheetHandle />
       <div className={compact ? 'mt-2' : 'mt-4'}>
         {title !== undefined ? (
-          <ModalHeader title={title} onBack={onBack} backLabel={backLabel} onClose={onClose} closeLabel={closeLabel} focusTitleOnChange={focusTitleOnChange} />
+          <ModalHeader title={title} onBack={onBack} backLabel={backLabel} onClose={onClose} closeLabel={closeLabel} closeDisabled={closeDisabled} focusTitleOnChange={focusTitleOnChange} />
         ) : (
           <div className="flex min-h-11 justify-end">
-            <IconButton onClick={onClose} label={closeLabel}><X size={18} /></IconButton>
+            <IconButton onClick={onClose} label={closeLabel} disabled={closeDisabled}><X size={18} /></IconButton>
           </div>
         )}
       </div>
@@ -335,24 +357,25 @@ export function SheetHeader({
   );
 }
 
-export function MediaSheetHeader({ children, onClose, closeLabel, className, ...props }: HTMLAttributes<HTMLDivElement> & {
+export function MediaSheetHeader({ children, onClose, closeLabel, showClose = true, className, ...props }: HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
   onClose: () => void;
   closeLabel: string;
+  showClose?: boolean;
 }) {
   return (
     <div className={cx('relative h-[220px] w-full shrink-0 overflow-hidden bg-canvas sm:h-60', className)} {...props}>
       {children}
       <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-brand-deep/30 to-transparent" />
       <SheetHandle className="absolute left-1/2 top-3 z-20 -translate-x-1/2 bg-white/85 shadow-control" />
-      <IconButton
+      {showClose && <IconButton
         onClick={onClose}
         label={closeLabel}
         tone="floating"
         className="absolute right-page top-4 z-20 sm:right-page-wide"
       >
         <X size={18} />
-      </IconButton>
+      </IconButton>}
     </div>
   );
 }
@@ -366,7 +389,7 @@ export function ScrollArea({ className, ...props }: HTMLAttributes<HTMLDivElemen
 }
 
 export function SurfaceCard({ className, tone = 'panel', ...props }: HTMLAttributes<HTMLElement> & { tone?: 'panel' | 'muted' }) {
-  return <article className={cx('rounded-card border', tone === 'muted' ? 'border-border bg-surface-muted' : 'border-border/90 bg-panel shadow-card', className)} {...props} />;
+  return <article className={cx('rounded-card border', tone === 'muted' ? 'border-border bg-surface-muted' : 'border-border/70 bg-panel shadow-card', className)} {...props} />;
 }
 
 type InsetTone = 'soft' | 'panel' | 'brand' | 'brandSolid' | 'warning' | 'danger' | 'allergen';
@@ -375,7 +398,7 @@ const insetTone: Record<InsetTone, string> = {
   soft: 'border border-border/70 bg-surface-soft',
   panel: 'border border-border bg-panel',
   brand: 'border border-brand/15 bg-brand-pale',
-  brandSolid: 'bg-brand text-white',
+  brandSolid: 'bg-brand-deep text-white',
   warning: 'bg-warning-surface text-warning-ink',
   danger: 'bg-danger-soft text-danger',
   allergen: 'border border-allergen-border bg-allergen-surface',
@@ -401,17 +424,18 @@ export function CardPressable({ className, type = 'button', ...props }: ButtonHT
   );
 }
 
-type StatusTone = 'brand' | 'dark' | 'accent' | 'accentSolid' | 'danger' | 'warning' | 'neutral';
+type StatusTone = 'brand' | 'dark' | 'accent' | 'accentSolid' | 'danger' | 'warning' | 'neutral' | 'success';
 type StatusSize = 'sm' | 'md' | 'lg';
 
 const statusTone: Record<StatusTone, string> = {
   brand: 'bg-brand-pale text-brand',
   dark: 'bg-brand-deep/92 text-white',
   accent: 'bg-accent-soft text-accent-strong',
-  accentSolid: 'bg-accent text-ink',
+  accentSolid: 'bg-highlight text-ink',
   danger: 'bg-danger-soft text-danger',
   warning: 'bg-warning-surface text-warning-ink',
   neutral: 'bg-surface-muted text-ink-secondary',
+  success: 'bg-success-soft text-success',
 };
 
 const statusSize: Record<StatusSize, string> = {
@@ -574,14 +598,14 @@ export function ListRow({
     <button
       type={type}
       className={cx(
-        'flex w-full items-center gap-3 rounded-card text-left transition active:scale-[.99] disabled:opacity-100',
+        'flex w-full items-center gap-3 rounded-control text-left transition active:scale-[.99] disabled:opacity-100',
         density === 'compact' ? 'min-h-14 px-3 py-2' : 'min-h-17 p-4',
-        tone === 'panel' ? 'border border-border bg-panel hover:bg-surface-soft' : 'border border-border/70 bg-surface-soft hover:bg-surface-muted',
+        tone === 'panel' ? 'border border-border/70 bg-panel hover:bg-surface-soft' : 'bg-surface hover:bg-surface-soft',
         className,
       )}
       {...props}
     >
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-control bg-brand-pale text-brand">{icon}</span>
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-control bg-surface-soft text-ink-secondary">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-extrabold">{title}</span>
         {subtitle && (
@@ -681,9 +705,9 @@ export function EmptyState({ icon, title, description, children, tone = 'brand' 
   tone?: 'brand' | 'accent';
 }) {
   return (
-    <div className="mt-16 text-center">
+    <div className="mx-auto my-10 max-w-sm rounded-sheet border border-border/60 bg-surface px-5 py-10 text-center">
       <span className={cx(
-        'mx-auto grid h-20 w-20 rotate-[-3deg] place-items-center rounded-[24px]',
+        'mx-auto grid h-24 w-24 rotate-[-6deg] place-items-center rounded-[32px]',
         tone === 'accent' ? 'bg-accent-soft text-accent' : 'bg-brand-pale text-brand',
       )}>
         {icon}
@@ -716,7 +740,7 @@ export function SegmentedControl<T extends string>({
           onClick={() => onChange(item.value)}
           className={cx(
             'min-h-11 rounded-[10px] px-3 text-sm font-extrabold transition',
-            value === item.value ? 'bg-brand-pale text-brand shadow-sm' : 'text-ink-muted hover:bg-surface-soft',
+            value === item.value ? 'bg-brand-deep text-white shadow-sm' : 'text-ink-muted hover:bg-surface-soft',
           )}
         >
           {item.label}
@@ -740,7 +764,7 @@ export function StickyActionFooter({ className, density = 'default', ...props }:
   return (
     <footer
       className={cx(
-        'shrink-0 border-t border-border bg-surface/96 px-page backdrop-blur-xl sm:px-page-wide',
+        'shrink-0 border-t border-border/70 bg-surface/96 px-page backdrop-blur-xl sm:px-page-wide',
         density === 'compact' ? 'pb-[max(.625rem,var(--algan-safe-area-bottom))] pt-2.5' : 'pb-[max(.75rem,var(--algan-safe-area-bottom))] pt-3',
         className,
       )}
@@ -751,60 +775,64 @@ export function StickyActionFooter({ className, density = 'default', ...props }:
 
 export function BottomNavigation({ children }: { children: ReactNode }) {
   return (
-    <nav className="z-[800] shrink-0 border-t border-border bg-surface/96 px-2 pb-[max(.4rem,var(--algan-safe-area-bottom))] pt-1.5 backdrop-blur-xl">
+    <nav className="z-[800] shrink-0 border-t border-border/70 bg-surface/96 px-2 pb-[max(.5rem,var(--algan-safe-area-bottom))] pt-2 backdrop-blur-xl">
       <div className="grid grid-cols-4">{children}</div>
     </nav>
   );
 }
 
-export function BottomNavigationItem({ active, icon, label, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
+export function BottomNavigationItem({ active, icon, label, badge = 0, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
   active: boolean;
   icon: ReactNode;
   label: ReactNode;
+  badge?: number;
 }) {
   return (
     <button
       type="button"
       aria-current={active ? 'page' : undefined}
       className={cx(
-        'flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-control text-[10px] font-bold tracking-[-0.02em] transition hover:bg-surface-soft',
-        active ? 'text-brand' : 'text-ink-subtle',
+        'flex min-h-13 min-w-0 flex-col items-center justify-center gap-1 rounded-control text-[10px] font-bold tracking-[-0.02em] transition hover:bg-surface-soft',
+        active ? 'bg-brand-pale text-brand' : 'text-ink-subtle',
       )}
       {...props}
     >
-      <span aria-hidden="true" className={cx('grid h-7 w-11 shrink-0 place-items-center rounded-[10px]', active && 'bg-brand-soft')}>{icon}</span>
+      <span aria-hidden="true" className="relative grid h-7 w-11 shrink-0 place-items-center">{icon}{badge > 0 && <span className="absolute -right-0.5 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[9px] text-white">{badge}</span>}</span>
       <span className="whitespace-nowrap text-center leading-none">{label}</span>
     </button>
   );
 }
 
-export function FullScreenFeedback({ icon, title, description, children, centered = false, tone = 'brand', className }: {
+export function FullScreenFeedback({ icon, title, description, children, header, centered = false, tone = 'brand', className }: {
   icon: ReactNode;
   title: ReactNode;
   description: ReactNode;
   children: ReactNode;
+  header?: ReactNode;
   centered?: boolean;
   tone?: 'brand' | 'coral' | 'danger';
   className?: string;
 }) {
   return (
     <div className={cx(
-      'hide-scrollbar flex min-h-[var(--algan-viewport-height)] flex-col overflow-y-auto overscroll-contain px-page pb-[max(1.5rem,var(--algan-safe-area-bottom))] pt-[max(1.5rem,var(--algan-safe-area-top))] text-center sm:min-h-[780px] sm:px-page-wide',
-      tone === 'brand' && 'bg-brand-pale/45',
+      'algan-full-screen hide-scrollbar flex h-full flex-col overflow-y-auto overscroll-contain px-page pb-[max(1.5rem,var(--algan-safe-area-bottom))] pt-[max(1.5rem,var(--algan-safe-area-top))] text-center sm:px-page-wide',
+      tone === 'brand' && 'bg-canvas',
       tone === 'coral' && 'bg-accent-soft',
       tone === 'danger' && 'bg-danger-soft/30',
-      centered && 'justify-center',
       className,
     )}>
+      {header && <div className="mb-6 flex shrink-0">{header}</div>}
+      <div className={cx('w-full shrink-0', centered && 'my-auto py-4')}>
       <div className={cx(
-        'relative mx-auto grid h-18 w-18 shrink-0 rotate-[-3deg] place-items-center rounded-[24px]',
+        'relative mx-auto grid h-24 w-24 shrink-0 rotate-[-6deg] place-items-center rounded-[32px]',
         tone === 'danger' && 'bg-danger-soft text-danger',
         tone === 'coral' && 'bg-accent text-brand-deep',
-        tone === 'brand' && 'bg-highlight text-brand',
+        tone === 'brand' && 'bg-success-soft text-success',
       )}>{icon}</div>
       <PageTitle className="mt-5">{title}</PageTitle>
       <p className="mx-auto mt-3 max-w-[320px] text-sm leading-6 text-ink-secondary">{description}</p>
       {children}
+      </div>
     </div>
   );
 }
@@ -831,9 +859,15 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
   useEffect(() => {
     const previouslyFocused = document.activeElement;
     const overlay = overlayRef.current;
-    const siblings = overlay?.parentElement
-      ? Array.from(overlay.parentElement.children).filter((element): element is HTMLElement => element instanceof HTMLElement && element !== overlay)
-      : [];
+    const siblings: HTMLElement[] = [];
+    const boundary = overlay?.closest('.algan-shell-panel') ?? overlay?.parentElement;
+    let branch: HTMLElement | null = overlay;
+    while (branch?.parentElement) {
+      const parent: HTMLElement = branch.parentElement;
+      siblings.push(...Array.from(parent.children).filter((element): element is HTMLElement => element instanceof HTMLElement && element !== branch));
+      if (parent === boundary) break;
+      branch = parent;
+    }
     siblings.forEach(lockElement);
     panelRef.current?.focus({ preventScroll: true });
     const handleDialogKeys = (event: KeyboardEvent) => {
@@ -880,12 +914,13 @@ export function DialogLayer({ children, onClose, closeLabel, full = false, varia
     )} role="dialog" aria-modal="true" aria-label={ariaLabel}>
       {resolvedVariant !== 'full' && <button type="button" onClick={onClose} className="absolute inset-0" aria-label={`${closeLabel} (${ariaLabel ?? 'dialog'})`} aria-hidden="true" tabIndex={-1} />}
       <section ref={panelRef} tabIndex={-1} data-dialog-variant={resolvedVariant} className={cx(
-        'algan-dialog-panel relative z-10 w-full overflow-hidden bg-surface outline-none',
+        'algan-dialog-panel relative z-10 w-full bg-surface outline-none',
+        resolvedVariant !== 'center' && 'overflow-hidden',
         resolvedVariant === 'full' && 'h-full min-h-0',
-        resolvedVariant === 'sheet' && 'max-h-[92%] rounded-t-sheet shadow-sheet',
+        resolvedVariant === 'sheet' && 'flex max-h-[92%] flex-col rounded-t-sheet shadow-sheet',
         resolvedVariant === 'sheet' && sheetHeight === 'medium' && 'h-[82%]',
         resolvedVariant === 'sheet' && sheetHeight === 'tall' && 'h-[92%]',
-        resolvedVariant === 'center' && 'mx-auto max-w-sm rounded-sheet shadow-floating',
+        resolvedVariant === 'center' && 'mx-auto max-h-[92%] max-w-sm overflow-y-auto rounded-sheet shadow-floating',
       )}>
         {children}
       </section>

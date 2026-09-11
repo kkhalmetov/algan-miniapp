@@ -192,7 +192,7 @@ export default function AlganApp() {
   return (
     <PriceProvider currency={displayCurrency} kztToRubRate={kztToRubRate}>
     <PhoneShell>
-      <div className="relative flex h-[var(--algan-viewport-height)] min-h-0 flex-col overflow-hidden bg-surface sm:h-[780px]">
+      <div className="algan-app-frame relative flex min-h-0 flex-col overflow-hidden bg-canvas">
         <main ref={mainScrollRef} className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
           {tab === 'home' && (
             <HomeTab
@@ -202,11 +202,11 @@ export default function AlganApp() {
             />
           )}
           {tab === 'favorites' && (
-            <FavoritesTab t={t} locale={locale} favoriteBoxIds={favoriteBoxIds} toggleFavoriteBox={toggleFavoriteBox} openBox={openBox} purchasedBoxQuantities={purchasedBoxQuantities} />
+            <FavoritesTab t={t} locale={locale} favoriteBoxIds={favoriteBoxIds} toggleFavoriteBox={toggleFavoriteBox} openBox={openBox} purchasedBoxQuantities={purchasedBoxQuantities} onBrowseOffers={() => setTab('home')} />
           )}
           {tab === 'orders' && <OrdersTab t={t} locale={locale} orders={orders} onCancelOrder={cancelOrder} onBrowseOffers={() => { setTab('home'); haptic('tap'); }} />}
           {tab === 'profile' && (
-            <ProfileTab t={t} profile={profile} currency={currency}
+            <ProfileTab t={t} locale={locale} orders={orders} profile={profile} currency={currency}
               currencyLoading={currency === 'RUB' && !kztToRubRate} currencyRateError={currencyRateError} onToggleCurrency={toggleCurrency}
               openSettings={() => setSettingsOpen(true)}
               openHelp={() => setHelpOpen(true)}
@@ -214,10 +214,10 @@ export default function AlganApp() {
               resetDemo={resetDemo} />
           )}
         </main>
-        {tab === 'home' && cartItems.length > 0 && !selectedBox && !cartOpen && (
+        {cartItems.length > 0 && !selectedBox && !cartOpen && (
           <CartDock items={cartItems} locale={locale} t={t} onOpen={() => setCartOpen(true)} />
         )}
-        <BottomNav tab={tab} setTab={setTab} t={t} />
+        <BottomNav tab={tab} setTab={setTab} t={t} activeOrders={orders.filter((order) => order.status === 'paid').length} />
       </div>
 
       {selectedBox && (

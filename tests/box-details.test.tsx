@@ -43,7 +43,7 @@ describe('box-first catalog and details', () => {
     renderHome();
 
     expect(screen.queryByRole('heading', { name: 'Выгодно рядом' })).not.toBeInTheDocument();
-    expect(screen.queryByText('Можно забрать сегодня')).not.toBeInTheDocument();
+    expect(screen.getByText('Можно забрать сегодня')).toBeInTheDocument();
     const cards = screen.getAllByTestId('marketplace-box-card');
     expect(cards).toHaveLength(boxes.length);
     expect(within(cards[0]!).getByText('Surprise Tatti-box')).toBeInTheDocument();
@@ -73,11 +73,12 @@ describe('box-first catalog and details', () => {
     expect(within(dialog).getByTestId('box-details-sheet')).toHaveClass('h-full');
     expect(within(dialog).getByText('Tatti Bakery')).toBeInTheDocument();
     expect(within(dialog).getByText('пр. Тауке хана, 47')).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Построить маршрут' }).querySelector('svg')).not.toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Построить маршрут' })).toBeEnabled();
     expect(within(dialog).getByText('SURPRISE')).toHaveAttribute('data-surprise-variant', 'default');
     expect(within(dialog).getByTestId('box-price-card')).toHaveTextContent('2 490 ₸');
     expect(within(dialog).getByTestId('box-price-card')).toHaveTextContent('6 200 ₸');
-    expect(within(dialog).getByTestId('box-price-card')).toHaveTextContent('−60%');
+    expect(within(dialog).getByTestId('box-details-cover')).toHaveTextContent('−60%');
+    expect(within(dialog).getByText('Ваша экономия · 3 710 ₸')).toBeInTheDocument();
     expect(within(dialog).getByTestId('box-pickup-time')).toHaveTextContent('19:30–20:30');
     expect(within(dialog).getByTestId('box-stock')).toHaveTextContent('Осталось 4 бокса');
     expect(within(dialog).getByTestId('box-appearance-notice')).toHaveTextContent('Внешний вид продукции может отличаться от представленного на фото.');
@@ -118,7 +119,8 @@ describe('box-first catalog and details', () => {
     expect(useAppStore.getState().cartItems).toEqual([{ boxId: 'bakery-surprise', quantity: 2 }]);
     expect(screen.queryByRole('dialog', { name: 'Surprise Tatti-box' })).not.toBeInTheDocument();
     const cartDock = screen.getByTestId('cart-dock');
-    expect(cartDock).toHaveTextContent(/Корзина · 2/);
+    expect(within(cartDock).getByText('2')).toBeInTheDocument();
+    expect(within(cartDock).getByText('Корзина')).toBeInTheDocument();
     expect(cartDock).toHaveTextContent('4 980 ₸');
     fireEvent.click(within(cartDock).getByRole('button', { name: /Корзина/ }));
     expect(screen.getByRole('dialog', { name: 'Корзина' })).toBeInTheDocument();
@@ -149,6 +151,16 @@ describe('box-first catalog and details', () => {
     fireEvent.click(within(picker).getByRole('button', { name: /Google Maps/ }));
     expect(open).toHaveBeenCalledWith(expect.stringContaining('destination=42.3184%2C69.5907'), '_blank', 'noopener,noreferrer');
     open.mockRestore();
+  });
+
+  it('lets a user remove a saved box after its stock runs out', () => {
+    useAppStore.setState({ favoriteBoxIds: ['bakery-surprise'], purchasedBoxQuantities: { 'bakery-surprise': 4 } });
+    renderHome();
+    fireEvent.click(screen.getByRole('button', { name: 'Избранное' }));
+    expect(screen.getByRole('button', { name: 'Подробнее: Surprise Tatti-box, Tatti Bakery' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Избранное: Surprise Tatti-box' }));
+    expect(useAppStore.getState().favoriteBoxIds).toEqual([]);
+    expect(screen.getByRole('button', { name: 'Найти любимый бокс' })).toBeVisible();
   });
 
   it('shows a safe allergen fallback when catalog data is missing', () => {

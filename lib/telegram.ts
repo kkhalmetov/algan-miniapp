@@ -1,4 +1,4 @@
-import { APP_SURFACE_COLOR, BRAND_COLOR } from './design-tokens';
+import { APP_SURFACE_COLOR } from './design-tokens';
 
 type TelegramUser = { id?: number; first_name?: string; last_name?: string; username?: string; language_code?: string; photo_url?: string };
 
@@ -48,7 +48,7 @@ export function prepareTelegram() {
   webApp?.ready();
   webApp?.expand();
   if (webApp && supportsTelegramVersion(webApp, '6.1')) {
-    webApp.setHeaderColor?.(supportsTelegramVersion(webApp, '6.9') ? BRAND_COLOR : 'bg_color');
+    webApp.setHeaderColor?.(supportsTelegramVersion(webApp, '6.9') ? APP_SURFACE_COLOR : 'bg_color');
     webApp.setBackgroundColor?.(APP_SURFACE_COLOR);
   }
   if (webApp && supportsTelegramVersion(webApp, '7.10')) {
