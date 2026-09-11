@@ -126,9 +126,13 @@ describe('profile information sections', () => {
     openProfile();
 
     const settings = screen.getByRole('button', { name: 'Настройки' });
+    const switchCurrency = screen.getByRole('button', { name: 'Показывать цены в рублях' });
     const support = screen.getByRole('button', { name: 'Помощь и поддержка' });
     const legal = screen.getByRole('button', { name: 'Правовая информация' });
-    expect(settings.compareDocumentPosition(support) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByText('Под вас')).not.toBeInTheDocument();
+    expect(screen.queryByText('Всегда рядом')).not.toBeInTheDocument();
+    expect(settings.compareDocumentPosition(switchCurrency) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(switchCurrency.compareDocumentPosition(support) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(support.compareDocumentPosition(legal) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     fireEvent.click(support);

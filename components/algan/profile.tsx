@@ -50,14 +50,10 @@ export function ProfileTab({ t, profile, locale = 'kk', orders = [], currency, c
           <p className="flex items-center gap-2 text-xs font-bold text-brand"><Leaf size={17} />{t('yourImpact')}</p>
           <div className="mt-4 grid grid-cols-2 divide-x divide-brand/15 tabular-nums"><div className="pr-3"><p className="text-3xl font-extrabold tracking-[-.04em]">{boxCount}</p><p className="mt-1 text-[11px] text-ink-secondary">{t('savedBoxes')}</p></div><div className="pl-4"><p className="text-2xl font-extrabold tracking-[-.04em]">{formatPrice(saved)}</p><p className="mt-1 text-[11px] text-ink-secondary">{t('moneySaved')}</p></div></div>
         </InsetSurface>
-        <p className="algan-eyebrow mb-3 text-ink-muted">{t('preferences')}</p>
         <div className="space-y-1.5">
           <ProfileRow icon={<Settings2 size={18} />} label={t('settings')} onClick={openSettings} />
           <ProfileRow icon={<CircleDollarSign size={19} />} label={currencyLoading ? t('currencyLoading') : currency === 'KZT' ? t('showRubles') : t('showTenge')} disabled={currencyLoading} aria-busy={currencyLoading} onClick={onToggleCurrency} />
-        </div>
-        {currencyRateError && <p role="alert" className="mt-2 text-center text-xs font-bold text-danger">{t('currencyRateError')}</p>}
-        <p className="algan-eyebrow mb-3 mt-6 text-ink-muted">{t('service')}</p>
-        <div className="space-y-1.5">
+          {currencyRateError && <p role="alert" className="text-center text-xs font-bold text-danger">{t('currencyRateError')}</p>}
           <ProfileRow icon={<CircleHelp size={18} />} label={t('support')} onClick={openHelp} />
           <ProfileRow icon={<PackageCheck size={18} />} label={t('legal')} onClick={openDocuments} />
         </div>
