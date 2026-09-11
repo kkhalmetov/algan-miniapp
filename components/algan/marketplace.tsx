@@ -61,7 +61,7 @@ export const HomeTab = memo(function HomeTab({ t, locale, profile, favoriteBoxId
           {categories.map((item) => <FilterChip key={item.id} selected={filters.category === item.id} icon={item.icon} onClick={() => setFilters((current) => ({ ...current, category: item.id }))}>{t(item.label)}</FilterChip>)}
         </div>
         <div className="mb-4 mt-5 flex items-end justify-between gap-2">
-          <div><p className="algan-eyebrow mb-1 text-ink-muted">{t('availableToday')}</p><SectionTitle>{t('boxesToday')}</SectionTitle></div>
+          <SectionTitle>{t('boxesToday')}</SectionTitle>
           <span role="status" aria-label={`${t('foundOffers')}: ${visibleBoxes.length}`} className="mb-1 text-xs font-bold text-ink-muted">{visibleBoxes.length}</span>
         </div>
         <div className="space-y-4 pb-7">

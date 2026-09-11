@@ -43,7 +43,7 @@ describe('box-first catalog and details', () => {
     renderHome();
 
     expect(screen.queryByRole('heading', { name: 'Выгодно рядом' })).not.toBeInTheDocument();
-    expect(screen.getByText('Можно забрать сегодня')).toBeInTheDocument();
+    expect(screen.queryByText('Можно забрать сегодня')).not.toBeInTheDocument();
     const cards = screen.getAllByTestId('marketplace-box-card');
     expect(cards).toHaveLength(boxes.length);
     expect(within(cards[0]!).getByText('Surprise Tatti-box')).toBeInTheDocument();
