@@ -34,7 +34,7 @@ const copy = {
     boxPrice: 'Цена бокса', appearanceMayDifferTitle: 'Внешний вид продукции может отличаться от представленного на фото', appearanceMayDifferText: 'Внешний вид продукции может отличаться от представленного на фото.', buildRoute: 'Построить маршрут', chooseMap: 'Выберите карту', openInMap: 'Открыть',
     addToCart: 'Добавить', addToCartFull: 'Добавить в корзину', cart: 'Корзина',
     cartEmpty: 'Корзина пуста', removeFromCart: 'Удалить', checkoutCart: 'Оформить заказ',
-    checkoutOfferPrefix: 'Нажимая «Оформить заказ», вы автоматически принимаете', checkoutOfferLink: 'публичную оферту', checkoutOfferBetween: 'и', checkoutRulesLink: 'правила заказа, оплаты, самовывоза, отмены и возврата', checkoutOfferSuffix: '',
+    checkoutOfferPrefix: 'Нажимая «Оформить заказ», вы автоматически принимаете', checkoutOfferLink: 'публичную оферту', checkoutOfferBetween: 'и', checkoutRulesLink: 'правила заказа оплаты', checkoutOfferSuffix: '',
     replaceCartConfirm: 'Текущие боксы будут удалены, а выбранный бокс добавится в новую корзину.', replaceCartAction: 'Очистить и добавить', cartRuleTitle: 'Заменить корзину?', cartRuleText: 'В одной корзине могут быть боксы только одного заведения.', keepCart: 'Оставить корзину', cancel: 'Отмена',
     ordersCreated: 'Заказ оформлен!', paymentSuccessTitle: 'Оплата прошла!', paymentProcessing: 'Проводим оплату…',
     paymentFailedTitle: 'Оплата не прошла', paymentFailedText: 'Не удалось завершить оплату. Попробуйте ещё раз.', cartPreservedTitle: 'Корзина сохранена', cartPreservedText: 'Все выбранные боксы остались на месте — вы сможете повторить оплату из корзины.',

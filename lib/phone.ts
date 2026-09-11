@@ -1,7 +1,8 @@
 export function normalizeKazakhstanPhone(value: string): string | null {
   let digits = value.replace(/\D/g, '');
+  const hasExplicitCountryCode = /^\s*\+7/.test(value);
 
-  if (digits.length === 10) digits = `7${digits}`;
+  if (digits.length === 10 && !hasExplicitCountryCode) digits = `7${digits}`;
   if (digits.length === 11 && digits.startsWith('8')) digits = `7${digits.slice(1)}`;
 
   return digits.length === 11 && digits.startsWith('7') ? `+${digits}` : null;

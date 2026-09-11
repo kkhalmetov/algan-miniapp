@@ -62,6 +62,9 @@ describe('onboarding legal consent', () => {
     expect(continueButton).toBeDisabled();
     expect(continueButton.querySelector('svg')).not.toBeInTheDocument();
 
+    fireEvent.change(screen.getByLabelText(/Телефон/), { target: { value: '+7 222 222 22 2' } });
+    expect(continueButton).toBeDisabled();
+
     fireEvent.change(screen.getByLabelText(/Телефон/), { target: { value: '+7 705 976 80 00' } });
     expect(continueButton).toBeEnabled();
     fireEvent.click(continueButton);

@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import { AlertTriangle, ArrowUpRight, CheckCircle2, Clock3, Image as ImageIcon, MapPin, Package, ShieldCheck, ShoppingBag, X } from '@/components/icons';
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Clock3, Image as ImageIcon, MapPin, Package, ShoppingBag, X } from '@/components/icons';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { SurpriseBadge } from '@/components/algan/marketplace';
@@ -15,7 +15,6 @@ import { boxes, storeById } from '@/lib/mock-data';
 import { formatBoxesLeft } from '@/lib/stock';
 import { haptic } from '@/lib/telegram';
 import type { Box, CartItem, Locale } from '@/lib/types';
-import { IS_DEMO_RELEASE } from '@/lib/release';
 import { AlganLogo } from '@/components/algan-logo';
 
 export function CartReplacementDialog({ t, onCancel, onConfirm }: { t: Translator; onCancel: () => void; onConfirm: () => void }) {
@@ -184,16 +183,15 @@ export function CartSheet({ items, purchasedBoxQuantities, locale, t, onChangeQu
               <NoticeCard className="mt-4" density="compact" icon={<Clock3 size={17} />} title={t('cancellationNoticeTitle')}>
                 {t('cancellationNoticeText')}
               </NoticeCard>
-              <p className="mt-5 text-xs leading-5 text-ink-muted">
-                {t('checkoutOfferPrefix')}{' '}<TextLinkButton disabled={paymentPending} onClick={onOpenOffer}>{t('checkoutOfferLink')}</TextLinkButton>{' '}{t('checkoutOfferBetween')}{' '}<TextLinkButton disabled={paymentPending} onClick={onOpenOrderRules}>{t('checkoutRulesLink')}</TextLinkButton>{t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
-              </p>
             </>
           )}
         </ScrollArea>
         {lines.length > 0 && <StickyActionFooter data-testid="cart-checkout-footer">
           <div className="mb-3 flex items-center justify-between gap-3 tabular-nums"><span className="text-sm font-semibold text-ink-secondary">{t('total')}</span><span className="text-2xl font-extrabold" aria-live="polite">{formatPrice(total)}</span></div>
           <PrimaryButton onClick={() => void onPay()} disabled={paymentPending} aria-busy={paymentPending}>{paymentPending ? t('paymentProcessing') : t('checkoutCart')}</PrimaryButton>
-          {IS_DEMO_RELEASE && <p className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-ink-muted"><ShieldCheck size={13} />{t('demoShort')}</p>}
+          <p className="mt-3 text-center text-xs leading-5 text-ink-muted">
+            {t('checkoutOfferPrefix')}{' '}<TextLinkButton disabled={paymentPending} onClick={onOpenOffer}>{t('checkoutOfferLink')}</TextLinkButton>{' '}{t('checkoutOfferBetween')}{' '}<TextLinkButton disabled={paymentPending} onClick={onOpenOrderRules}>{t('checkoutRulesLink')}</TextLinkButton>{t('checkoutOfferSuffix') ? ` ${t('checkoutOfferSuffix')}` : ''}
+          </p>
         </StickyActionFooter>}
       </div>
     </DialogLayer>
@@ -230,7 +228,7 @@ export function PaymentFailure({ t, onBackToCart }: { t: Translator; onBackToCar
       onAction={onBackToCart}
       tone="coral"
       statusIcon={<AlertTriangle size={42} />}
-    ><NoticeCard className="mx-auto mt-6 max-w-[330px] text-left" icon={<ShoppingBag size={20} />} title={t('cartPreservedTitle')}>{t('cartPreservedText')}</NoticeCard></PaymentResultScreen>
+    />
   );
 }
 
@@ -244,6 +242,6 @@ export function Success({ t, onDone }: { t: Translator; onDone: () => void }) {
       onAction={onDone}
       tone="brand"
       statusIcon={<CheckCircle2 size={44} />}
-    ><div className="algan-ticket mx-auto mt-6 w-full max-w-[330px] p-5"><p className="algan-eyebrow text-brand">{t('readyToCollect')}</p><p className="mt-2 text-sm leading-6 text-ink-secondary">{t('pickupInstructions')}</p><div className="algan-ticket-divider mt-4 pt-3"><p className="text-xs font-bold text-ink-muted">{t('city')} · ALGAN</p></div></div></PaymentResultScreen>
+    />
   );
 }

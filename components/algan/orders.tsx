@@ -70,7 +70,7 @@ export function OrdersTab({ t, locale, orders, onCancelOrder, onBrowseOffers }: 
   }, [orders, nowMs]);
 
   return (
-    <PageSection title={t('orders')} eyebrow={t('myAlgan')} description={t('ordersIntro')}>
+    <PageSection title={t('orders')} description={t('ordersIntro')}>
       <div className="mt-5">
         <SegmentedControl value={view} label={t('orders')} items={[{ value: 'active', label: t('activeOrders') }, { value: 'past', label: t('pastOrders') }]} onChange={(item) => { setView(item); haptic('tap'); }} />
       </div>

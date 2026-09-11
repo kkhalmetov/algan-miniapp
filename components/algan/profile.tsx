@@ -38,13 +38,11 @@ export function ProfileTab({ t, profile, locale = 'kk', orders = [], currency, c
   return (
     <section className="min-h-full bg-canvas pb-8">
       <BrandHeader>
-        <p className="algan-eyebrow algan-section-kicker">{t('myAlgan')}</p>
         <PageTitle>{t('profile')}</PageTitle>
         <div className="mt-6 flex items-center gap-4">
           <ProfileAvatar key={profile.photoUrl ?? 'fallback-avatar'} profile={profile} fallbackName={firstName} />
           <div className="min-w-0 flex-1"><ContentTitle className="break-words">{fullName}</ContentTitle><p className="mt-1 truncate text-sm text-ink-muted">{telegramUsername ? `@${telegramUsername}` : 'Telegram'}</p></div>
         </div>
-        <p className="mt-4 text-sm leading-6 text-ink-muted">{t('profileIntro')}</p>
       </BrandHeader>
 
       <ScreenBody flush>

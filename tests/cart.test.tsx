@@ -129,8 +129,8 @@ describe('multi-box cart', () => {
 
     const failureDialog = screen.getByRole('dialog', { name: 'Оплата не прошла' });
     expect(within(failureDialog).getByText('Не удалось завершить оплату. Попробуйте ещё раз.')).toBeInTheDocument();
-    expect(within(failureDialog).getByText('Корзина сохранена')).toBeInTheDocument();
-    expect(within(failureDialog).getByText(/Все выбранные боксы остались на месте/)).toBeInTheDocument();
+    expect(within(failureDialog).queryByText('Корзина сохранена')).not.toBeInTheDocument();
+    expect(within(failureDialog).queryByText(/Все выбранные боксы остались на месте/)).not.toBeInTheDocument();
     expect(within(failureDialog).getByText('Оплата не прошла').closest('.algan-full-screen')).toHaveClass('h-full', 'bg-accent-soft');
     expect(failureDialog.querySelector('[data-icon="warning"]')).toBeInTheDocument();
     expect([...failureDialog.querySelectorAll('*')].some((element) => element.classList.contains('bg-danger-soft/30'))).toBe(false);
@@ -204,14 +204,15 @@ describe('multi-box cart', () => {
     addBoxFromDetails('Surprise Tatti-box');
     fireEvent.click(screen.getByRole('button', { name: /^Корзина/ }));
 
-    expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Нажимая «Оформить заказ», вы автоматически принимаете публичную оферту и правила заказа, оплаты, самовывоза, отмены и возврата')).toBeInTheDocument();
+    const checkoutFooter = screen.getByTestId('cart-checkout-footer');
+    expect(within(checkoutFooter).getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Нажимая «Оформить заказ», вы автоматически принимаете публичную оферту и правила заказа оплаты')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'публичную оферту' }));
 
     const offer = screen.getByRole('dialog', { name: 'Публичная оферта' });
     expect(within(offer).getByText(/Документ готовится/)).toBeInTheDocument();
     fireEvent.click(within(offer).getByRole('button', { name: 'Закрыть' }));
 
-    fireEvent.click(screen.getByRole('button', { name: 'правила заказа, оплаты, самовывоза, отмены и возврата' }));
+    fireEvent.click(screen.getByRole('button', { name: 'правила заказа оплаты' }));
     const rules = screen.getByRole('dialog', { name: 'Правила заказа, оплаты, самовывоза, отмены и возврата' });
     expect(within(rules).getByText(/Документ готовится/)).toBeInTheDocument();
   });

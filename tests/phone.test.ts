@@ -8,6 +8,11 @@ describe('Kazakhstan phone helpers', () => {
     expect(normalizeKazakhstanPhone('7001234567')).toBe('+77001234567');
   });
 
+  it('does not accept an incomplete number with an explicit +7 country code', () => {
+    expect(normalizeKazakhstanPhone('+7 222 222 22 2')).toBeNull();
+    expect(normalizeKazakhstanPhone('+7 222 222 22 22')).toBe('+72222222222');
+  });
+
   it('rejects incomplete and unsupported numbers', () => {
     expect(normalizeKazakhstanPhone('+7 700 123')).toBeNull();
     expect(normalizeKazakhstanPhone('+1 202 555 0100')).toBeNull();

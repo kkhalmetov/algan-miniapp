@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import { ArrowUpRight, Check, Clock3, Coffee, Cookie, Croissant, FlaskConical, Heart, LayoutGrid, Leaf, MapPin, Package, Search, ShoppingBag, SlidersHorizontal, Sparkles, Star } from '@/components/icons';
+import { ArrowUpRight, Check, Clock3, Coffee, Cookie, Croissant, Heart, LayoutGrid, Leaf, MapPin, Package, Search, ShoppingBag, SlidersHorizontal, Sparkles } from '@/components/icons';
 import { memo, useState, type ReactNode } from 'react';
 import { AlganLogo } from '@/components/algan-logo';
 import { usePriceFormatter } from '@/components/algan/price-context';
@@ -11,7 +11,6 @@ import { availableQuantity, localizedFirstName } from '@/lib/app-utils';
 import { boxName, storeAddress } from '@/lib/catalog-localization';
 import { DEFAULT_CATALOG_FILTERS, queryCatalog, type CatalogCategory, type CatalogFilters, type CatalogSort } from '@/lib/catalog-query';
 import { boxes, storeById, stores } from '@/lib/mock-data';
-import { IS_DEMO_RELEASE } from '@/lib/release';
 import { formatBoxesLeft } from '@/lib/stock';
 import type { Box, Locale, Store, UserProfile } from '@/lib/types';
 import type { CopyKey } from '@/lib/translations';
@@ -44,7 +43,6 @@ export const HomeTab = memo(function HomeTab({ t, locale, profile, favoriteBoxId
       <BrandHeader className="pb-4">
         <div className="flex items-center justify-between gap-3">
           <AlganLogo markClassName="h-10 w-10" wordmarkClassName="h-9 w-[91px]" />
-          <span className="flex items-center gap-1.5 text-xs font-bold text-ink"><MapPin size={15} className="text-brand" />{t('city')}</span>
         </div>
         <div className="algan-hero mt-5 min-h-40 px-5 py-5">
           <p className="relative z-10 max-w-[75%] text-[11px] font-semibold text-ink-muted">{t('greeting')}, <span>{firstName}!</span></p>
@@ -66,7 +64,6 @@ export const HomeTab = memo(function HomeTab({ t, locale, profile, favoriteBoxId
           <div><p className="algan-eyebrow mb-1 text-ink-muted">{t('availableToday')}</p><SectionTitle>{t('boxesToday')}</SectionTitle></div>
           <span role="status" aria-label={`${t('foundOffers')}: ${visibleBoxes.length}`} className="mb-1 text-xs font-bold text-ink-muted">{visibleBoxes.length}</span>
         </div>
-        {IS_DEMO_RELEASE && <p title={t('demoModeText')} className="mb-3 flex items-center gap-1.5 text-[11px] text-ink-muted"><FlaskConical size={13} />{t('demoShort')}</p>}
         <div className="space-y-4 pb-7">
           {visibleBoxes.map((box, index) => (
             <MarketplaceBoxCard
@@ -117,7 +114,7 @@ function MarketplaceBoxCard({ box, store, t, locale, favorite, toggleFavorite, o
           {box.type === 'SURPRISE' && <span className="absolute bottom-3 right-3"><SurpriseBadge compact /></span>}
         </span>
         <span className={`block p-4 ${soldOut ? 'text-ink-muted' : ''}`}>
-          <span className="flex items-center gap-2"><CardTitle tone={soldOut ? 'muted' : 'default'} className="min-w-0 flex-1">{name}</CardTitle><span className="flex shrink-0 items-center gap-1 text-[11px] font-bold"><Star size={12} fill="currentColor" className="text-brand" />{store.rating}</span></span>
+          <CardTitle tone={soldOut ? 'muted' : 'default'}>{name}</CardTitle>
           <span className="mt-2 flex items-start gap-1.5 text-xs font-medium text-ink-muted"><MapPin size={14} className="mt-0.5 shrink-0 text-brand-hover" /><span>{address}</span></span>
           <span className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-bold text-ink-secondary">
             <span className="flex items-center gap-1.5"><Clock3 size={14} className="shrink-0 text-brand" />{box.pickupFrom}–{box.pickupTo}</span>
@@ -162,7 +159,7 @@ export function FavoritesTab({ t, locale, favoriteBoxIds, toggleFavoriteBox, ope
 }) {
   const favoriteBoxes = boxes.filter((box) => favoriteBoxIds.includes(box.id));
   return (
-    <PageSection title={t('favorites')} eyebrow={t('collection')} description={t('favoritesIntro')}>
+    <PageSection title={t('favorites')} description={t('favoritesIntro')}>
       {favoriteBoxes.length === 0 ? (
         <EmptyState icon={<Heart size={34} />} title={t('noFavorites')} description={t('noFavoritesText')} tone="accent">{onBrowseOffers && <PrimaryButton onClick={onBrowseOffers}>{t('favoritesBrowse')}</PrimaryButton>}</EmptyState>
       ) : (

@@ -19,7 +19,7 @@ export function Splash({ t }: { t: Translator }) {
           <p className="mt-2 text-sm font-semibold">{t('loadingTagline')}</p>
           <span className="algan-loader mt-12" role="status"><span className="sr-only">{t('loading')}</span></span>
         </div>
-        <p className="algan-eyebrow absolute bottom-10 text-brand-deep">ALGAN · {t('city')}</p>
+        <p className="algan-eyebrow absolute bottom-10 text-brand-deep">ALGAN</p>
       </main>
     </PhoneShell>
   );
@@ -53,7 +53,7 @@ export function Onboarding({ t, locale, setLocale, phone, setPhone, openLegal, o
       <div className="shrink-0 px-page pb-6 pt-[max(1.25rem,var(--algan-safe-area-top))] sm:px-page-wide">
         <div className="flex items-center justify-between"><AlganLogo markClassName="h-10 w-10" wordmarkClassName="h-9 w-[91px]" /><LanguagePill locale={locale} setLocale={setLocale} /></div>
         <div className="relative mt-6 min-h-56 overflow-hidden">
-          <p className="algan-eyebrow text-brand">{t('intro')} · {t('city')}</p>
+          <p className="algan-eyebrow text-brand">{t('intro')}</p>
           <h1 className="relative z-10 mt-3 text-display">{t('onboardingHeadline')}<br /><span className="text-brand">{t('onboardingAccent')}</span></h1>
           <p className="relative z-10 mt-4 max-w-[64%] text-sm leading-6 text-ink-secondary">{t('onboardingDescription')}</p>
           <img src="/images/algan-good-bag.svg" alt="" aria-hidden="true" width={180} height={220} className="absolute -bottom-4 -right-3 w-[112px] rotate-[8deg] min-[360px]:w-[136px]" />
