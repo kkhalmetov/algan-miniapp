@@ -19,7 +19,6 @@ export function Splash({ t }: { t: Translator }) {
           <p className="mt-2 text-sm font-semibold">{t('loadingTagline')}</p>
           <span className="algan-loader mt-12" role="status"><span className="sr-only">{t('loading')}</span></span>
         </div>
-        <p className="algan-eyebrow absolute bottom-10 text-brand-deep">ALGAN</p>
       </main>
     </PhoneShell>
   );
